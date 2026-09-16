@@ -1,4 +1,4 @@
-# sipdrift
+# SIPdrift
 
 Differential testing harness for open-source SIP/VoIP stacks.
 

@@ -2,13 +2,14 @@
 
 | Tag | Role |
 | --- | --- |
-| `0.3.3` | **Current cite pin** for manuscripts and Code metadata C1/C2 |
+| `0.3.4` | **Current cite pin** for manuscripts and Code metadata C1/C2 |
+| `0.3.3` | Prior corpus pin (oracle/fixtures unchanged into 0.3.4) |
 
 Cite the tag tree URL:
 
-https://github.com/kazuru-chidumbwe/sipdrift/tree/0.3.3
+https://github.com/kazuru-chidumbwe/sipdrift/tree/0.3.4
 
-Do not cite floating `main`. If laboratory packs were produced on commits after `0.3.3`, either cut a new tag or disclose the commit in the paper while keeping C1/C2 on a published tag.
+Do not cite floating `main`. Laboratory suite digests under `results/V-BASE-restart/` match this pin.
 
 ## Release hygiene
 

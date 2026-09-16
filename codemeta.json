@@ -3,11 +3,11 @@
   "@type": "SoftwareSourceCode",
   "name": "sipdrift: a differential testing harness for open-source SIP stacks",
   "description": "Differential testing harness for SIP message handling. A pinned fixture corpus is run through multiple stack drivers; observations are normalized onto shared oracle axes and classified as agree, diverge, error, or skip.",
-  "version": "0.3.3",
-  "dateModified": "2026-09-15",
+  "version": "0.3.4",
+  "dateModified": "2026-09-16",
   "license": "https://spdx.org/licenses/MIT.html",
   "codeRepository": "https://github.com/kazuru-chidumbwe/sipdrift",
-  "url": "https://github.com/kazuru-chidumbwe/sipdrift/tree/0.3.3",
+  "url": "https://github.com/kazuru-chidumbwe/sipdrift/tree/0.3.4",
   "programmingLanguage": [
     "Python",
     "C"

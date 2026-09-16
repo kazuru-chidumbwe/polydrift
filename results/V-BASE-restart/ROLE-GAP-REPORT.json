@@ -1,0 +1,167 @@
+{
+  "written_utc": "2026-09-14T20:51:54.748798+00:00",
+  "pack": "sipdrift-lab-20260914T204058Z-V-BASE-restart",
+  "cell": "V-BASE-restart",
+  "definitions": {
+    "UA_UA": "pjsip-lab vs sofia-lab",
+    "UA_PROXY": "pjsip-lab|sofia-lab vs kamailio-lab"
+  },
+  "counts": {
+    "UA_UA": {
+      "agree": 48,
+      "error": 4,
+      "diverge": 1
+    },
+    "UA_PROXY_pjsip_kamailio": {
+      "agree": 41,
+      "error": 7,
+      "diverge": 5
+    },
+    "UA_PROXY_sofia_kamailio": {
+      "agree": 41,
+      "error": 6,
+      "diverge": 6
+    }
+  },
+  "deltas_vs_UA_UA": {
+    "pjsip_kamailio": {
+      "delta_agree": 7,
+      "delta_diverge": 4,
+      "delta_error": 3
+    },
+    "sofia_kamailio": {
+      "delta_agree": 7,
+      "delta_diverge": 5,
+      "delta_error": 2
+    }
+  },
+  "via_mismatch_mass": {
+    "UA_UA": 0,
+    "pjsip_kamailio": 5,
+    "sofia_kamailio": 5
+  },
+  "hypothesis": "UA\u2013proxy receive pairs show higher diverge+error and nonzero Via mismatch mass relative to UA\u2013UA on the same corpus; gap is structural not version-noise (see Lab null upgrades).",
+  "via_diverge_cases": {
+    "pjsip_vs_kamailio": [
+      {
+        "fixture": "F-FOLDED-VIA",
+        "status": "diverge",
+        "notes": [
+          "via mismatch: 'pjsip-lab'='SIP/2.0/UDP 192.0.2.1:5060;branch=z9hG4bK-folded' vs 'kamailio-lab'='SIP/2.0/UDP 192.0.2.1:5060;\\r\\n branch=z9hG4bK-folded'"
+        ],
+        "left_via": "SIP/2.0/UDP 192.0.2.1:5060;branch=z9hG4bK-folded",
+        "right_via": "SIP/2.0/UDP 192.0.2.1:5060;\r\n branch=z9hG4bK-folded",
+        "left_ok": true,
+        "right_ok": true
+      },
+      {
+        "fixture": "F-LOWER-SIP",
+        "status": "diverge",
+        "notes": [
+          "start_line mismatch: 'pjsip-lab'='INVITE sip:bob@example.com SIP/2.0' vs 'kamailio-lab'='invite sip:bob@example.com SIP/2.0'",
+          "via mismatch: 'pjsip-lab'='SIP/2.0/UDP 192.0.2.1:5060;branch=z9hG4bK-lower' vs 'kamailio-lab'='sip/2.0/udp 192.0.2.1:5060;branch=z9hG4bK-lower'",
+          "cseq mismatch: 'pjsip-lab'='1 INVITE' vs 'kamailio-lab'='1 invite'"
+        ],
+        "left_via": "SIP/2.0/UDP 192.0.2.1:5060;branch=z9hG4bK-lower",
+        "right_via": "sip/2.0/udp 192.0.2.1:5060;branch=z9hG4bK-lower",
+        "left_ok": true,
+        "right_ok": true
+      },
+      {
+        "fixture": "F-TORTURE-WS-END",
+        "status": "diverge",
+        "notes": [
+          "via mismatch: 'pjsip-lab'='SIP/2.0/UDP 192.0.2.1:5060;branch=z9hG4bK-ws-end' vs 'kamailio-lab'='SIP/2.0/UDP 192.0.2.1:5060;branch=z9hG4bK-ws-end  '"
+        ],
+        "left_via": "SIP/2.0/UDP 192.0.2.1:5060;branch=z9hG4bK-ws-end",
+        "right_via": "SIP/2.0/UDP 192.0.2.1:5060;branch=z9hG4bK-ws-end  ",
+        "left_ok": true,
+        "right_ok": true
+      },
+      {
+        "fixture": "F-TORTURE-DUP-VIA",
+        "status": "diverge",
+        "notes": [
+          "via mismatch: 'pjsip-lab'='SIP/2.0/UDP 192.0.2.1:5060;branch=z9hG4bK-d1' vs 'kamailio-lab'=None",
+          "cseq mismatch: 'pjsip-lab'='1 INVITE' vs 'kamailio-lab'=None"
+        ],
+        "left_via": "SIP/2.0/UDP 192.0.2.1:5060;branch=z9hG4bK-d1",
+        "right_via": null,
+        "left_ok": true,
+        "right_ok": true
+      },
+      {
+        "fixture": "F-TORTURE-MULTI-CLEN",
+        "status": "diverge",
+        "notes": [
+          "via mismatch: 'pjsip-lab'='SIP/2.0/UDP 192.0.2.1:5060;branch=z9hG4bK-mclen' vs 'kamailio-lab'=None",
+          "cseq mismatch: 'pjsip-lab'='1 MESSAGE' vs 'kamailio-lab'=None"
+        ],
+        "left_via": "SIP/2.0/UDP 192.0.2.1:5060;branch=z9hG4bK-mclen",
+        "right_via": null,
+        "left_ok": true,
+        "right_ok": true
+      }
+    ],
+    "sofia_vs_kamailio": [
+      {
+        "fixture": "F-FOLDED-VIA",
+        "status": "diverge",
+        "notes": [
+          "via mismatch: 'sofia-lab'='SIP/2.0/UDP 192.0.2.1:5060;branch=z9hG4bK-folded' vs 'kamailio-lab'='SIP/2.0/UDP 192.0.2.1:5060;\\r\\n branch=z9hG4bK-folded'"
+        ],
+        "left_via": "SIP/2.0/UDP 192.0.2.1:5060;branch=z9hG4bK-folded",
+        "right_via": "SIP/2.0/UDP 192.0.2.1:5060;\r\n branch=z9hG4bK-folded",
+        "left_ok": true,
+        "right_ok": true
+      },
+      {
+        "fixture": "F-LOWER-SIP",
+        "status": "diverge",
+        "notes": [
+          "via mismatch: 'sofia-lab'='SIP/2.0/UDP 192.0.2.1:5060;branch=z9hG4bK-lower' vs 'kamailio-lab'='sip/2.0/udp 192.0.2.1:5060;branch=z9hG4bK-lower'"
+        ],
+        "left_via": "SIP/2.0/UDP 192.0.2.1:5060;branch=z9hG4bK-lower",
+        "right_via": "sip/2.0/udp 192.0.2.1:5060;branch=z9hG4bK-lower",
+        "left_ok": true,
+        "right_ok": true
+      },
+      {
+        "fixture": "F-TORTURE-WS-END",
+        "status": "diverge",
+        "notes": [
+          "via mismatch: 'sofia-lab'='SIP/2.0/UDP 192.0.2.1:5060;branch=z9hG4bK-ws-end' vs 'kamailio-lab'='SIP/2.0/UDP 192.0.2.1:5060;branch=z9hG4bK-ws-end  '"
+        ],
+        "left_via": "SIP/2.0/UDP 192.0.2.1:5060;branch=z9hG4bK-ws-end",
+        "right_via": "SIP/2.0/UDP 192.0.2.1:5060;branch=z9hG4bK-ws-end  ",
+        "left_ok": true,
+        "right_ok": true
+      },
+      {
+        "fixture": "F-TORTURE-DUP-VIA",
+        "status": "diverge",
+        "notes": [
+          "via mismatch: 'sofia-lab'='SIP/2.0/UDP 192.0.2.1:5060;branch=z9hG4bK-d1' vs 'kamailio-lab'=None",
+          "cseq mismatch: 'sofia-lab'='1 INVITE' vs 'kamailio-lab'=None"
+        ],
+        "left_via": "SIP/2.0/UDP 192.0.2.1:5060;branch=z9hG4bK-d1",
+        "right_via": null,
+        "left_ok": true,
+        "right_ok": true
+      },
+      {
+        "fixture": "F-TORTURE-MULTI-CLEN",
+        "status": "diverge",
+        "notes": [
+          "via mismatch: 'sofia-lab'='SIP/2.0/UDP 192.0.2.1:5060;branch=z9hG4bK-mclen' vs 'kamailio-lab'=None",
+          "cseq mismatch: 'sofia-lab'='1 MESSAGE' vs 'kamailio-lab'=None"
+        ],
+        "left_via": "SIP/2.0/UDP 192.0.2.1:5060;branch=z9hG4bK-mclen",
+        "right_via": null,
+        "left_ok": true,
+        "right_ok": true
+      }
+    ],
+    "pjsip_vs_sofia": []
+  }
+}

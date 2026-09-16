@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""lab host experiment matrix for sipdrift — run many compare/suite packs."""
+"""Laboratory experiment matrix for sipdrift: run many compare/suite packs."""
 
 from __future__ import annotations
 
@@ -50,7 +50,7 @@ def run_cmd(cmd: list[str], timeout: int = 30) -> dict:
 
 
 def main() -> int:
-    pack_id = f"sipdrift-hostb-{utc_stamp()}"
+    pack_id = f"sipdrift-lab-{utc_stamp()}"
     out = Path(os.environ.get("SIPDRIFT_PACK_DIR", f"/opt/atlas/sipdrift-packs/{pack_id}"))
     out.mkdir(parents=True, exist_ok=True)
 
@@ -61,7 +61,7 @@ def main() -> int:
     meta = {
         "pack_id": pack_id,
         "host": socket.gethostname(),
-        "host_ip_hint": "192.0.2.32",
+        "host_ip_hint": None,
         "started_utc": datetime.now(timezone.utc).isoformat(),
         "drivers": drivers,
         "fixture_count": len(fixtures),

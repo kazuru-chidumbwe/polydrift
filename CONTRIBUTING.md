@@ -37,4 +37,4 @@ Stub drivers (`builtin`, `*-stub`) run without native SIP libraries. Lab drivers
 
 - Headline interop claims are **lab-vs-lab** (real OSS stacks). `builtin` is a reference parse path for calibration and CI — not a fourth SIP stack.
 - Divergences are normalization-class findings under the oracle axes, not vulnerability claims.
-- Do not invent lab host Results; re-run `tools/run_hostb_experiments.py` on a lab host and compare digests to [`docs/DIVERGENCES.md`](docs/DIVERGENCES.md) and deposited pack indexes.
+- Do not invent laboratory Results; re-run `tools/run_lab_experiments.py` on a lab host and compare digests to [`docs/DIVERGENCES.md`](docs/DIVERGENCES.md) and deposited pack indexes.

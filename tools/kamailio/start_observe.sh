@@ -1,5 +1,5 @@
 #!/bin/bash
-# Start sipdrift Kamailio observe listener (lab host / lab).
+# Start sipdrift Kamailio observe listener (laboratory).
 set -euo pipefail
 export PATH="/usr/sbin:/usr/bin:/bin:${PATH:-}"
 ROOT="${SIPDRIFT_ROOT:-/opt/atlas/repos/sipdrift}"

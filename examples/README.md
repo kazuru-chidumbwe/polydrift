@@ -41,7 +41,7 @@ python -m sipdrift.cli compare F-INVITE-SDP --left builtin --right sofia-stub --
 ```
 
 ```bash
-python tools/run_hostb_experiments.py
+python tools/run_lab_experiments.py
 ```
 
-Writes `/opt/atlas/sipdrift-packs/sipdrift-hostb-<UTC>/`.
+Writes `/opt/atlas/sipdrift-packs/sipdrift-lab-<UTC>/`.

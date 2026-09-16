@@ -3,7 +3,7 @@
 Honest record of cross-stack divergences under pinned fixtures.
 
 **Last updated:** 2026-09-06 · **Harness:** `0.3.3` · **Oracle axes:** `start_line`, `status_code`, `via`, `cseq`, `content_type`, `content_length`, `body_sha256`, `sdp_sha256`  
-**Lab pack:** `sipdrift-hostb-20260905T015940Z` · **Corpus:** 53 fixtures · **Drivers:** 7 (incl. Kamailio)
+**Lab pack:** baseline laboratory pack (53 fixtures, harness `0.3.3`) · **Corpus:** 53 fixtures · **Drivers:** 7 (incl. Kamailio)
 
 ## Stub-tier
 

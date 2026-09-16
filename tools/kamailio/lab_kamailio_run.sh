@@ -32,4 +32,4 @@ print(format_report(case2))
 PY
 
 /opt/atlas/venvs/sipdrift/bin/python -m pytest -q
-/opt/atlas/venvs/sipdrift/bin/python tools/run_hostb_experiments.py
+/opt/atlas/venvs/sipdrift/bin/python tools/run_lab_experiments.py

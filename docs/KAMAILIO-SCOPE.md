@@ -13,7 +13,7 @@
 
 `kamailio-lab` observes **what Kamailio’s script sees** when a fixture is delivered as a UDP SIP message to `127.0.0.1:5090`. Request fixtures hit `request_route`; incomplete/stray messages may **error**. This is a **proxy-tier receive parse** path, complementary to PJSIP/Sofia library parse helpers.
 
-## lab host quick start
+## Lab quick start
 
 ```bash
 sudo apt-get install -y kamailio kamailio-lua-modules
@@ -23,7 +23,7 @@ export SIPDRIFT_KAMAILIO_OBS=/tmp/sipdrift-kamailio-obs.json
 python -m sipdrift.cli suite --left sofia-lab --right kamailio-lab
 ```
 
-## Error fixtures (pack `…015940Z`)
+## Error fixtures (baseline laboratory pack)
 
 Six fixtures against `kamailio-lab` return **error** in the `builtin` vs `kamailio-lab` suite (no observation JSON written). This is expected for the receive-only script path — not a harness bug.
 
@@ -40,4 +40,4 @@ When `kamailio-lab` errors, the driver reports `no observation file from kamaili
 
 ## Pack
 
-Canonical lab pack: **`sipdrift-hostb-20260905T015940Z`** (`0.3.3`, 53 fixtures) — see `docs/DIVERGENCES.md`.
+Canonical laboratory pack for harness `0.3.3` (53 fixtures) — see `docs/DIVERGENCES.md`. Digests are recorded with the deposited suite JSON.

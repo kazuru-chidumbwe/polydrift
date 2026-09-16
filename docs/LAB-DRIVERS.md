@@ -1,6 +1,6 @@
 # Lab drivers (PJSIP + Sofia-SIP)
 
-Real stack parsers run on a Linux lab host (Atlas lab host / Lab Test Server), **not** local Docker Desktop on the Windows workstation.
+Real stack parsers run on a Linux lab host, not a local Docker Desktop install on a workstation.
 
 ## Sofia-SIP (`sofia-lab`)
 
@@ -48,7 +48,7 @@ Without these binaries, lab drivers report `ok=false` (ERROR in compares). Stub 
 
 ## Experiment runner
 
-`tools/run_hostb_experiments.py` sweeps all driver pairs, per-fixture spotlights, Sofia CLI tools, optional live OPTIONS, and pytest. Writes a pack under `/opt/atlas/sipdrift-packs/`.
+`tools/run_lab_experiments.py` sweeps all driver pairs, per-fixture spotlights, Sofia CLI tools, optional live OPTIONS, and pytest. Writes a pack under `/opt/atlas/sipdrift-packs/` with prefix `sipdrift-lab-<UTC>`.
 
 ## References
 

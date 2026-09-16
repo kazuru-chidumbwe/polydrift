@@ -23,4 +23,4 @@ export SIPDRIFT_SOFIA_OBSERVE=/opt/atlas/repos/sipdrift/tools/sofia_observe
 export SIPDRIFT_PJSIP_OBSERVE=/opt/atlas/repos/sipdrift/tools/pjsip_observe
 /opt/atlas/venvs/sipdrift/bin/python -m sipdrift.cli drivers
 /opt/atlas/venvs/sipdrift/bin/python -m sipdrift.cli fixtures | wc -l
-/opt/atlas/venvs/sipdrift/bin/python tools/run_hostb_experiments.py
+/opt/atlas/venvs/sipdrift/bin/python tools/run_lab_experiments.py

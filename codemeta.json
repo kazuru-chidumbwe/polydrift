@@ -1,0 +1,52 @@
+{
+  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+  "@type": "SoftwareSourceCode",
+  "name": "sipdrift: a differential testing harness for open-source SIP stacks",
+  "description": "Differential testing harness for SIP message handling. A pinned fixture corpus is run through multiple stack drivers; observations are normalized onto shared oracle axes and classified as agree, diverge, error, or skip.",
+  "version": "0.3.3",
+  "dateModified": "2026-09-15",
+  "license": "https://spdx.org/licenses/MIT.html",
+  "codeRepository": "https://github.com/kazuru-chidumbwe/sipdrift",
+  "url": "https://github.com/kazuru-chidumbwe/sipdrift/tree/0.3.3",
+  "programmingLanguage": [
+    "Python",
+    "C"
+  ],
+  "runtimePlatform": "Python 3.11+",
+  "operatingSystem": [
+    "Linux",
+    "macOS",
+    "Windows"
+  ],
+  "author": [
+    {
+      "@type": "Person",
+      "givenName": "Seke",
+      "familyName": "Kazuru",
+      "email": "kazuruuni@gmail.com",
+      "identifier": "https://orcid.org/0009-0002-4099-1059",
+      "affiliation": {
+        "@type": "Organization",
+        "name": "Independent Researcher, Malawi"
+      }
+    }
+  ],
+  "maintainer": [
+    {
+      "@type": "Person",
+      "givenName": "Seke",
+      "familyName": "Kazuru",
+      "email": "kazuruuni@gmail.com"
+    }
+  ],
+  "keywords": [
+    "SIP",
+    "VoIP",
+    "differential testing",
+    "interoperability",
+    "PJSIP",
+    "Sofia-SIP",
+    "Kamailio",
+    "software testing"
+  ]
+}

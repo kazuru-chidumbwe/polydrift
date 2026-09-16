@@ -9,7 +9,7 @@ digests), and classified as `agree`, `diverge`, `error`, or `skip`.
 [![CI](https://github.com/kazuru-chidumbwe/sipdrift/actions/workflows/ci.yml/badge.svg)](https://github.com/kazuru-chidumbwe/sipdrift/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Cite pin [`0.3.4`](https://github.com/kazuru-chidumbwe/sipdrift/tree/0.3.4).
+Cite pin [`0.3.5`](https://github.com/kazuru-chidumbwe/sipdrift/tree/0.3.5).
 See [CODE_METADATA.md](CODE_METADATA.md), [CITATION.cff](CITATION.cff), and [codemeta.json](codemeta.json).
 Cite the release tag, not floating `main`.
 
@@ -20,7 +20,7 @@ No native SIP libraries required.
 ```bash
 git clone https://github.com/kazuru-chidumbwe/sipdrift.git
 cd sipdrift
-git checkout 0.3.4
+git checkout 0.3.5
 python -m venv .venv
 source .venv/bin/activate    # Windows: .venv\Scripts\activate
 pip install -U pip && pip install -e ".[dev]"
@@ -33,7 +33,7 @@ sipdrift suite --right sofia-stub
 
 | Capability | Role |
 | --- | --- |
-| Fixture corpus | Pinned `.sip` messages under `fixtures/` (53 at `0.3.4`) |
+| Fixture corpus | Pinned `.sip` messages under `fixtures/` (53 at `0.3.5`) |
 | Drivers | `builtin` / `*-stub` for CI; `pjsip-lab` / `sofia-lab` / `kamailio-lab` for host labs |
 | Oracle | Shared axes + agree / diverge / error / skip |
 | Suite JSON | Machine-readable pairwise results; SHA-256 digests for restart checks |

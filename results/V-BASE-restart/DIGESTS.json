@@ -1,6 +1,6 @@
 {
   "pack_id": "sipdrift-lab-20260914T204058Z-V-BASE-restart",
-  "cite_pin": "0.3.4",
+  "cite_pin": "0.3.5",
   "n_restart": 3,
   "restart_stable_all": true,
   "sha256": {
@@ -8,9 +8,15 @@
     "E-suite-pjsip-lab-vs-kamailio-lab.json": "3864619d38bff5f0040f29ea9d1c963942b3160f3d2c4df4612c4ea01cebc9b9",
     "E-suite-pjsip-lab-vs-sofia-lab.json": "5cbe69fb7f56c09e19bf6492a85f16ad1af44fd81bd22e1237e8a74a8426d4d1",
     "E-suite-sofia-lab-vs-kamailio-lab.json": "4777e48b0a87a18eecb634e44c653472ab77e3b982b25be446079d3d2fe3a050",
-    "EXPERIMENT-INDEX.json": "4f8653627682d49ba544cfafa06e0882e109c5d06c55a0928677ab3df8116845",
-    "ROLE-GAP-REPORT.json": "5ff08aea416a5183c082d7e56f552fdd6f14209c833107142d5598429d0eed61"
+    "EXPERIMENT-INDEX.json": "a5e58d122ed15022aebb24938c9842591872b79949c02458683fd363629bdaf2",
+    "ROLE-GAP-REPORT.json": "4c7b599e78154ad0b2573c3e2d306fe8b67a8a33f35f2b4e8bafafbbd0fd08a6"
   },
+  "exact_equality_claim": [
+    "E-suite-pjsip-lab-vs-sofia-lab.json",
+    "E-suite-pjsip-lab-vs-kamailio-lab.json",
+    "E-suite-sofia-lab-vs-kamailio-lab.json",
+    "AXIS-BREAKDOWN.json"
+  ],
   "headline_counts": {
     "pjsip-lab-vs-sofia-lab": {
       "agree": 48,
@@ -28,5 +34,5 @@
       "error": 6
     }
   },
-  "note": "Suite JSON bytes match lab N=3 restart run1. Index/report pack_id labels scrubbed to lab alias for public tree."
+  "note": "All JSON files in this directory are stored with LF newlines. N=3 restart exact-equality applies to the three E-suite-*.json objects (and AXIS-BREAKDOWN.json as the derived axis summary). EXPERIMENT-INDEX.json and ROLE-GAP-REPORT.json are pack manifests; their digests are listed for pin integrity after public pack_id labeling."
 }

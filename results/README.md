@@ -6,15 +6,17 @@ Deposited suite digests for citation. Full laboratory packs may also be archived
 
 Public alias: `sipdrift-lab-20260914T204058Z-V-BASE-restart`  
 Directory: `results/V-BASE-restart/`  
-Cite pin: **`0.3.4`** (oracle corpus unchanged from `0.3.3`)
+Cite pin: **`0.3.5`** (oracle corpus unchanged from `0.3.3` / `0.3.4`)
 
-| File | Role |
-| --- | --- |
-| `DIGESTS.json` | SHA-256 map + headline counts |
-| `EXPERIMENT-INDEX.json` | N=3 restart stability index |
-| `AXIS-BREAKDOWN.json` | Pair counts + Via mismatch mass |
-| `ROLE-GAP-REPORT.json` | UA–UA vs UA–proxy gap + Via cases |
-| `E-suite-*-lab.json` | Suite JSON (run 1; digests match runs 2–3) |
+All JSON files are stored with **LF** newlines (see `.gitattributes`). Hash on Linux/macOS without rewriting line endings.
+
+| File | Role | Exact-equality (N=3) |
+| --- | --- | --- |
+| `DIGESTS.json` | SHA-256 map + headline counts | n/a (index) |
+| `E-suite-*-lab.json` | Suite JSON (run 1; digests match runs 2–3) | **yes** |
+| `AXIS-BREAKDOWN.json` | Pair counts + Via mismatch mass | derived |
+| `EXPERIMENT-INDEX.json` | Restart stability index / pack manifest | manifest pin |
+| `ROLE-GAP-REPORT.json` | UA–UA vs UA–proxy gap + Via cases | manifest pin |
 
 ## Headline pair counts (run 1)
 
@@ -28,14 +30,10 @@ Corpus size: **53** fixtures.
 UA↔UA diverge+error = **5/53**.  
 Each UA↔Kamailio receive pair diverge+error = **12/53**.
 
-## Clean-restart digests
-
-N=3 independent suite runs produced **identical** SHA-256 digests per pair (exact equality). See `DIGESTS.json` for hex values.
-
-## Version-matrix boundary
-
-Kamailio 5.7.4→6.0.1 and pjproject 2.15.1→2.16 cells left the headline agree/diverge/error counts unchanged on this corpus.
-
 ## Reproduce
 
-See `docs/LAB-DRIVERS.md` and `tools/run_lab_experiments.py` on a lab host with observe binaries installed.
+```bash
+sha256sum results/V-BASE-restart/E-suite-*.json
+```
+
+See `DIGESTS.json` for expected hex digests and `docs/LAB-DRIVERS.md` for laboratory setup.

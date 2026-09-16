@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sipdrift"
-version = "0.3.4"
+version = "0.3.5"
 description = "Differential testing harness for open-source SIP/VoIP stacks (parse-oracle and lab drivers)."
 readme = "README.md"
 requires-python = ">=3.11"

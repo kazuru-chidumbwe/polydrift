@@ -2,12 +2,12 @@
 
 | Tag | Role |
 | --- | --- |
-| `0.3.4` | **Current cite pin** for manuscripts and Code metadata C1/C2 |
-| `0.3.3` | Prior corpus pin (oracle/fixtures unchanged into 0.3.4) |
+| `0.3.5` | **Current cite pin** for manuscripts and Code metadata C1/C2 |
+| `0.3.3` | Prior corpus pin (oracle/fixtures unchanged into 0.3.5) |
 
 Cite the tag tree URL:
 
-https://github.com/kazuru-chidumbwe/sipdrift/tree/0.3.4
+https://github.com/kazuru-chidumbwe/sipdrift/tree/0.3.5
 
 Do not cite floating `main`. Laboratory suite digests under `results/V-BASE-restart/` match this pin.
 

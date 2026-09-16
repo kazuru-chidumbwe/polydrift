@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.5] — 2026-09-16
+
+### Fixed
+
+- LF-normalized `results/V-BASE-restart/` JSON so SHA-256 digests match Linux/macOS readers.
+- Document exact-equality claim for the three `E-suite-*.json` files; align complete diverge/error fixture listing with `AXIS-BREAKDOWN.json`.
+
+### Added
+
+- `.gitattributes` with `eol=lf` for results JSON and common text files.
+
 ## [0.3.4] — 2026-09-16
 
 ### Added

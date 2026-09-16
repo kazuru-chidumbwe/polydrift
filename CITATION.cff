@@ -26,7 +26,7 @@ keywords:
   - Sofia-SIP
   - Kamailio
 license: MIT
-version: "0.3.4"
+version: "0.3.5"
 date-released: "2026-09-16"
 preferred-citation:
   type: software
@@ -35,7 +35,7 @@ preferred-citation:
       given-names: Seke
       orcid: "https://orcid.org/0009-0002-4099-1059"
   title: "sipdrift: A Differential Testing Harness for Open-Source SIP Stacks"
-  version: "0.3.4"
+  version: "0.3.5"
   url: "https://github.com/kazuru-chidumbwe/sipdrift"
   year: 2026
   month: 9

@@ -13,7 +13,7 @@ Do not cite floating `main`. Laboratory suite digests under `results/V-BASE-rest
 
 ## Release hygiene
 
-1. Align `pyproject.toml` version, `CITATION.cff`, `codemeta.json`, and `CODE_METADATA.md`.
+1. Align `pyproject.toml` version, `CITATION.cff`, `codemeta.json` and `CODE_METADATA.md`.
 2. Run `pytest -q` on stubs.
 3. Create annotated tag + GitHub Release for the cite pin.
 4. Optional: mint Zenodo from the GitHub Release; put Zenodo in docs / C7 only, **not** C2.

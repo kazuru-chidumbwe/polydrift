@@ -10,7 +10,7 @@ digests), and classified as `agree`, `diverge`, `error`, or `skip`.
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 Cite pin [`0.3.5`](https://github.com/kazuru-chidumbwe/sipdrift/tree/0.3.5).
-See [CODE_METADATA.md](CODE_METADATA.md), [CITATION.cff](CITATION.cff), and [codemeta.json](codemeta.json).
+See [CODE_METADATA.md](CODE_METADATA.md), [CITATION.cff](CITATION.cff) and [codemeta.json](codemeta.json).
 Cite the release tag, not floating `main`.
 
 ## Quick start (stub / CI)

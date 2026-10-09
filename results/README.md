@@ -1,6 +1,6 @@
 # Results (illustrative laboratory insets)
 
-Deposited suite digests for citation. Full laboratory packs may also be archived on Zenodo later; these files are the regeneration targets cited in the manuscript.
+Deposited suite digests for the cite pin. Full laboratory packs may also be archived on Zenodo later; these files are the regeneration targets cited in the manuscript.
 
 ## Pack: `V-BASE-restart`
 

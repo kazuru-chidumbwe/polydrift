@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Deposited laboratory suite digests under `results/V-BASE-restart/` (N=3 restart SHA-256 targets).
-- Public surface: `CODE_METADATA.md`, `docs/METRICS.md`, results README.
+- Public documentation: `docs/METRICS.md`, results README.
 
 ### Changed
 

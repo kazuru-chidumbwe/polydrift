@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-from sipdrift.drivers.builtin import BuiltinDriver
-from sipdrift.drivers.kamailio_lab import KamailioLabDriver
-from sipdrift.drivers.kamailio_stub import KamailioStubDriver
-from sipdrift.drivers.pjsip_lab import PjsipLabDriver
-from sipdrift.drivers.pjsip_stub import PjsipStubDriver
-from sipdrift.drivers.protocol import StackDriver
-from sipdrift.drivers.sofia_lab import SofiaLabDriver
-from sipdrift.drivers.sofia_stub import SofiaStubDriver
+from polydrift.drivers.builtin import BuiltinDriver
+from polydrift.drivers.kamailio_lab import KamailioLabDriver
+from polydrift.drivers.kamailio_stub import KamailioStubDriver
+from polydrift.drivers.pjsip_lab import PjsipLabDriver
+from polydrift.drivers.pjsip_stub import PjsipStubDriver
+from polydrift.drivers.protocol import StackDriver
+from polydrift.drivers.sofia_lab import SofiaLabDriver
+from polydrift.drivers.sofia_stub import SofiaStubDriver
 
 _BUILTIN = BuiltinDriver()
 _PJSIP_STUB = PjsipStubDriver()

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Laboratory experiment matrix for sipdrift: run many compare/suite packs."""
+"""Laboratory experiment matrix for polydrift: run many compare/suite packs."""
 
 from __future__ import annotations
 
@@ -15,9 +15,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from sipdrift.drivers.registry import get_driver, list_driver_names  # noqa: E402
-from sipdrift.fixtures import FIXTURE_INDEX  # noqa: E402
-from sipdrift.run import run_compare, run_suite, suite_to_dict  # noqa: E402
+from polydrift.drivers.registry import get_driver, list_driver_names  # noqa: E402
+from polydrift.fixtures import FIXTURE_INDEX  # noqa: E402
+from polydrift.run import run_compare, run_suite, suite_to_dict  # noqa: E402
 
 
 def utc_stamp() -> str:
@@ -50,8 +50,8 @@ def run_cmd(cmd: list[str], timeout: int = 30) -> dict:
 
 
 def main() -> int:
-    pack_id = f"sipdrift-lab-{utc_stamp()}"
-    out = Path(os.environ.get("SIPDRIFT_PACK_DIR", f"/opt/atlas/sipdrift-packs/{pack_id}"))
+    pack_id = f"polydrift-lab-{utc_stamp()}"
+    out = Path(os.environ.get("POLYDRIFT_PACK_DIR", f"/opt/atlas/polydrift-packs/{pack_id}"))
     out.mkdir(parents=True, exist_ok=True)
 
     experiments: list[dict] = []

@@ -3,7 +3,7 @@ Via: SIP/2.0/UDP proxy.example.com:5060;branch=z9hG4bK-p1
 Via: SIP/2.0/UDP 192.0.2.1:5060;branch=z9hG4bK-u1
 From: <sip:alice@example.com>;tag=a1
 To: <sip:bob@example.com>;tag=b1
-Call-ID: sipdrift-multivia@example.com
+Call-ID: polydrift-multivia@example.com
 CSeq: 1 INVITE
 Content-Length: 0
 

@@ -18,9 +18,9 @@
 ```bash
 sudo apt-get install -y kamailio kamailio-lua-modules
 bash tools/kamailio/start_observe.sh
-export SIPDRIFT_KAMAILIO_HOST=127.0.0.1 SIPDRIFT_KAMAILIO_PORT=5090
-export SIPDRIFT_KAMAILIO_OBS=/tmp/sipdrift-kamailio-obs.json
-python -m sipdrift.cli suite --left sofia-lab --right kamailio-lab
+export POLYDRIFT_KAMAILIO_HOST=127.0.0.1 POLYDRIFT_KAMAILIO_PORT=5090
+export POLYDRIFT_KAMAILIO_OBS=/tmp/polydrift-kamailio-obs.json
+python -m polydrift.cli suite --left sofia-lab --right kamailio-lab
 ```
 
 ## Error fixtures (baseline laboratory pack)
@@ -36,7 +36,7 @@ Six fixtures against `kamailio-lab` return **error** in the `builtin` vs `kamail
 | `F-MISSING-VIA` | Request without Via; proxy script does not emit axes | UA parsers often tolerate |
 | `F-MISSING-CSEQ` | Request without CSeq; same | UA parsers often tolerate |
 
-When `kamailio-lab` errors, the driver reports `no observation file from kamailio at /tmp/sipdrift-kamailio-obs.json`. Treat these rows as **proxy-tier receive limits**, not CVE claims.
+When `kamailio-lab` errors, the driver reports `no observation file from kamailio at /tmp/polydrift-kamailio-obs.json`. Treat these rows as **proxy-tier receive limits**, not CVE claims.
 
 ## Pack
 

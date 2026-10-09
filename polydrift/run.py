@@ -5,9 +5,9 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from sipdrift.drivers.protocol import StackDriver
-from sipdrift.fixtures import FIXTURE_INDEX, load_fixture
-from sipdrift.harness import CompareCase, CompareStatus, classify_observations
+from polydrift.drivers.protocol import StackDriver
+from polydrift.fixtures import FIXTURE_INDEX, load_fixture
+from polydrift.harness import CompareCase, CompareStatus, classify_observations
 
 
 def _short_hash(value: str | None) -> str:

@@ -1,6 +1,6 @@
-# Contributing to sipdrift
+# Contributing to polydrift
 
-Thanks for interest in improving the harness. sipdrift is maintained by a single author; contributions via GitHub issues and pull requests are welcome.
+Thanks for interest in improving the harness. polydrift is maintained by a single author; contributions via GitHub issues and pull requests are welcome.
 
 ## Support
 
@@ -13,7 +13,7 @@ Thanks for interest in improving the harness. sipdrift is maintained by a single
 ```bash
 python -m pip install -e ".[dev]"
 python -m pytest -q
-python -m sipdrift.cli compare F-200-MIN
+python -m polydrift.cli compare F-200-MIN
 ```
 
 Stub drivers (`builtin`, `*-stub`) run without native SIP libraries. Lab drivers (`pjsip-lab`, `sofia-lab`, `kamailio-lab`) need host-pinned observe binaries — see [`docs/LAB-DRIVERS.md`](docs/LAB-DRIVERS.md).
@@ -23,8 +23,8 @@ Stub drivers (`builtin`, `*-stub`) run without native SIP libraries. Lab drivers
 | Change | Prefer |
 | --- | --- |
 | New fixture | `fixtures/*.sip` + short note in `fixtures/README.md` |
-| Oracle / classification | `sipdrift/harness.py` + tests under `tests/` |
-| Stub driver | `sipdrift/drivers/` + registry entry |
+| Oracle / classification | `polydrift/harness.py` + tests under `tests/` |
+| Stub driver | `polydrift/drivers/` + registry entry |
 | Lab observe helper | `tools/` + docs update |
 
 ## Commit style

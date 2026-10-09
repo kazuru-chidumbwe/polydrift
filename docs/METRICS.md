@@ -1,6 +1,6 @@
 # Metrics and classification contract
 
-sipdrift projects driver observations onto shared **oracle axes** and classifies each fixture.
+polydrift projects driver observations onto shared **oracle axes** and classifies each fixture.
 
 ## Axes (headline)
 

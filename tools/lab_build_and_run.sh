@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-cd /opt/atlas/repos/sipdrift
+cd /opt/atlas/repos/polydrift
 python3 tools/gen_extra_fixtures.py >/dev/null
 python3 tools/normalize_fixtures.py >/dev/null
 # malformed must stay empty
@@ -17,10 +17,10 @@ echo '--- pjsip invite ---'
 ./pjsip_observe ../fixtures/invite_min.sip
 echo '--- pjsip compact ---'
 ./pjsip_observe ../fixtures/compact_via.sip
-cd /opt/atlas/repos/sipdrift
-/opt/atlas/venvs/sipdrift/bin/pip install -q -e '.[dev]'
-export SIPDRIFT_SOFIA_OBSERVE=/opt/atlas/repos/sipdrift/tools/sofia_observe
-export SIPDRIFT_PJSIP_OBSERVE=/opt/atlas/repos/sipdrift/tools/pjsip_observe
-/opt/atlas/venvs/sipdrift/bin/python -m sipdrift.cli drivers
-/opt/atlas/venvs/sipdrift/bin/python -m sipdrift.cli fixtures | wc -l
-/opt/atlas/venvs/sipdrift/bin/python tools/run_lab_experiments.py
+cd /opt/atlas/repos/polydrift
+/opt/atlas/venvs/polydrift/bin/pip install -q -e '.[dev]'
+export POLYDRIFT_SOFIA_OBSERVE=/opt/atlas/repos/polydrift/tools/sofia_observe
+export POLYDRIFT_PJSIP_OBSERVE=/opt/atlas/repos/polydrift/tools/pjsip_observe
+/opt/atlas/venvs/polydrift/bin/python -m polydrift.cli drivers
+/opt/atlas/venvs/polydrift/bin/python -m polydrift.cli fixtures | wc -l
+/opt/atlas/venvs/polydrift/bin/python tools/run_lab_experiments.py

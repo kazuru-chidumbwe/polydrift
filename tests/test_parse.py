@@ -1,6 +1,6 @@
 """Tests for parse helpers."""
 
-from sipdrift.parse import extract_header, parse_method, parse_status_code, split_start_line
+from polydrift.parse import extract_header, parse_method, parse_status_code, split_start_line
 
 
 def test_parse_status_code_200():

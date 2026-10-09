@@ -1,7 +1,7 @@
-from sipdrift import __version__
-from sipdrift.fixtures import load_fixture
-from sipdrift.harness import CompareStatus, StackObservation, classify_start_lines
-from sipdrift.parse import split_start_line
+from polydrift import __version__
+from polydrift.fixtures import load_fixture
+from polydrift.harness import CompareStatus, StackObservation, classify_start_lines
+from polydrift.parse import split_start_line
 
 
 def test_version_pinned():

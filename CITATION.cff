@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: >-
   If you use this software, please cite it using the metadata below.
 type: software
-title: "sipdrift: A Differential Testing Harness for Open-Source SIP Stacks"
+title: "PolyDrift: Differential Testing of Independent Protocol Implementations"
 authors:
   - family-names: Kazuru
     given-names: Seke
@@ -12,30 +12,29 @@ authors:
 repository-code: "https://github.com/kazuru-chidumbwe/polydrift"
 url: "https://github.com/kazuru-chidumbwe/polydrift"
 abstract: >-
-  Differential testing harness for SIP message handling. A pinned fixture
-  corpus is run through multiple stack drivers; observations are normalized
-  onto shared oracle axes and classified as agree, diverge, error, or skip.
-  Stub drivers support CI without native SIP libraries; optional lab drivers
-  exercise PJSIP, Sofia-SIP, and Kamailio on a host-pinned lab path.
+  PolyDrift sends the same input to several independent implementations of a
+  protocol, records what each one does, and reports where they agree and where
+  they differ. The SIP cell provides a pinned fixture corpus, stub drivers for
+  continuous integration, and laboratory drivers for PJSIP, Sofia-SIP and
+  Kamailio.
 keywords:
-  - SIP
-  - VoIP
   - differential testing
+  - test oracle
+  - protocol implementations
   - interoperability
+  - SIP
   - PJSIP
   - Sofia-SIP
   - Kamailio
 license: MIT
-version: "0.3.5"
-date-released: "2026-09-16"
+version: "0.4.0.dev0"
 preferred-citation:
   type: software
   authors:
     - family-names: Kazuru
       given-names: Seke
       orcid: "https://orcid.org/0009-0002-4099-1059"
-  title: "sipdrift: A Differential Testing Harness for Open-Source SIP Stacks"
-  version: "0.3.5"
+  title: "PolyDrift: Differential Testing of Independent Protocol Implementations"
+  version: "0.4.0.dev0"
   url: "https://github.com/kazuru-chidumbwe/polydrift"
   year: 2026
-  month: 9

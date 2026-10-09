@@ -1,9 +1,9 @@
 """Tests for stack drivers."""
 
-from sipdrift.drivers.builtin import BuiltinDriver
-from sipdrift.drivers.pjsip_stub import PjsipStubDriver
-from sipdrift.drivers.sofia_stub import SofiaStubDriver
-from sipdrift.fixtures import load_fixture
+from polydrift.drivers.builtin import BuiltinDriver
+from polydrift.drivers.pjsip_stub import PjsipStubDriver
+from polydrift.drivers.sofia_stub import SofiaStubDriver
+from polydrift.fixtures import load_fixture
 
 
 def test_builtin_driver_f200():

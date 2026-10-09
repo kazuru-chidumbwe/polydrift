@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from sipdrift.harness import StackObservation
-from sipdrift.parse import extract_body_axes
+from polydrift.harness import StackObservation
+from polydrift.parse import extract_body_axes
 
 
 def observation_from_lab_json(

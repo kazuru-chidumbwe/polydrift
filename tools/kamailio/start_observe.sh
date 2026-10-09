@@ -1,12 +1,12 @@
 #!/bin/bash
-# Start sipdrift Kamailio observe listener (laboratory).
+# Start polydrift Kamailio observe listener (laboratory).
 set -euo pipefail
 export PATH="/usr/sbin:/usr/bin:/bin:${PATH:-}"
-ROOT="${SIPDRIFT_ROOT:-/opt/atlas/repos/sipdrift}"
-CFG="$ROOT/tools/kamailio/sipdrift-observe.cfg"
-PIDFILE=/tmp/sipdrift-kamailio.pid
-OBS=/tmp/sipdrift-kamailio-obs.json
-RUNDIR=/tmp/sipdrift-kamailio-run
+ROOT="${POLYDRIFT_ROOT:-/opt/atlas/repos/polydrift}"
+CFG="$ROOT/tools/kamailio/polydrift-observe.cfg"
+PIDFILE=/tmp/polydrift-kamailio.pid
+OBS=/tmp/polydrift-kamailio-obs.json
+RUNDIR=/tmp/polydrift-kamailio-run
 KAMAILIO_BIN="${KAMAILIO_BIN:-$(command -v kamailio || true)}"
 if [[ -z "$KAMAILIO_BIN" && -x /usr/sbin/kamailio ]]; then
   KAMAILIO_BIN=/usr/sbin/kamailio
@@ -31,7 +31,7 @@ if [[ -f "$PIDFILE" ]]; then
   kill "$(cat "$PIDFILE")" 2>/dev/null || true
   rm -f "$PIDFILE"
 fi
-pkill -f "kamailio.*sipdrift-observe.cfg" 2>/dev/null || true
+pkill -f "kamailio.*polydrift-observe.cfg" 2>/dev/null || true
 sleep 0.3
 rm -f "$OBS"
 

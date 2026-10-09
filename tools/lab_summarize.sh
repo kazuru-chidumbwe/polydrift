@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Summarize suite JSON files in a laboratory pack directory.
-# Usage: SIPDRIFT_PACK_DIR=/path/to/pack bash tools/lab_summarize.sh
+# Usage: POLYDRIFT_PACK_DIR=/path/to/pack bash tools/lab_summarize.sh
 set -euo pipefail
-PACK="${SIPDRIFT_PACK_DIR:-}"
+PACK="${POLYDRIFT_PACK_DIR:-}"
 if [[ -z "$PACK" || ! -d "$PACK" ]]; then
-  echo "Set SIPDRIFT_PACK_DIR to a pack directory" >&2
+  echo "Set POLYDRIFT_PACK_DIR to a pack directory" >&2
   exit 1
 fi
 python3 - "$PACK" <<'PY'

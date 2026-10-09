@@ -1,4 +1,4 @@
-"""PJSIP lab driver — subprocess to tools/pjsip_observe."""
+"""Sofia-SIP lab driver — subprocess to tools/sofia_observe."""
 
 from __future__ import annotations
 
@@ -8,22 +8,22 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from sipdrift.drivers.lab_json import observation_from_lab_json
-from sipdrift.harness import StackObservation
+from polydrift.drivers.lab_json import observation_from_lab_json
+from polydrift.harness import StackObservation
 
-_DEFAULT_BIN = Path(__file__).resolve().parents[2] / "tools" / "pjsip_observe"
+_DEFAULT_BIN = Path(__file__).resolve().parents[2] / "tools" / "sofia_observe"
 
 
-class PjsipLabDriver:
-    """Real PJSIP parse path via C helper on Lab hosts."""
+class SofiaLabDriver:
+    """Real Sofia-SIP parse path via C helper on Lab hosts."""
 
     def __init__(self, binary: str | Path | None = None) -> None:
-        env = os.environ.get("SIPDRIFT_PJSIP_OBSERVE", "").strip()
+        env = os.environ.get("POLYDRIFT_SOFIA_OBSERVE", "").strip()
         self._bin = Path(env) if env else Path(binary) if binary else _DEFAULT_BIN
 
     @property
     def stack_id(self) -> str:
-        return "pjsip-lab"
+        return "sofia-lab"
 
     def observe(self, raw: str) -> StackObservation:
         if not self._bin.is_file():
@@ -31,7 +31,7 @@ class PjsipLabDriver:
                 stack_id=self.stack_id,
                 start_line=None,
                 ok=False,
-                detail=f"pjsip_observe missing: {self._bin}",
+                detail=f"sofia_observe missing: {self._bin}",
             )
         with tempfile.NamedTemporaryFile(
             mode="w",
@@ -40,6 +40,7 @@ class PjsipLabDriver:
             delete=False,
             newline="\n",
         ) as tmp:
+            # Prefer CRLF for SIP wire; helper accepts either.
             tmp.write(raw.replace("\n", "\r\n") if "\r\n" not in raw else raw)
             path = tmp.name
         try:
@@ -63,9 +64,9 @@ class PjsipLabDriver:
             except OSError:
                 pass
 
-        lines = (proc.stdout or "").strip().splitlines()
+        line = (proc.stdout or "").strip().splitlines()
         json_line = ""
-        for candidate in reversed(lines):
+        for candidate in reversed(line):
             if candidate.startswith("{"):
                 json_line = candidate
                 break
@@ -86,5 +87,5 @@ class PjsipLabDriver:
                 detail=f"json parse: {exc}; raw={json_line[:200]}",
             )
         return observation_from_lab_json(
-            self.stack_id, data, raw=raw, default_detail="pjsip-lab"
+            self.stack_id, data, raw=raw, default_detail="sofia-lab"
         )

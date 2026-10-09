@@ -8,10 +8,10 @@ import socket
 import time
 from pathlib import Path
 
-from sipdrift.drivers.lab_json import observation_from_lab_json
-from sipdrift.harness import StackObservation
+from polydrift.drivers.lab_json import observation_from_lab_json
+from polydrift.harness import StackObservation
 
-_DEFAULT_OBS = Path("/tmp/sipdrift-kamailio-obs.json")
+_DEFAULT_OBS = Path("/tmp/polydrift-kamailio-obs.json")
 _DEFAULT_HOST = "127.0.0.1"
 _DEFAULT_PORT = 5090
 
@@ -25,10 +25,10 @@ class KamailioLabDriver:
         port: int | None = None,
         obs_path: str | Path | None = None,
     ) -> None:
-        self._host = host or os.environ.get("SIPDRIFT_KAMAILIO_HOST", _DEFAULT_HOST)
-        env_port = os.environ.get("SIPDRIFT_KAMAILIO_PORT", "").strip()
+        self._host = host or os.environ.get("POLYDRIFT_KAMAILIO_HOST", _DEFAULT_HOST)
+        env_port = os.environ.get("POLYDRIFT_KAMAILIO_PORT", "").strip()
         self._port = port if port is not None else int(env_port or _DEFAULT_PORT)
-        env_obs = os.environ.get("SIPDRIFT_KAMAILIO_OBS", "").strip()
+        env_obs = os.environ.get("POLYDRIFT_KAMAILIO_OBS", "").strip()
         self._obs = Path(obs_path) if obs_path else Path(env_obs) if env_obs else _DEFAULT_OBS
 
     @property

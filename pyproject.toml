@@ -3,14 +3,14 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "sipdrift"
-version = "0.3.5"
-description = "Differential testing harness for open-source SIP/VoIP stacks (parse-oracle and lab drivers)."
+name = "polydrift"
+version = "0.4.0.dev0"
+description = "Differential testing of independent protocol implementations; SIP cell with stub and laboratory drivers."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [{ name = "Seke Kazuru", email = "kazuruuni@gmail.com" }]
-keywords = ["sip", "voip", "differential-testing", "interoperability"]
+keywords = ["differential-testing", "protocol-implementations", "test-oracle", "interoperability", "sip"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Science/Research",
@@ -24,11 +24,11 @@ classifiers = [
 dev = ["pytest>=8.0"]
 
 [project.scripts]
-sipdrift = "sipdrift.cli:main"
+polydrift = "polydrift.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["sipdrift*"]
+include = ["polydrift*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

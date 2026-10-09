@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from sipdrift.harness import StackObservation
-from sipdrift.parse import (
+from polydrift.harness import StackObservation
+from polydrift.parse import (
     extract_body_axes,
     extract_header,
     parse_method,

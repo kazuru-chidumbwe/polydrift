@@ -1,6 +1,6 @@
 """Tests for multi-axis classification."""
 
-from sipdrift.harness import CompareStatus, StackObservation, classify_observations
+from polydrift.harness import CompareStatus, StackObservation, classify_observations
 
 
 def test_classify_agree_all_axes():

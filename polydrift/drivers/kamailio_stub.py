@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from sipdrift.drivers.common import observe_from_parse
+from polydrift.drivers.common import observe_from_parse
 
 
 class KamailioStubDriver:

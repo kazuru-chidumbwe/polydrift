@@ -2,12 +2,12 @@
 
 import json
 
-from sipdrift.cli import main
-from sipdrift.drivers.builtin import BuiltinDriver
-from sipdrift.drivers.pjsip_stub import PjsipStubDriver
-from sipdrift.drivers.sofia_stub import SofiaStubDriver
-from sipdrift.harness import CompareStatus
-from sipdrift.run import case_to_dict, format_report, run_compare, run_suite
+from polydrift.cli import main
+from polydrift.drivers.builtin import BuiltinDriver
+from polydrift.drivers.pjsip_stub import PjsipStubDriver
+from polydrift.drivers.sofia_stub import SofiaStubDriver
+from polydrift.harness import CompareStatus
+from polydrift.run import case_to_dict, format_report, run_compare, run_suite
 
 
 def test_run_compare_agree_f200():

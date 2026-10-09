@@ -7,8 +7,8 @@ Real stack parsers run on a Linux lab host, not a local Docker Desktop install o
 ```bash
 sudo apt-get install -y sofia-sip-bin libsofia-sip-ua-dev build-essential pkg-config
 cd tools && make sofia
-export SIPDRIFT_SOFIA_OBSERVE=$PWD/sofia_observe
-python -m sipdrift.cli suite --left builtin --right sofia-lab
+export POLYDRIFT_SOFIA_OBSERVE=$PWD/sofia_observe
+python -m polydrift.cli suite --left builtin --right sofia-lab
 ```
 
 Helper: `tools/sofia_observe.c` → uses Sofia `msg_make` / `sip_object`.
@@ -20,8 +20,8 @@ Build [pjproject](https://github.com/pjsip/pjproject), then:
 ```bash
 cd tools
 make pjsip PJDIR=/path/to/pjproject
-export SIPDRIFT_PJSIP_OBSERVE=$PWD/pjsip_observe
-python -m sipdrift.cli suite --left builtin --right pjsip-lab
+export POLYDRIFT_PJSIP_OBSERVE=$PWD/pjsip_observe
+python -m polydrift.cli suite --left builtin --right pjsip-lab
 ```
 
 Helper: `tools/pjsip_observe.c` → uses `pjsip_parse_msg`.
@@ -31,24 +31,24 @@ Helper: `tools/pjsip_observe.c` → uses `pjsip_parse_msg`.
 ```bash
 sudo apt-get install -y kamailio kamailio-lua-modules
 bash tools/kamailio/start_observe.sh
-export SIPDRIFT_KAMAILIO_HOST=127.0.0.1
-export SIPDRIFT_KAMAILIO_PORT=5090
-export SIPDRIFT_KAMAILIO_OBS=/tmp/sipdrift-kamailio-obs.json
-python -m sipdrift.cli suite --left sofia-lab --right kamailio-lab
+export POLYDRIFT_KAMAILIO_HOST=127.0.0.1
+export POLYDRIFT_KAMAILIO_PORT=5090
+export POLYDRIFT_KAMAILIO_OBS=/tmp/polydrift-kamailio-obs.json
+python -m polydrift.cli suite --left sofia-lab --right kamailio-lab
 ```
 
 See [`KAMAILIO-SCOPE.md`](KAMAILIO-SCOPE.md).
 
 | Variable | Purpose |
 | --- | --- |
-| `SIPDRIFT_SOFIA_OBSERVE` | Path to `sofia_observe` binary |
-| `SIPDRIFT_PJSIP_OBSERVE` | Path to `pjsip_observe` binary |
+| `POLYDRIFT_SOFIA_OBSERVE` | Path to `sofia_observe` binary |
+| `POLYDRIFT_PJSIP_OBSERVE` | Path to `pjsip_observe` binary |
 
 Without these binaries, lab drivers report `ok=false` (ERROR in compares). Stub drivers remain the CI path.
 
 ## Experiment runner
 
-`tools/run_lab_experiments.py` sweeps all driver pairs, per-fixture spotlights, Sofia CLI tools, optional live OPTIONS, and pytest. Writes a pack under `/opt/atlas/sipdrift-packs/` with prefix `sipdrift-lab-<UTC>`.
+`tools/run_lab_experiments.py` sweeps all driver pairs, per-fixture spotlights, Sofia CLI tools, optional live OPTIONS, and pytest. Writes a pack under `/opt/atlas/polydrift-packs/` with prefix `polydrift-lab-<UTC>`.
 
 ## References
 

@@ -1,84 +1,114 @@
-# polydrift (formerly SIPdrift)
+# PolyDrift
 
-Differential testing harness for protocol implementations. Release 0.3.5 covers open-source SIP/VoIP stacks and was published under the name sipdrift; the Python package and CLI keep that name until the next release, which extends the harness to further protocols.
-
-Pinned SIP fixtures are observed through multiple drivers, normalized onto shared
-oracle axes (start-line, status, Via, CSeq, Content-Type/Length, body and SDP
-digests), and classified as `agree`, `diverge`, `error`, or `skip`.
+Differential testing of independent protocol implementations.
 
 [![CI](https://github.com/kazuru-chidumbwe/polydrift/actions/workflows/ci.yml/badge.svg)](https://github.com/kazuru-chidumbwe/polydrift/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Cite pin [`0.3.5`](https://github.com/kazuru-chidumbwe/polydrift/tree/0.3.5).
-See [CODE_METADATA.md](CODE_METADATA.md), [CITATION.cff](CITATION.cff) and [codemeta.json](codemeta.json).
-Cite the release tag, not floating `main`.
+PolyDrift sends the same input to several independent implementations of a protocol, records what each one does, and reports where they agree and where they differ. Each input (a *fixture*) is a pinned protocol message. Each implementation is reached through a *driver* that turns its behaviour into an observation on a fixed set of comparison axes. A fixture's outcome for a pair of implementations is `agree`, `diverge`, `error` or `skip`.
 
-## Quick start (stub / CI)
+This repository is the software artifact for a cross-protocol study in preparation. The SIP cell is implemented and is described below. The protocol-independent observation model and the further protocol cells used by the study are being added here; the [status table](#status) says what is present today.
 
-No native SIP libraries required.
+## Status
+
+| Component | State |
+| --- | --- |
+| SIP fixture corpus: 53 messages (requests, responses, compact and folded headers, SDP bodies, RFC 4475-class torture cases) | implemented |
+| Stub drivers for continuous integration: `builtin`, `pjsip-stub`, `sofia-stub`, `kamailio-stub` | implemented |
+| Laboratory drivers for PJSIP, Sofia-SIP and Kamailio | implemented |
+| Comparison on eight SIP axes, with text and JSON reports | implemented |
+| Protocol-independent observation model and graded oracle | in development |
+| Further protocol cells: DNS, MQTT, LDAP, Sieve and JMAP | planned |
+
+## Requirements
+
+- Python 3.11 or later; `pytest` for the test suite.
+- Stub path: no native SIP libraries; runs on Linux, macOS and Windows.
+- Laboratory path: Linux, a C compiler, PJSIP and Sofia-SIP development libraries, and Kamailio with its Lua module. See [`docs/LAB-DRIVERS.md`](docs/LAB-DRIVERS.md).
+
+## Installation
 
 ```bash
 git clone https://github.com/kazuru-chidumbwe/polydrift.git
 cd polydrift
-git checkout 0.3.5
 python -m venv .venv
-source .venv/bin/activate    # Windows: .venv\Scripts\activate
-pip install -U pip && pip install -e ".[dev]"
-pytest -q
-sipdrift compare F-200-MIN
-sipdrift suite --right sofia-stub
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+python -m pip install -U pip
+python -m pip install -e ".[dev]"
 ```
 
-## What it does
+## Quick start (stub path)
 
-| Capability | Role |
-| --- | --- |
-| Fixture corpus | Pinned `.sip` messages under `fixtures/` (53 at `0.3.5`) |
-| Drivers | `builtin` / `*-stub` for CI; `pjsip-lab` / `sofia-lab` / `kamailio-lab` for host labs |
-| Oracle | Shared axes + agree / diverge / error / skip |
-| Suite JSON | Machine-readable pairwise results; SHA-256 digests for restart checks |
+```bash
+pytest -q                                                   # run the test suite
+polydrift fixtures                                          # list the corpus
+polydrift drivers                                           # list registered drivers
+polydrift compare F-200-MIN                                 # one fixture: builtin vs pjsip-stub
+polydrift suite --right sofia-stub                          # whole corpus, one pair
+polydrift compare F-COMPACT-VIA --right sofia-stub --format json
+```
 
-Headline laboratory comparisons:
+Worked examples with expected output are in [`examples/`](examples/).
 
-| Pair | Role |
-| --- | --- |
-| `pjsip-lab` vs `sofia-lab` | UA library vs UA library |
-| `pjsip-lab` / `sofia-lab` vs `kamailio-lab` | UA library vs proxy receive path |
+## Laboratory path
 
-`builtin` and stub drivers are for continuous integration and calibration, not a fourth production SIP stack.
-
-## Lab path (optional)
-
-Requires host-built observe helpers. See [`docs/LAB-DRIVERS.md`](docs/LAB-DRIVERS.md).
+Build the observe helpers on a Linux host, point the drivers at them, and compare real implementations:
 
 ```bash
 make -C tools sofia
-export SIPDRIFT_SOFIA_OBSERVE=$PWD/tools/sofia_observe
+export POLYDRIFT_SOFIA_OBSERVE=$PWD/tools/sofia_observe
 make -C tools pjsip PJDIR=/path/to/pjproject
-export SIPDRIFT_PJSIP_OBSERVE=$PWD/tools/pjsip_observe
-sipdrift suite --left pjsip-lab --right sofia-lab
+export POLYDRIFT_PJSIP_OBSERVE=$PWD/tools/pjsip_observe
+polydrift suite --left pjsip-lab --right sofia-lab
 
 bash tools/kamailio/start_observe.sh
-export SIPDRIFT_KAMAILIO_PORT=5090
-sipdrift suite --left sofia-lab --right kamailio-lab
+export POLYDRIFT_KAMAILIO_PORT=5090
+polydrift suite --left sofia-lab --right kamailio-lab
 ```
 
-Known divergences: [`docs/DIVERGENCES.md`](docs/DIVERGENCES.md) · Kamailio scope: [`docs/KAMAILIO-SCOPE.md`](docs/KAMAILIO-SCOPE.md) · Metrics: [`docs/METRICS.md`](docs/METRICS.md) · Tags: [`docs/TAGS.md`](docs/TAGS.md).
+`tools/run_lab_experiments.py` runs every driver pair over the corpus and writes a pack: one JSON report per suite plus a `meta.json` naming the drivers, fixtures, host and start time. The Kamailio driver observes the proxy's receive path; its scope, and the fixtures it cannot observe, are listed in [`docs/KAMAILIO-SCOPE.md`](docs/KAMAILIO-SCOPE.md).
 
-Committed illustrative counts from laboratory packs: [`results/`](results/).
+## Comparison axes
+
+| Axis | Meaning |
+| --- | --- |
+| `start_line` | request line or status line |
+| `status_code` | response status code |
+| `via` | top Via value |
+| `cseq` | CSeq value |
+| `content_type`, `content_length` | body headers |
+| `body_sha256`, `sdp_sha256` | digests of the raw body and of the normalised SDP |
+
+The classification contract is in [`docs/METRICS.md`](docs/METRICS.md).
+
+## Repository layout
+
+| Path | Contents |
+| --- | --- |
+| `polydrift/` | package: CLI, fixture loader, parser, comparison harness |
+| `polydrift/drivers/` | driver protocol, registry, stub and laboratory drivers |
+| `fixtures/` | SIP fixture corpus (`.sip`) and its index |
+| `tools/` | observe helpers in C, Kamailio configuration and Lua observer, laboratory runners |
+| `tests/` | test suite |
+| `examples/` | walkthroughs and expected JSON output |
+| `docs/` | driver setup, Kamailio scope, axis contract |
+
+## Reproducibility
+
+JSON reports are written with sorted keys, so two runs on the same implementations can be compared by hashing their reports. Release `0.3.5` and the laboratory results recorded with it remain available at the [`0.3.5` tag](https://github.com/kazuru-chidumbwe/polydrift/tree/0.3.5). Cite a release tag rather than `main`.
 
 ## Extending
 
-To add a driver: implement the observe protocol in `sipdrift/drivers/`, register it, and keep axis keys aligned with `docs/METRICS.md`. Stub first, then lab.
+A new driver implements the `StackDriver` protocol in `polydrift/drivers/protocol.py`, registers itself in `polydrift/drivers/registry.py`, and emits the axis keys in `docs/METRICS.md`. Add a stub first so the driver runs in continuous integration, then the laboratory version.
 
-## Cite
+## Citation
 
-See [`CITATION.cff`](CITATION.cff). Changelog: [`CHANGELOG.md`](CHANGELOG.md).
+Citation metadata is in [`CITATION.cff`](CITATION.cff) and [`codemeta.json`](codemeta.json). Changes are listed in [`CHANGELOG.md`](CHANGELOG.md).
 
-## Contributing and support
+## Contributing and contact
 
-Contributions via issues and pull requests are welcome. See [`CONTRIBUTING.md`](CONTRIBUTING.md). Best-effort maintainer response; this is an independent research project. Support email: kazuruuni@gmail.com.
+Issues and pull requests are welcome; see [`CONTRIBUTING.md`](CONTRIBUTING.md). This is an independent research project with best-effort maintenance. Contact: kazuruuni@gmail.com.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT. See [`LICENSE`](LICENSE).

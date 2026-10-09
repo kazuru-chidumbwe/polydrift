@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from sipdrift.harness import StackObservation
+from polydrift.harness import StackObservation
 
 
 class StackDriver(Protocol):

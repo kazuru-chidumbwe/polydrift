@@ -6,7 +6,7 @@ lab subprocess hook documented in docs/LAB-PJSIP.md.
 
 from __future__ import annotations
 
-from sipdrift.drivers.common import observe_from_parse
+from polydrift.drivers.common import observe_from_parse
 
 
 class PjsipStubDriver:

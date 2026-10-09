@@ -84,7 +84,7 @@ int main(int argc, char **argv)
 
     pj_caching_pool_init(&cp, &pj_pool_factory_default_policy, 0);
     pool = pj_pool_create(&cp.factory, "obs", 4096, 4096, NULL);
-    status = pjsip_endpt_create(&cp.factory, "sipdrift", &endpt);
+    status = pjsip_endpt_create(&cp.factory, "polydrift", &endpt);
     if (status != PJ_SUCCESS) {
         emit_fail("pjsip_endpt_create failed");
         return 1;

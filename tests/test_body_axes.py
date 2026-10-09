@@ -1,15 +1,15 @@
 """Tests for body / SDP oracle axes."""
 
-from sipdrift.drivers.builtin import BuiltinDriver
-from sipdrift.drivers.sofia_stub import SofiaStubDriver
-from sipdrift.harness import COMPARE_AXES, CompareStatus
-from sipdrift.parse import (
+from polydrift.drivers.builtin import BuiltinDriver
+from polydrift.drivers.sofia_stub import SofiaStubDriver
+from polydrift.harness import COMPARE_AXES, CompareStatus
+from polydrift.parse import (
     body_sha256_raw,
     extract_body_axes,
     normalize_sdp,
     sdp_sha256,
 )
-from sipdrift.run import run_compare
+from polydrift.run import run_compare
 
 
 def test_compare_axes_include_body():

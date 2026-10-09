@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.3.5] — 2026-09-16
+### Changed
+
+- Project, Python package and command-line tool are named PolyDrift (`polydrift`). Environment variables use the `POLYDRIFT_` prefix.
+- Identifier tokens inside the fixtures (Call-ID, branch, SDP session name) use `polydrift`; message structure is unchanged, so fixture digests differ from release 0.3.5.
+- README rewritten as an artifact description with a status table.
+
+## [0.3.5] - 2026-09-16
 
 ### Fixed
 
@@ -18,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `.gitattributes` with `eol=lf` for results JSON and common text files.
 
-## [0.3.4] — 2026-09-16
+## [0.3.4] - 2026-09-16
 
 ### Added
 
@@ -27,31 +33,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Cite pin for manuscripts moves from `0.3.3` to `0.3.4` (fixture corpus and oracle axes unchanged).
 - Headline docs lead with lab-vs-lab pairs; `builtin` framed as calibration.
-- Laboratory experiment runner named `tools/run_lab_experiments.py` (pack prefix `sipdrift-lab-`).
+- Laboratory experiment runner named `tools/run_lab_experiments.py` (pack prefix `polydrift-lab-`).
 - Kamailio observe binary PATH resolution when `/usr/sbin` is omitted.
 
-## [0.3.3] — 2026-09-05
+## [0.3.3] - 2026-09-05
 
 ### Added
 
 - Body and SDP oracle axes (`body_sha256`, `sdp_sha256`, Content-Type / Content-Length).
-- Expanded RFC 4475–class torture corpus — **53** fixtures total.
+- Expanded RFC 4475-class torture corpus: 53 fixtures in total.
 - Canonical laboratory pack digests recorded in divergences docs (53-fixture baseline).
 
-### Changed
-
-- Divergences and Results framing for the 0.3.3 pack.
-
-## [0.3.2] — 2026-09-05
+## [0.3.2] - 2026-09-05
 
 ### Added
 
 - `kamailio-stub` and `kamailio-lab` (UDP + Lua observe).
 - Seven-driver laboratory pack and expected JSON examples.
 
-## [0.3.1] — 2026-09-05
+## [0.3.1] - 2026-09-05
 
 ### Added
 
@@ -59,22 +60,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Live OPTIONS lab path repair.
 - Examples walkthrough under `examples/`.
 
-## [0.3.0] — 2026-09-05
+## [0.3.0] - 2026-09-05
 
 ### Added
 
 - `pjsip-lab` and `sofia-lab` observe helpers.
 - 32-fixture corpus and laboratory experiment pack.
 
-## [0.2.0] — 2026-08-30
+## [0.2.0] - 2026-08-30
 
 ### Added
 
 - Multi-axis oracle (`start_line`, `status_code`, `via`, `cseq`).
 - `sofia-stub` driver.
-- `sipdrift suite` command and divergences documentation.
+- `polydrift suite` command and divergences documentation.
 
-## [0.1.0] — 2026-08-30
+## [0.1.0] - 2026-08-30
 
 ### Added
 

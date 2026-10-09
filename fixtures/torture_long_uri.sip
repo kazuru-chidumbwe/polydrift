@@ -3,7 +3,7 @@ Via: SIP/2.0/UDP 192.0.2.1:5060;branch=z9hG4bK-long
 Max-Forwards: 70
 From: <sip:alice@example.com>;tag=a1
 To: <sip:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com>
-Call-ID: sipdrift-long@example.com
+Call-ID: polydrift-long@example.com
 CSeq: 1 INVITE
 Content-Length: 0
 

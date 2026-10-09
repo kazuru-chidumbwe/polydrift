@@ -18,7 +18,7 @@ CASES: dict[str, tuple[str, str]] = {
         "Max-Forwards: 70\n"
         "From: <sip:alice@example.com>;tag=a1\n"
         "To: <sip:bob@example.com>\n"
-        "Call-ID: sipdrift-ws-end@example.com\n"
+        "Call-ID: polydrift-ws-end@example.com\n"
         "CSeq: 1 INVITE\n"
         "Content-Length: 0\n\n",
     ),
@@ -29,7 +29,7 @@ CASES: dict[str, tuple[str, str]] = {
         "Max-Forwards: 70\n"
         "From: <sip:alice@example.com>;tag=a1\n"
         "To: <sip:bob@example.com>\n"
-        "Call-ID: sipdrift-lws@example.com\n"
+        "Call-ID: polydrift-lws@example.com\n"
         "CSeq: 1 OPTIONS\n"
         "Content-Length: 0\n\n",
     ),
@@ -40,7 +40,7 @@ CASES: dict[str, tuple[str, str]] = {
         "Max-Forwards: 70\n"
         "From: <sip:alice@example.com>;tag=a1\n"
         "To: <sip:bob%40example.com@proxy.example.com>\n"
-        "Call-ID: sipdrift-esc@example.com\n"
+        "Call-ID: polydrift-esc@example.com\n"
         "CSeq: 1 INVITE\n"
         "Content-Length: 0\n\n",
     ),
@@ -51,7 +51,7 @@ CASES: dict[str, tuple[str, str]] = {
         "Max-Forwards: 70\n"
         "From: <sip:alice@example.com>;tag=a1\n"
         f"To: <sip:{_LONG_USER}@example.com>\n"
-        "Call-ID: sipdrift-long@example.com\n"
+        "Call-ID: polydrift-long@example.com\n"
         "CSeq: 1 INVITE\n"
         "Content-Length: 0\n\n",
     ),
@@ -62,7 +62,7 @@ CASES: dict[str, tuple[str, str]] = {
         "Max-Forwards: 70\n"
         "From: <sip:alice@example.com>;tag=a1\n"
         "To: <sip:bob@example.com>\n"
-        "Call-ID: sipdrift-clen@example.com\n"
+        "Call-ID: polydrift-clen@example.com\n"
         "CSeq: 1 MESSAGE\n"
         "Content-Type: text/plain\n"
         "Content-Length: 999\n\n"
@@ -76,7 +76,7 @@ CASES: dict[str, tuple[str, str]] = {
         "Max-Forwards: 70\n"
         "From: <sip:alice@example.com>;tag=a1\n"
         "To: <sip:bob@example.com>\n"
-        "Call-ID: sipdrift-dup@example.com\n"
+        "Call-ID: polydrift-dup@example.com\n"
         "CSeq: 1 INVITE\n"
         "CSeq: 2 INVITE\n"
         "Content-Length: 0\n\n",
@@ -87,7 +87,7 @@ CASES: dict[str, tuple[str, str]] = {
         "Via: SIP/2.0/UDP 192.0.2.1:5060;branch=z9hG4bK-na\n"
         "From: <sip:alice@example.com>;tag=a1\n"
         "To: <sip:bob@example.com>;tag=b1\n"
-        "Call-ID: sipdrift-na@example.com\n"
+        "Call-ID: polydrift-na@example.com\n"
         "CSeq: 1 INVITE\n"
         "Warning: 399 example.com \"café\"\n"
         "Content-Length: 0\n\n",
@@ -99,7 +99,7 @@ CASES: dict[str, tuple[str, str]] = {
         "Max-Forwards: 70\n"
         "From: <sip:alice@example.com>;tag=a1\n"
         "To: <sip:bob@example.com>\n"
-        "Call-ID: sipdrift-null@example.com\n"
+        "Call-ID: polydrift-null@example.com\n"
         "CSeq: 1 MESSAGE\n"
         "Content-Type: text/plain\n"
         "Content-Length: 4\n\n"
@@ -113,9 +113,9 @@ CASES: dict[str, tuple[str, str]] = {
         "Max-Forwards: 70\n"
         "From: <sip:alice@example.com>;tag=a1\n"
         "To: <sip:bob@example.com>\n"
-        "Call-ID: sipdrift-unrecog@example.com\n"
+        "Call-ID: polydrift-unrecog@example.com\n"
         "CSeq: 1 OPTIONS\n"
-        "X-Sipdrift-Odd: yes-please\n"
+        "X-PolyDrift-Odd: yes-please\n"
         "Content-Length: 0\n\n",
     ),
     "F-TORTURE-DISPLAY-NAME": (
@@ -125,7 +125,7 @@ CASES: dict[str, tuple[str, str]] = {
         "Max-Forwards: 70\n"
         'From: "Alice, the caller" <sip:alice@example.com>;tag=a1\n'
         "To: <sip:bob@example.com>\n"
-        "Call-ID: sipdrift-disp@example.com\n"
+        "Call-ID: polydrift-disp@example.com\n"
         "CSeq: 1 INVITE\n"
         "Content-Length: 0\n\n",
     ),
@@ -136,7 +136,7 @@ CASES: dict[str, tuple[str, str]] = {
         "Max-Forwards: 70\n"
         "From: <sip:alice@example.com>;tag=a1\n"
         "To: <sip:bob@example.com>\n"
-        "Call-ID: sipdrift-v6@example.com\n"
+        "Call-ID: polydrift-v6@example.com\n"
         "CSeq: 1 OPTIONS\n"
         "Content-Length: 0\n\n",
     ),
@@ -147,7 +147,7 @@ CASES: dict[str, tuple[str, str]] = {
         "Max-Forwards: 70\n"
         "From: <sip:alice@example.com>;tag=a1\n"
         "To: <sip:bob@example.com>\n"
-        "Call-ID: sipdrift-nomagic@example.com\n"
+        "Call-ID: polydrift-nomagic@example.com\n"
         "CSeq: 1 INVITE\n"
         "Content-Length: 0\n\n",
     ),
@@ -158,7 +158,7 @@ CASES: dict[str, tuple[str, str]] = {
         "Max-Forwards: 70\n"
         "From: <sip:alice@example.com>;tag=a1\n"
         "To: <sip:bob@example.com>\n"
-        "Call-ID: sipdrift-subj@example.com\n"
+        "Call-ID: polydrift-subj@example.com\n"
         "CSeq: 1 INVITE\n"
         "Subject:\n"
         "Content-Length: 0\n\n",
@@ -170,7 +170,7 @@ CASES: dict[str, tuple[str, str]] = {
         "Max-Forwards: 70\n"
         "From: <sip:alice@example.com>;tag=a1\n"
         "To: <sip:bob@example.com>\n"
-        "Call-ID: sipdrift-mclen@example.com\n"
+        "Call-ID: polydrift-mclen@example.com\n"
         "CSeq: 1 MESSAGE\n"
         "Content-Type: text/plain\n"
         "Content-Length: 5\n"
@@ -184,7 +184,7 @@ CASES: dict[str, tuple[str, str]] = {
         "Max-Forwards: 70\n"
         "From: <sip:alice@example.com>;tag=a1\n"
         "To: <unusual:bob@example.com>\n"
-        "Call-ID: sipdrift-scheme@example.com\n"
+        "Call-ID: polydrift-scheme@example.com\n"
         "CSeq: 1 INVITE\n"
         "Content-Length: 0\n\n",
     ),
@@ -195,7 +195,7 @@ CASES: dict[str, tuple[str, str]] = {
         "Max-Forwards: 70\n"
         "From: <sip:alice@example.com>;tag=a1\n"
         "To: <sip:bob@example.com>\n"
-        "Call-ID: sipdrift-ruri@example.com\n"
+        "Call-ID: polydrift-ruri@example.com\n"
         "CSeq: 1 INVITE\n"
         "Content-Length: 0\n\n",
     ),

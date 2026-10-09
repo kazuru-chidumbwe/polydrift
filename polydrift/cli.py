@@ -5,10 +5,10 @@ from __future__ import annotations
 import argparse
 import sys
 
-from sipdrift import __version__
-from sipdrift.drivers.registry import get_driver, list_driver_names
-from sipdrift.fixtures import list_fixtures
-from sipdrift.run import (
+from polydrift import __version__
+from polydrift.drivers.registry import get_driver, list_driver_names
+from polydrift.fixtures import list_fixtures
+from polydrift.run import (
     compare_exit_code,
     format_report,
     format_suite_report,
@@ -20,13 +20,13 @@ from sipdrift.run import (
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        prog="sipdrift",
+        prog="polydrift",
         description="SIP/VoIP stack differential testing harness.",
     )
     parser.add_argument(
         "--version",
         action="version",
-        version=f"sipdrift {__version__}",
+        version=f"polydrift {__version__}",
     )
     subparsers = parser.add_subparsers(dest="command")
 
@@ -66,11 +66,11 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if args.command is None:
-        print(f"sipdrift {__version__}: compare harness ready.")
+        print(f"polydrift {__version__}: compare harness ready.")
         return 0
 
     if args.command == "status":
-        print(f"sipdrift {__version__}: compare harness ready.")
+        print(f"polydrift {__version__}: compare harness ready.")
         return 0
 
     if args.command == "fixtures":

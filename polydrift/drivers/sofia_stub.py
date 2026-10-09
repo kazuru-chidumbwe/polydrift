@@ -6,7 +6,7 @@ FreeSWITCH-class stacks. Phase 2 parse-path stub; real driver follows lab work.
 
 from __future__ import annotations
 
-from sipdrift.drivers.common import observe_from_parse
+from polydrift.drivers.common import observe_from_parse
 
 
 class SofiaStubDriver:

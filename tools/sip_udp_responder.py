@@ -11,8 +11,8 @@ def build_200(req: bytes) -> bytes:
     text = req.decode("utf-8", errors="replace")
     via = "Via: SIP/2.0/UDP 127.0.0.1"
     cseq = "CSeq: 1 OPTIONS"
-    call_id = "Call-ID: sipdrift-live@127.0.0.1"
-    from_h = "From: <sip:probe@127.0.0.1>;tag=sipdrift"
+    call_id = "Call-ID: polydrift-live@127.0.0.1"
+    from_h = "From: <sip:probe@127.0.0.1>;tag=polydrift"
     to_h = "To: <sip:target@127.0.0.1>;tag=lab"
     for line in text.replace("\r\n", "\n").split("\n"):
         low = line.lower()

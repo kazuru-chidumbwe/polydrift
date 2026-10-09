@@ -1,6 +1,6 @@
--- sipdrift Kamailio observe helper (Lua) — Kamailio 5.7 KSR API
+-- polydrift Kamailio observe helper (Lua) — Kamailio 5.7 KSR API
 
-local OBS_PATH = "/tmp/sipdrift-kamailio-obs.json"
+local OBS_PATH = "/tmp/polydrift-kamailio-obs.json"
 
 local function json_escape(s)
   if s == nil then

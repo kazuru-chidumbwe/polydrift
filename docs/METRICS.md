@@ -32,7 +32,3 @@ Exact field names in JSON follow the harness emitter. Treat this table as the se
 - `kamailio-lab` is a **receive** observe path, not production routing equivalence.
 - Body/SDP digests are wire fingerprints until a re-serialize path exists.
 - No CVE or stack-desynchronization attack claim.
-
-## Illustrative laboratory counts (`0.3.3`)
-
-See [`../results/README.md`](../results/README.md). Regenerate from suite JSON; do not hand-edit rates in papers without regenerating digests.

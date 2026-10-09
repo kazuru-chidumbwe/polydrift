@@ -1,6 +1,6 @@
 # Kamailio lab driver (proxy tier)
 
-**Status (0.3.3):** `kamailio-stub` + **`kamailio-lab`** shipped (unchanged; body axes filled from wire when Lua omits digests).
+**Status:** `kamailio-stub` and `kamailio-lab` are implemented; body axes are filled from the wire when the Lua observer omits digests.
 
 | Field | Value |
 | --- | --- |
@@ -37,7 +37,3 @@ Six fixtures against `kamailio-lab` return **error** in the `builtin` vs `kamail
 | `F-MISSING-CSEQ` | Request without CSeq; same | UA parsers often tolerate |
 
 When `kamailio-lab` errors, the driver reports `no observation file from kamailio at /tmp/polydrift-kamailio-obs.json`. Treat these rows as **proxy-tier receive limits**, not CVE claims.
-
-## Pack
-
-Canonical laboratory pack for harness `0.3.3` (53 fixtures) — see `docs/DIVERGENCES.md`. Digests are recorded with the deposited suite JSON.

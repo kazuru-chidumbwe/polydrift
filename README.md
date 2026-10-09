@@ -95,7 +95,7 @@ The classification contract is in [`docs/METRICS.md`](docs/METRICS.md).
 
 ## Reproducibility
 
-JSON reports are written with sorted keys, so two runs on the same implementations can be compared by hashing their reports. Release `0.3.5` and the laboratory results recorded with it remain available at the [`0.3.5` tag](https://github.com/kazuru-chidumbwe/polydrift/tree/0.3.5). Cite a release tag rather than `main`.
+JSON reports are written with sorted keys, so two runs on the same implementations can be compared by hashing their reports. Cite a tagged release, once one is published, rather than `main`.
 
 ## Extending
 

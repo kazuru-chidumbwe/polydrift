@@ -30,7 +30,7 @@ python -m polydrift.cli suite --left builtin --right sofia-lab --format json
 
 ## 4. Expected JSON (reviewer gold)
 
-Checked-in samples under `examples/expected/` (includes body/SDP axes from **0.3.3**):
+Checked-in samples under `examples/expected/` (including the body and SDP axes):
 
 ```bash
 python -m polydrift.cli compare F-200-MIN --left builtin --right sofia-stub --format json

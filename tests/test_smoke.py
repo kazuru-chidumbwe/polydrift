@@ -5,7 +5,7 @@ from polydrift.parse import split_start_line
 
 
 def test_version_pinned():
-    assert __version__ == "0.3.5"
+    assert __version__ == "0.4.0.dev0"
 
 
 def test_split_start_line_request():

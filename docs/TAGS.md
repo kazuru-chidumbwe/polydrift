@@ -7,7 +7,7 @@
 
 Cite the tag tree URL:
 
-https://github.com/kazuru-chidumbwe/sipdrift/tree/0.3.5
+https://github.com/kazuru-chidumbwe/polydrift/tree/0.3.5
 
 Do not cite floating `main`. Laboratory suite digests under `results/V-BASE-restart/` match this pin.
 

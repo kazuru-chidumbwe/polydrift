@@ -1,15 +1,15 @@
-# SIPdrift
+# polydrift (formerly SIPdrift)
 
-Differential testing harness for open-source SIP/VoIP stacks.
+Differential testing harness for protocol implementations. Release 0.3.5 covers open-source SIP/VoIP stacks and was published under the name sipdrift; the Python package and CLI keep that name until the next release, which extends the harness to further protocols.
 
 Pinned SIP fixtures are observed through multiple drivers, normalized onto shared
 oracle axes (start-line, status, Via, CSeq, Content-Type/Length, body and SDP
 digests), and classified as `agree`, `diverge`, `error`, or `skip`.
 
-[![CI](https://github.com/kazuru-chidumbwe/sipdrift/actions/workflows/ci.yml/badge.svg)](https://github.com/kazuru-chidumbwe/sipdrift/actions/workflows/ci.yml)
+[![CI](https://github.com/kazuru-chidumbwe/polydrift/actions/workflows/ci.yml/badge.svg)](https://github.com/kazuru-chidumbwe/polydrift/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Cite pin [`0.3.5`](https://github.com/kazuru-chidumbwe/sipdrift/tree/0.3.5).
+Cite pin [`0.3.5`](https://github.com/kazuru-chidumbwe/polydrift/tree/0.3.5).
 See [CODE_METADATA.md](CODE_METADATA.md), [CITATION.cff](CITATION.cff) and [codemeta.json](codemeta.json).
 Cite the release tag, not floating `main`.
 
@@ -18,8 +18,8 @@ Cite the release tag, not floating `main`.
 No native SIP libraries required.
 
 ```bash
-git clone https://github.com/kazuru-chidumbwe/sipdrift.git
-cd sipdrift
+git clone https://github.com/kazuru-chidumbwe/polydrift.git
+cd polydrift
 git checkout 0.3.5
 python -m venv .venv
 source .venv/bin/activate    # Windows: .venv\Scripts\activate

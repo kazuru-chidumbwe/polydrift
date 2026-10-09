@@ -9,8 +9,8 @@ authors:
     orcid: "https://orcid.org/0009-0002-4099-1059"
     email: kazuruuni@gmail.com
     affiliation: Independent Researcher
-repository-code: "https://github.com/kazuru-chidumbwe/sipdrift"
-url: "https://github.com/kazuru-chidumbwe/sipdrift"
+repository-code: "https://github.com/kazuru-chidumbwe/polydrift"
+url: "https://github.com/kazuru-chidumbwe/polydrift"
 abstract: >-
   Differential testing harness for SIP message handling. A pinned fixture
   corpus is run through multiple stack drivers; observations are normalized
@@ -36,6 +36,6 @@ preferred-citation:
       orcid: "https://orcid.org/0009-0002-4099-1059"
   title: "sipdrift: A Differential Testing Harness for Open-Source SIP Stacks"
   version: "0.3.5"
-  url: "https://github.com/kazuru-chidumbwe/sipdrift"
+  url: "https://github.com/kazuru-chidumbwe/polydrift"
   year: 2026
   month: 9

@@ -4,7 +4,7 @@ Thanks for interest in improving the harness. sipdrift is maintained by a single
 
 ## Support
 
-- **Issues:** use [GitHub Issues](https://github.com/kazuru-chidumbwe/sipdrift/issues) for bugs, fixture proposals, and driver ideas.
+- **Issues:** use [GitHub Issues](https://github.com/kazuru-chidumbwe/polydrift/issues) for bugs, fixture proposals, and driver ideas.
 - **Pull requests:** open against `main`. Prefer small, focused changes.
 - **Response expectation:** best-effort; this is an independent research project, not a commercial support channel.
 

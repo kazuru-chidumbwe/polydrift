@@ -1,0 +1,61 @@
+# SIP fixture predicates (manuscript 3.1, 3.5). Each fixture names the requirement rows it exercises
+# and, per row, the clause, its keyword, the observation axis, the step and the canonical values the
+# clause permits (label.py reads clause/keyword/axis/step/allowed/security; req_id is for traceability).
+#
+# Decisions of 11 Oct 2026 applied:
+#  - refusal rule: a parser rejection is observed as decision_class `fix-request` at T1, so a well-formedness
+#    MUST is satisfied by `fix-request` (reject) and broken by `proceed` (accept of a malformed message).
+#  - SHOULD rows carry keyword SHOULD and label as Deviation, never Violation.
+#  - declarative (keywordless) rows, when added from the sample, carry keyword `declarative`.
+#
+# IN PROGRESS: 7 of 53 fixtures authored (confirmed req_ids). The remaining fixtures, the folded-header
+# LWS row, and the census fixtures for the other testable rows are added before the SIP Zenodo deposit;
+# the deposit (freeze.py) happens only when all 53 are mapped and reviewed.
+
+cell: sip
+
+fixtures:
+  invite_min:
+    cell: sip
+    spec_refs:
+      - {req_id: SIP-9faefe1e, clause: "RFC 3261 7", keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+      - {req_id: SIP-8effc4e6, clause: "RFC 3261 7.1", keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+
+  compact_via:
+    cell: sip
+    # 7.3.3: a compact header-name form MAY substitute the long form. The clause predicate below is the MAY
+    # acceptance; that the parsed `via` equals the long form is enforced by the axis canonicalisation (3.2) and
+    # the cross-implementation comparison, not by a clause predicate, so it is not a spec_ref.
+    # TODO: locate the receiver-side MUST to accept both forms before the deposit (SIP-7aa019b5/201cb2a0 are sender MAY).
+    spec_refs:
+      - {req_id: SIP-7aa019b5, clause: "RFC 3261 7.3.3", keyword: MAY, axis: decision_class, step: 1, allowed: [proceed]}
+
+  lower_sip_version:
+    cell: sip
+    # 7.1: the SIP-Version string is case-insensitive on receipt (senders MUST send upper-case).
+    spec_refs:
+      - {req_id: SIP-f74047b6, clause: "RFC 3261 7.1", keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+
+  multi_via:
+    cell: sip
+    # 8.1.3.3: if more than one Via is present in a response, the UAC SHOULD discard the message. SHOULD -> Deviation.
+    spec_refs:
+      - {req_id: SIP-ff25b0e9, clause: "RFC 3261 8.1.3.3", keyword: SHOULD, axis: decision_class, step: 1, allowed: [stop]}
+
+  missing_cseq:
+    cell: sip
+    # 8.1.1: a valid request MUST contain the minimum header set (incl. CSeq); a receiver rejects one that lacks it.
+    spec_refs:
+      - {req_id: SIP-dfabd7a8, clause: "RFC 3261 8.1.1", keyword: MUST, axis: decision_class, step: 1, allowed: [fix-request]}
+
+  missing_via:
+    cell: sip
+    # 8.1.1: the minimum header set includes Via.
+    spec_refs:
+      - {req_id: SIP-dfabd7a8, clause: "RFC 3261 8.1.1", keyword: MUST, axis: decision_class, step: 1, allowed: [fix-request]}
+
+  only_start_line:
+    cell: sip
+    # a request with no header fields violates the minimum-header-set MUST and the CRLF/empty-line rule.
+    spec_refs:
+      - {req_id: SIP-dfabd7a8, clause: "RFC 3261 8.1.1", keyword: MUST, axis: decision_class, step: 1, allowed: [fix-request]}

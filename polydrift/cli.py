@@ -21,7 +21,7 @@ from polydrift.run import (
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="polydrift",
-        description="SIP/VoIP stack differential testing harness.",
+        description="Differential testing of independent protocol implementations.",
     )
     parser.add_argument(
         "--version",
@@ -63,7 +63,83 @@ def main(argv: list[str] | None = None) -> int:
         help="Report format (default: text).",
     )
 
+    cell_run = subparsers.add_parser(
+        "cell-run",
+        help="Run every fixture of a cell against one implementation, N clean restarts.",
+    )
+    cell_run.add_argument("--cell", choices=("sip",), default="sip")
+    cell_run.add_argument("--impl", required=True, help="Driver name (e.g. pjsip-lab).")
+    cell_run.add_argument("--impl-version", default="", help="Implementation version under test.")
+    cell_run.add_argument("--repeats", type=int, default=3, help="Clean-restart repeats (default 3).")
+    cell_run.add_argument("--restart-cmd", default="", help="Shell command that restarts the implementation.")
+    cell_run.add_argument("--fixture", action="append", help="Limit to these fixture IDs (repeatable).")
+    cell_run.add_argument("--out", required=True, help="Output JSONL of observation records.")
+
+    cell_an = subparsers.add_parser(
+        "cell-analyse",
+        help="Compare records of all implementations in a cell under the shared oracle.",
+    )
+    cell_an.add_argument("--cell", choices=("sip",), default="sip")
+    cell_an.add_argument("records", nargs="+", help="JSONL record files.")
+    cell_an.add_argument("--deposits", default="deposits.json", help="Deposit register (default deposits.json).")
+    cell_an.add_argument(
+        "--provisional",
+        action="store_true",
+        help="Run without a deposited oracle spec; output is marked provisional and is not a study result.",
+    )
+    cell_an.add_argument("--min-repeats", type=int, default=3)
+    cell_an.add_argument("--out", required=True, help="Output JSON.")
+
     args = parser.parse_args(argv)
+
+    if args.command == "cell-run":
+        from polydrift.cells.sip.runner import run_impl, shell_restart
+        from polydrift.core.record import write_jsonl
+
+        try:
+            driver = get_driver(args.impl)
+        except KeyError as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 2
+        restart = shell_restart(args.restart_cmd) if args.restart_cmd else None
+        records = run_impl(
+            driver,
+            repeats=args.repeats,
+            fixture_ids=args.fixture,
+            impl_version=args.impl_version,
+            restart=restart,
+            log=lambda m: print(m, file=sys.stderr),
+        )
+        write_jsonl(args.out, records)
+        print(f"{len(records)} records -> {args.out}")
+        return 0
+
+    if args.command == "cell-analyse":
+        import json
+
+        from polydrift.analyse import analyse_cell
+        from polydrift.cells.sip.adapter import CELL_DIR, load_spec
+        from polydrift.core.freeze import SpecNotDeposited
+        from polydrift.core.record import read_jsonl
+
+        records = [r for path in args.records for r in read_jsonl(path)]
+        try:
+            result = analyse_cell(
+                records,
+                load_spec(),
+                CELL_DIR,
+                deposits=args.deposits,
+                provisional=args.provisional,
+                min_repeats=args.min_repeats,
+            )
+        except (SpecNotDeposited, ValueError) as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 2
+        with open(args.out, "w", encoding="utf-8", newline="\n") as handle:
+            json.dump(result, handle, indent=2, sort_keys=True, ensure_ascii=False)
+            handle.write("\n")
+        print(json.dumps({"summary": result["summary"], "provisional": result["provisional"]}, sort_keys=True))
+        return 0
 
     if args.command is None:
         print(f"polydrift {__version__}: compare harness ready.")

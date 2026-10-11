@@ -8,6 +8,7 @@ version = "0.4.0.dev0"
 description = "Differential testing of independent protocol implementations; SIP cell with stub and laboratory drivers."
 readme = "README.md"
 requires-python = ">=3.11"
+dependencies = ["PyYAML>=6.0"]
 license = { text = "MIT" }
 authors = [{ name = "Seke Kazuru", email = "kazuruuni@gmail.com" }]
 keywords = ["differential-testing", "protocol-implementations", "test-oracle", "interoperability", "sip"]
@@ -29,6 +30,10 @@ polydrift = "polydrift.cli:main"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["polydrift*"]
+
+[tool.setuptools.package-data]
+"polydrift.cells.sip" = ["*.yaml"]
+"polydrift.cells.dns" = ["*.yaml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

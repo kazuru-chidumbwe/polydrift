@@ -1,0 +1,5 @@
+# Capability matrix, fixed from documentation before any run.
+# Status: DRAFT, not deposited.
+pjsip-lab: [sip-parse, sdp-body]
+sofia-lab: [sip-parse, sdp-body]
+kamailio-lab: [sip-parse, sdp-body]

@@ -1,0 +1,63 @@
+# SIP cell: axis -> tier, derived from the tier rule (manuscript 3.3).
+# Observation point for the 0.3.x fixture set: every implementation parses one
+# message and reports what it read (PJSIP and Sofia-SIP in-process, Kamailio
+# through its script on receipt). The consumer is the stack's own transaction
+# and dialog layer.
+# Status: DRAFT, not deposited. Edits are free until the SIP deposit.
+cell: sip
+profile: sip-default-v1
+refusal_class: fix-request
+axes:
+  decision_class:
+    tier: 1
+    kappa: identity
+    clause: "T1: the next action of the transaction layer follows the class (classes.py)"
+  method:
+    tier: 2
+    kappa: identity
+    clause: "T2: the dialog layer dispatches on the method; method names are case-sensitive (RFC 3261 7.1)"
+  request_uri:
+    tier: 2
+    kappa: uri_scheme_casefold
+    clause: "T2: the Request-URI decides the target the request is processed for"
+  sip_version:
+    tier: 2
+    kappa: upper
+    clause: "T2: the version decides whether the message is processed; the token is case-insensitive (RFC 3261 7.1)"
+  native_code:
+    tier: 3
+    kappa: identity
+    clause: "T3: the code within its decision class changes neither action nor kept data"
+  via:
+    tier: 2
+    kappa: via
+    clause: "T2: the top Via branch matches responses to transactions (RFC 3261 17.1.3, 17.2.3)"
+  cseq:
+    tier: 2
+    kappa: cseq
+    clause: "T2: CSeq number and method match the transaction and order the dialog (RFC 3261 8.1.1.5, 12.2.2)"
+  content_length:
+    tier: 2
+    kappa: identity
+    clause: "T2: Content-Length decides where the body ends on stream transports (RFC 3261 18.3)"
+  content_type_media:
+    tier: 2
+    kappa: casefold
+    clause: "T2: the dialog layer dispatches the body by media type"
+  content_type_params:
+    tier: 3
+    kappa: media_params
+    clause: "T3: parameters a conforming consumer does not act on"
+  body_digest:
+    tier: 3
+    kappa: identity
+    clause: "T3: digest after structural canonicalisation (SDP line endings and trailing whitespace)"
+  reason_phrase:
+    tier: 4
+    kappa: identity
+    clause: "T4: the reason phrase is not acted on (RFC 3261 7.2)"
+  start_line_text:
+    tier: 4
+    kappa: identity
+    clause: "T4: spacing and token case of the start line disappear once parsed"
+volatile: []

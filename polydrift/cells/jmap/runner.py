@@ -28,6 +28,9 @@ from polydrift.core.record import ObservationRecord, Status, StepRecord
 
 CELL_DIR = Path(__file__).resolve().parent
 CANARY = [{"op": "call", "using": [driver.CORE], "calls": [["Core/echo", {"pd": 1}, "c0"]]}]
+# Account warm-up, once after the account exists and before the canary: James creates its default mailboxes on the
+# first Mailbox/get, so a Mailbox/query sent first finds none (smoke 10 Nov 17:42). Every server gets the same call.
+WARMUP = [{"op": "call", "calls": [["Mailbox/get", {"accountId": "{acct}", "ids": None, "properties": ["role"]}, "c0"]]}]
 
 
 def load_fixtures() -> dict:
@@ -109,6 +112,7 @@ def main() -> int:
                 ok_start, note, user, pw, sess = False, "", "", "", {}
                 try:
                     user, pw, sess, note = accounts.ensure(t["impl"], name, base, admin_base)
+                    driver.run_script(base, user, pw, sess, WARMUP, "warmup")
                     ok_start = canary_ok(base, user, pw, sess)
                 except Exception as e:  # noqa: BLE001
                     note = f"account: {e}"[:300]

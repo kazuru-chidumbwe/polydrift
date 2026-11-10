@@ -1,0 +1,155 @@
+"""MQTT cell driver: runs one fixture script against one broker and returns raw step observations.
+
+A fixture is a list of steps. Each step is performed by one named client (``a``, ``b``, ...), each client its own TCP
+connection. After every step the driver listens on every open connection for the step window and records, per
+client, the packets received and whether the connection closed. The consumer in MQTT is not only the sender: a
+broker's divergence shows in what other clients receive, so every client is observed at every step.
+
+Placeholders in fixture strings: ``{T}`` is a topic prefix and ``{C}`` a client-id prefix unique to the fixture and
+repeat, so fixtures never see each other's retained messages or sessions.
+
+Step keys: ``client``, ``op`` (open, close, sleep, hex, or a builder in codec.BUILDERS), ``args`` (builder
+arguments), ``hex`` (exact bytes for op ``hex``), ``window_ms`` (listen time, default 600), ``end`` (true: the step
+belongs to the end-state probe, not to the fixture's steps), ``auto_ack`` (client default true: QoS 1 and 2
+deliveries are acknowledged so the broker's flow completes).
+"""
+
+from __future__ import annotations
+
+import select
+import socket
+import time
+from dataclasses import dataclass, field
+from typing import Any
+
+from polydrift.cells.mqtt import codec
+
+DEFAULT_WINDOW_MS = 600
+
+
+def _subst(value: Any, t: str, c: str) -> Any:
+    if isinstance(value, str):
+        return value.replace("{T}", t).replace("{C}", c)
+    if isinstance(value, list):
+        return [_subst(v, t, c) for v in value]
+    if isinstance(value, dict):
+        return {k: _subst(v, t, c) for k, v in value.items()}
+    return value
+
+
+@dataclass
+class Client:
+    name: str
+    sock: socket.socket | None = None
+    version: int = 5
+    buf: bytes = b""
+    closed: bool = False
+    auto_ack: bool = True
+    inbox: list[dict[str, Any]] = field(default_factory=list)
+
+    def send(self, data: bytes) -> str | None:
+        if self.sock is None or self.closed:
+            return "not-open"
+        try:
+            self.sock.sendall(data)
+            return None
+        except OSError as e:
+            self.closed = True
+            return f"send-failed: {type(e).__name__}"
+
+    def pump(self) -> None:
+        """Read what is available, split packets, auto-acknowledge deliveries."""
+        if self.sock is None or self.closed:
+            return
+        try:
+            data = self.sock.recv(65536)
+        except BlockingIOError:
+            return
+        except OSError:
+            self.closed = True
+            return
+        if not data:
+            self.closed = True
+            return
+        self.buf += data
+        pkts, self.buf = codec.split_stream(self.buf)
+        for first, body in pkts:
+            p = codec.decode(first, body, self.version)
+            self.inbox.append(p)
+            if self.auto_ack and p.get("type") == "PUBLISH" and p.get("qos") in (1, 2):
+                kind = "puback" if p["qos"] == 1 else "pubrec"
+                self.send(codec.BUILDERS[kind]({"packet_id": p.get("packet_id", 0), "version": self.version}))
+            elif self.auto_ack and p.get("type") == "PUBREL":
+                self.send(codec.BUILDERS["pubcomp"]({"packet_id": p.get("packet_id", 0), "version": self.version}))
+
+
+def run_script(host: str, port: int, steps: list[dict[str, Any]], *, topic_prefix: str, client_prefix: str,
+               connect_timeout: float = 3.0) -> list[dict[str, Any]]:
+    clients: dict[str, Client] = {}
+    out: list[dict[str, Any]] = []
+    for i, raw in enumerate(steps, 1):
+        st = _subst(raw, topic_prefix, client_prefix)
+        name = st.get("client", "a")
+        c = clients.setdefault(name, Client(name=name))
+        if "auto_ack" in st:
+            c.auto_ack = bool(st["auto_ack"])
+        op = st.get("op", "hex")
+        args = dict(st.get("args") or {})
+        err: str | None = None
+        was_closed = {n: k.closed for n, k in clients.items()}
+        if op in ("open", "connect", "hex") and (c.sock is None or c.closed):
+            try:
+                c.sock = socket.create_connection((host, port), timeout=connect_timeout)
+                c.sock.setblocking(False)
+                c.closed, c.buf = False, b""
+            except OSError as e:
+                err = f"tcp-connect-failed: {type(e).__name__}"
+        if err is None:
+            if op == "connect":
+                c.version = int(args.get("version", 5))
+                err = c.send(codec.connect(args))
+            elif op == "hex":
+                err = c.send(bytes.fromhex(st["hex"].replace(" ", "")))
+            elif op == "close":
+                if c.sock is not None:
+                    try:
+                        c.sock.close()
+                    except OSError:
+                        pass
+                c.closed = True
+            elif op in ("open", "sleep"):
+                pass
+            elif op in codec.BUILDERS:
+                args.setdefault("version", c.version)
+                err = c.send(codec.BUILDERS[op](args))
+            else:
+                err = f"unknown-op {op}"
+        start = {n: len(k.inbox) for n, k in clients.items()}
+        deadline = time.monotonic() + st.get("window_ms", DEFAULT_WINDOW_MS) / 1000.0
+        while True:
+            left = deadline - time.monotonic()
+            if left <= 0:
+                break
+            socks = [k.sock for k in clients.values() if k.sock is not None and not k.closed]
+            if not socks:
+                time.sleep(min(left, 0.05))
+                continue
+            ready, _, _ = select.select(socks, [], [], min(left, 0.1))
+            for k in clients.values():
+                if k.sock in ready:
+                    k.pump()
+        obs = {"step": i, "actor": name, "op": op, "end": bool(st.get("end")), "error": err, "clients": {}}
+        for n, k in clients.items():
+            obs["clients"][n] = {
+                "packets": k.inbox[start.get(n, 0):],
+                "closed_now": k.closed and not was_closed.get(n, False) and not (n == name and op == "close"),
+                "open": k.sock is not None and not k.closed,
+            }
+        out.append(obs)
+    for k in clients.values():
+        if k.sock is not None and not k.closed:
+            try:
+                k.sock.close()
+            except OSError:
+                pass
+    return out

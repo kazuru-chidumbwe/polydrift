@@ -1,0 +1,443 @@
+# MQTT fixtures (manuscript 3.1, 4.4). Each fixture names the ledger rows it exercises by their MQTT 5.0 normative id
+# (`native`, ledger column native_id) and, per row, the axis, the step and the canonical values the clause allows.
+# Kinds: control (every conforming broker agrees), probe (boundary or malformed input), stateful, security.
+# {T}: topic prefix, {C}: client-id prefix, both unique per fixture and repeat (driver.py).
+# Status: first batch (10 Nov 2026). The census covers every testable ledger row before the cell is frozen.
+cell: mqtt
+
+fixtures:
+
+  # ---------------- controls ----------------
+  connect_v5_min:
+    kind: control
+    spec_refs:
+      - {native: MQTT-3.1.4-5, keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+      - {native: MQTT-3.2.0-1, keyword: MUST, axis: packet_types, step: 1, allowed: [[CONNACK]]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a", clean_start: true}}
+
+  connect_v311_min:
+    kind: control
+    version: 4
+    spec_refs:
+      - {native: MQTT-3.1.2-1, keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a", version: 4, clean_start: true}}
+
+  pubsub_qos0:
+    kind: control
+    spec_refs:
+      - {native: MQTT-3.3.2-3, keyword: MUST, axis: deliveries, step: 4, allowed: [[[b, [[x, m0, 0, 0]]]]]}
+    steps:
+      - {client: b, op: connect, args: {client_id: "{C}b"}}
+      - {client: b, op: subscribe, args: {packet_id: 7, filters: [{topic: "{T}x", qos: 0}]}}
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+      - {client: a, op: publish, args: {topic: "{T}x", payload: m0, qos: 0}}
+
+  pubsub_qos1:
+    kind: control
+    spec_refs:
+      - {native: MQTT-2.2.1-5, keyword: MUST, axis: packet_types, step: 4, allowed: [[PUBACK]]}
+      - {native: MQTT-3.3.4-1, keyword: MUST, axis: decision_class, step: 4, allowed: [proceed]}
+      - {native: MQTT-2.2.1-4, keyword: MUST, axis: deliveries, step: 4, allowed: [[[b, [[x, m1, 1, 0]]]]]}
+    steps:
+      - {client: b, op: connect, args: {client_id: "{C}b"}}
+      - {client: b, op: subscribe, args: {packet_id: 7, filters: [{topic: "{T}x", qos: 1}]}}
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+      - {client: a, op: publish, args: {topic: "{T}x", payload: m1, qos: 1, packet_id: 4242}}
+
+  pubsub_qos2:
+    kind: control
+    spec_refs:
+      - {native: MQTT-2.2.1-6, keyword: MUST, axis: packet_types, step: 4, allowed: [[PUBREC]]}
+      - {native: MQTT-2.2.1-6, keyword: MUST, axis: packet_types, step: 5, allowed: [[PUBCOMP]]}
+    steps:
+      - {client: b, op: connect, args: {client_id: "{C}b"}}
+      - {client: b, op: subscribe, args: {packet_id: 7, filters: [{topic: "{T}x", qos: 2}]}}
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+      - {client: a, op: publish, args: {topic: "{T}x", payload: m2, qos: 2, packet_id: 4243}}
+      - {client: a, op: pubrel, args: {packet_id: 4243}}
+
+  subscribe_suback:
+    kind: control
+    spec_refs:
+      - {native: MQTT-3.8.4-1, keyword: MUST, axis: packet_types, step: 2, allowed: [[SUBACK]]}
+      - {native: MQTT-3.8.4-2, keyword: MUST, axis: granted, step: 2, allowed: [[0, 1, 2]]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+      - {client: a, op: subscribe, args: {packet_id: 99, filters: [{topic: "{T}q0", qos: 0}, {topic: "{T}q1", qos: 1}, {topic: "{T}q2", qos: 2}]}}
+
+  unsubscribe_unsuback:
+    kind: control
+    spec_refs:
+      - {native: MQTT-3.10.4-4, keyword: MUST, axis: packet_types, step: 3, allowed: [[UNSUBACK]]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+      - {client: a, op: subscribe, args: {packet_id: 5, filters: ["{T}x"]}}
+      - {client: a, op: unsubscribe, args: {packet_id: 6, filters: ["{T}x"]}}
+
+  ping:
+    kind: control
+    spec_refs:
+      - {native: MQTT-3.12.4-1, keyword: MUST, axis: packet_types, step: 2, allowed: [[PINGRESP]]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+      - {client: a, op: pingreq}
+
+  # ---------------- CONNECT boundary and malformed ----------------
+  connect_reserved_flag:
+    kind: probe
+    spec_refs:
+      - {native: MQTT-3.1.2-3, keyword: MUST, axis: status, step: 1, allowed: [closed, "fix-request"]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a", reserved_bit: true}}
+
+  connect_bad_protocol_name:
+    kind: probe
+    spec_refs:
+      - {native: MQTT-3.1.2-1, keyword: MUST, axis: status, step: 1, allowed: [closed, "fix-request"]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a", protocol_name: MQTX}}
+
+  connect_unsupported_level:
+    kind: probe
+    spec_refs:
+      - {native: MQTT-3.1.2-2, keyword: MUST, axis: native_codes, step: 1, allowed: [[132], []]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a", protocol_level: 6}}
+
+  connect_second_connect:
+    kind: probe
+    spec_refs:
+      - {native: MQTT-3.1.0-2, keyword: MUST, axis: status, step: 2, allowed: [closed, "fix-request"]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+
+  connect_will_retain_without_will:
+    kind: probe
+    spec_refs:
+      - {native: MQTT-3.1.2-14, keyword: MUST, axis: status, step: 1, allowed: [closed, "fix-request"]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a", will_retain_bit: true}}
+
+  connect_will_qos3:
+    kind: probe
+    spec_refs:
+      - {native: MQTT-3.1.2-12, keyword: MUST, axis: status, step: 1, allowed: [closed, "fix-request"]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a", will: {topic: "{T}w", payload: gone, qos: 3}}}
+
+  connect_empty_clientid:
+    kind: probe
+    spec_refs:
+      - {native: MQTT-3.1.3-6, keyword: MUST, axis: decision_class, step: 1, allowed: [proceed, "fix-request"]}
+      - {native: MQTT-3.2.2-16, keyword: MUST, axis: connack_props, step: 1, note: "on success the CONNACK carries an Assigned Client Identifier"}
+    steps:
+      - {client: a, op: connect, args: {client_id: "", clean_start: true}}
+
+  connect_empty_clientid_v311_persistent:
+    kind: probe
+    version: 4
+    spec_refs:
+      - {native: MQTT-3.1.3-8, keyword: MUST, axis: decision_class, step: 1, allowed: ["fix-request"]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "", version: 4, clean_start: false}}
+
+  connect_clientid_null_char:
+    kind: probe
+    spec_refs:
+      - {native: MQTT-1.5.4-2, keyword: MUST, axis: status, step: 1, allowed: [closed, "fix-request"]}
+    steps:
+      - {client: a, op: hex, hex: "10 13 0004 4d515454 05 02 003c 00 0006 70642d00 6161"}
+
+  connect_clientid_surrogate:
+    kind: probe
+    spec_refs:
+      - {native: MQTT-1.5.4-1, keyword: MUST, axis: status, step: 1, allowed: [closed, "fix-request"]}
+    steps:
+      - {client: a, op: hex, hex: "10 12 0004 4d515454 05 02 003c 00 0005 7064eda080"}
+
+  connect_bom_clientid:
+    kind: probe
+    spec_refs:
+      - {native: MQTT-1.5.4-3, keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+    steps:
+      - {client: a, op: hex, hex: "10 12 0004 4d515454 05 02 003c 00 0005 efbbbf7064"}
+
+  connect_no_property_length:
+    kind: probe
+    spec_refs:
+      - {native: MQTT-2.2.2-1, keyword: MUST, axis: status, step: 1, allowed: [closed, "fix-request"]}
+    steps:
+      - {client: a, op: hex, hex: "10 0e 0004 4d515454 05 02 003c 0002 7064"}
+
+  pingreq_overlong_length:
+    kind: probe
+    spec_refs:
+      - {native: MQTT-1.5.5-1, keyword: MUST, axis: status, step: 2, allowed: [closed, "fix-request", responded]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+      - {client: a, op: hex, hex: "c0 80 00"}
+
+  # ---------------- sessions ----------------
+  session_resume:
+    kind: stateful
+    spec_refs:
+      - {native: MQTT-3.2.2-3, keyword: MUST, axis: session_present, step: 4, allowed: [1]}
+      - {native: MQTT-3.1.2-23, keyword: MUST, axis: session_present, step: 4, allowed: [1]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a", clean_start: true, properties: {session_expiry_interval: 300}}}
+      - {client: a, op: subscribe, args: {packet_id: 3, filters: [{topic: "{T}s", qos: 1}]}}
+      - {client: a, op: disconnect}
+      - {client: a, op: connect, args: {client_id: "{C}a", clean_start: false, properties: {session_expiry_interval: 300}}}
+
+  session_clean_start_discards:
+    kind: stateful
+    spec_refs:
+      - {native: MQTT-3.1.2-4, keyword: MUST, axis: session_present, step: 4, allowed: [0]}
+      - {native: MQTT-3.2.2-2, keyword: MUST, axis: session_present, step: 4, allowed: [0]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a", clean_start: true, properties: {session_expiry_interval: 300}}}
+      - {client: a, op: subscribe, args: {packet_id: 3, filters: [{topic: "{T}s", qos: 1}]}}
+      - {client: a, op: disconnect}
+      - {client: a, op: connect, args: {client_id: "{C}a", clean_start: true}}
+
+  session_takeover:
+    kind: stateful
+    spec_refs:
+      - {native: MQTT-3.1.4-3, keyword: MUST, axis: peers_closed, step: 2, allowed: [[a]]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}same"}}
+      - {client: b, op: connect, args: {client_id: "{C}same"}, window_ms: 1000}
+
+  session_offline_queue_qos1:
+    kind: stateful
+    spec_refs:
+      - {native: MQTT-3.1.2-5, keyword: MUST, axis: own_publishes, step: 6, allowed: [[[b, [[q, held, 1, 0]]]]]}
+    steps:
+      - {client: b, op: connect, args: {client_id: "{C}b", clean_start: true, properties: {session_expiry_interval: 300}}}
+      - {client: b, op: subscribe, args: {packet_id: 3, filters: [{topic: "{T}q", qos: 1}]}}
+      - {client: b, op: close}
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+      - {client: a, op: publish, args: {topic: "{T}q", payload: held, qos: 1, packet_id: 11}}
+      - {client: b, op: connect, args: {client_id: "{C}b", clean_start: false, properties: {session_expiry_interval: 300}}, window_ms: 1200}
+
+  # ---------------- retained messages ----------------
+  retain_deliver_on_subscribe:
+    kind: stateful
+    spec_refs:
+      - {native: MQTT-3.3.1-5, keyword: MUST, axis: own_publishes, step: 4, allowed: [[[b, [[r, r1, 0, 1]]]]]}
+      - {native: MQTT-3.3.1-9, keyword: MUST, axis: own_publishes, step: 4, allowed: [[[b, [[r, r1, 0, 1]]]]]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+      - {client: a, op: publish, args: {topic: "{T}r", payload: r1, retain: true}}
+      - {client: b, op: connect, args: {client_id: "{C}b"}}
+      - {client: b, op: subscribe, args: {packet_id: 1, filters: [{topic: "{T}r", qos: 0}]}}
+
+  retain_replace:
+    kind: stateful
+    spec_refs:
+      - {native: MQTT-3.3.1-5, keyword: MUST, axis: retained_after, step: end, allowed: [[[e, [[r, r2, 0, 1]]]]]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+      - {client: a, op: publish, args: {topic: "{T}r", payload: r1, retain: true}}
+      - {client: a, op: publish, args: {topic: "{T}r", payload: r2, retain: true}}
+      - {client: e, op: connect, args: {client_id: "{C}e"}, end: true}
+      - {client: e, op: subscribe, args: {packet_id: 1, filters: ["{T}#"]}, end: true}
+
+  retain_clear_with_empty_payload:
+    kind: stateful
+    spec_refs:
+      - {native: MQTT-3.3.1-6, keyword: MUST, axis: retained_after, step: end, allowed: [[]]}
+      - {native: MQTT-3.3.1-7, keyword: MUST, axis: retained_after, step: end, allowed: [[]]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+      - {client: a, op: publish, args: {topic: "{T}r", payload: r1, retain: true}}
+      - {client: a, op: publish, args: {topic: "{T}r", payload: "", retain: true}}
+      - {client: e, op: connect, args: {client_id: "{C}e"}, end: true}
+      - {client: e, op: subscribe, args: {packet_id: 1, filters: ["{T}#"]}, end: true}
+
+  retain_flag0_not_stored:
+    kind: stateful
+    spec_refs:
+      - {native: MQTT-3.3.1-8, keyword: MUST, axis: retained_after, step: end, allowed: [[]]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+      - {client: a, op: publish, args: {topic: "{T}r", payload: live, retain: false}}
+      - {client: e, op: connect, args: {client_id: "{C}e"}, end: true}
+      - {client: e, op: subscribe, args: {packet_id: 1, filters: ["{T}#"]}, end: true}
+
+  retain_handling_2:
+    kind: stateful
+    spec_refs:
+      - {native: MQTT-3.3.1-11, keyword: MUST, axis: own_publishes, step: 4, allowed: [[[b, []]]]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+      - {client: a, op: publish, args: {topic: "{T}r", payload: r1, retain: true}}
+      - {client: b, op: connect, args: {client_id: "{C}b"}}
+      - {client: b, op: subscribe, args: {packet_id: 1, filters: [{topic: "{T}r", retain_handling: 2}]}}
+
+  retain_handling_1_existing:
+    kind: stateful
+    spec_refs:
+      - {native: MQTT-3.3.1-10, keyword: MUST, axis: own_publishes, step: 5, allowed: [[[b, []]]]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+      - {client: a, op: publish, args: {topic: "{T}r", payload: r1, retain: true}}
+      - {client: b, op: connect, args: {client_id: "{C}b"}}
+      - {client: b, op: subscribe, args: {packet_id: 1, filters: [{topic: "{T}r", retain_handling: 1}]}}
+      - {client: b, op: subscribe, args: {packet_id: 2, filters: [{topic: "{T}r", retain_handling: 1}]}}
+
+  retain_as_published_0:
+    kind: stateful
+    spec_refs:
+      - {native: MQTT-3.3.1-12, keyword: MUST, axis: deliveries, step: 4, allowed: [[[b, [[r, live, 0, 0]]]]]}
+    steps:
+      - {client: b, op: connect, args: {client_id: "{C}b"}}
+      - {client: b, op: subscribe, args: {packet_id: 1, filters: [{topic: "{T}r", retain_as_published: false}]}}
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+      - {client: a, op: publish, args: {topic: "{T}r", payload: live, retain: true}}
+
+  retain_as_published_1:
+    kind: stateful
+    spec_refs:
+      - {native: MQTT-3.3.1-13, keyword: MUST, axis: deliveries, step: 4, allowed: [[[b, [[r, live, 0, 1]]]]]}
+    steps:
+      - {client: b, op: connect, args: {client_id: "{C}b"}}
+      - {client: b, op: subscribe, args: {packet_id: 1, filters: [{topic: "{T}r", retain_as_published: true}]}}
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+      - {client: a, op: publish, args: {topic: "{T}r", payload: live, retain: true}}
+
+  # ---------------- PUBLISH validity and forwarding ----------------
+  publish_wildcard_topic:
+    kind: probe
+    spec_refs:
+      - {native: MQTT-3.3.2-2, keyword: MUST, axis: status, step: 2, allowed: [closed, "fix-request"]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+      - {client: a, op: publish, args: {topic: "{T}a/+", payload: w, qos: 1, packet_id: 3}}
+
+  publish_qos3:
+    kind: probe
+    spec_refs:
+      - {native: MQTT-3.3.1-4, keyword: MUST, axis: status, step: 2, allowed: [closed, "fix-request"]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+      - {client: a, op: publish, args: {topic: "{T}x", payload: q3, flags: 6, packet_id: 3}}
+
+  publish_topic_alias_zero:
+    kind: probe
+    spec_refs:
+      - {native: MQTT-3.3.2-8, keyword: MUST, axis: status, step: 2, allowed: [closed, "fix-request"]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+      - {client: a, op: publish, args: {topic: "{T}x", payload: ta0, properties: {topic_alias: 0}}}
+
+  forward_user_properties_order:
+    kind: control
+    spec_refs:
+      - {native: MQTT-3.3.2-17, keyword: MUST, axis: forwarded_props, step: 4, note: "user properties arrive in the order sent, duplicates kept"}
+      - {native: MQTT-3.3.2-18, keyword: MUST, axis: forwarded_props, step: 4}
+    steps:
+      - {client: b, op: connect, args: {client_id: "{C}b"}}
+      - {client: b, op: subscribe, args: {packet_id: 1, filters: ["{T}u"]}}
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+      - {client: a, op: publish, args: {topic: "{T}u", payload: up, properties: {user_property: [[k, "2"], [k, "1"], [a, b]]}}}
+
+  forward_request_response_props:
+    kind: control
+    spec_refs:
+      - {native: MQTT-3.3.2-4, keyword: MUST, axis: forwarded_props, step: 4}
+      - {native: MQTT-3.3.2-15, keyword: MUST, axis: forwarded_props, step: 4}
+      - {native: MQTT-3.3.2-16, keyword: MUST, axis: forwarded_props, step: 4}
+      - {native: MQTT-3.3.2-20, keyword: MUST, axis: forwarded_props, step: 4}
+    steps:
+      - {client: b, op: connect, args: {client_id: "{C}b"}}
+      - {client: b, op: subscribe, args: {packet_id: 1, filters: ["{T}rr"]}}
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+      - {client: a, op: publish, args: {topic: "{T}rr", payload: "{\"q\":1}", properties: {payload_format_indicator: 1, content_type: application/json, response_topic: "{T}reply", correlation_data: c0ffee}}}
+
+  no_local:
+    kind: control
+    spec_refs:
+      - {native: MQTT-3.8.3-3, keyword: MUST, axis: own_publishes, step: 3, allowed: [[[b, []]]]}
+    steps:
+      - {client: b, op: connect, args: {client_id: "{C}b"}}
+      - {client: b, op: subscribe, args: {packet_id: 1, filters: [{topic: "{T}n", no_local: true}]}}
+      - {client: b, op: publish, args: {topic: "{T}n", payload: mine}}
+
+  overlapping_subscriptions:
+    kind: probe
+    spec_refs:
+      - {native: MQTT-3.3.4-2, keyword: MUST, axis: own_publishes, step: 4, note: "one message at the maximum QoS, or one per subscription"}
+    steps:
+      - {client: b, op: connect, args: {client_id: "{C}b"}}
+      - {client: b, op: subscribe, args: {packet_id: 1, filters: [{topic: "{T}o/#", qos: 0}]}}
+      - {client: b, op: subscribe, args: {packet_id: 2, filters: [{topic: "{T}o/x", qos: 1}]}}
+      - {client: b, op: publish, args: {topic: "{T}o/x", payload: both, qos: 0}}
+
+  # ---------------- SUBSCRIBE / UNSUBSCRIBE / PUBREL validity ----------------
+  subscribe_fixed_flags_zero:
+    kind: probe
+    spec_refs:
+      - {native: MQTT-3.8.1-1, keyword: MUST, axis: status, step: 2, allowed: [closed, "fix-request"]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+      - {client: a, op: subscribe, args: {packet_id: 1, fixed_flags: 0, filters: ["{T}x"]}}
+
+  subscribe_reserved_option_bits:
+    kind: probe
+    spec_refs:
+      - {native: MQTT-3.8.3-5, keyword: MUST, axis: status, step: 2, allowed: [closed, "fix-request"]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+      - {client: a, op: subscribe, args: {packet_id: 1, filters: [{topic: "{T}x", options: 64}]}}
+
+  subscribe_bad_multilevel_wildcard:
+    kind: probe
+    spec_refs:
+      - {native: MQTT-4.7.1-1, keyword: MUST, axis: decision_class, step: 2, allowed: ["fix-request"]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+      - {client: a, op: subscribe, args: {packet_id: 1, filters: ["{T}a#"]}}
+
+  pubrel_fixed_flags_zero:
+    kind: probe
+    spec_refs:
+      - {native: MQTT-3.6.1-1, keyword: MUST, axis: status, step: 3, allowed: [closed, "fix-request"]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+      - {client: a, op: publish, args: {topic: "{T}x", payload: q2, qos: 2, packet_id: 9}}
+      - {client: a, op: pubrel, args: {packet_id: 9, fixed_flags: 0}}
+
+  unsubscribe_fixed_flags_zero:
+    kind: probe
+    spec_refs:
+      - {native: MQTT-3.10.1-1, keyword: MUST, axis: status, step: 2, allowed: [closed, "fix-request"]}
+    steps:
+      - {client: a, op: connect, args: {client_id: "{C}a"}}
+      - {client: a, op: unsubscribe, args: {packet_id: 1, fixed_flags: 0, filters: ["{T}x"]}}
+
+  # ---------------- will messages (security-tagged: delivery to third parties) ----------------
+  will_on_abrupt_close:
+    kind: security
+    tags: [third-party-delivery]
+    spec_refs:
+      - {native: MQTT-3.1.2-8, keyword: MUST, axis: deliveries, step: 4, allowed: [[[b, [[w, gone, 0, 0]]]]]}
+    steps:
+      - {client: b, op: connect, args: {client_id: "{C}b"}}
+      - {client: b, op: subscribe, args: {packet_id: 1, filters: ["{T}w"]}}
+      - {client: a, op: connect, args: {client_id: "{C}a", will: {topic: "{T}w", payload: gone}}}
+      - {client: a, op: close, window_ms: 1500}
+
+  will_not_sent_on_normal_disconnect:
+    kind: security
+    tags: [third-party-delivery]
+    spec_refs:
+      - {native: MQTT-3.1.2-10, keyword: MUST, axis: deliveries, step: 4, allowed: [[]]}
+    steps:
+      - {client: b, op: connect, args: {client_id: "{C}b"}}
+      - {client: b, op: subscribe, args: {packet_id: 1, filters: ["{T}w"]}}
+      - {client: a, op: connect, args: {client_id: "{C}a", will: {topic: "{T}w", payload: gone}}}
+      - {client: a, op: disconnect, window_ms: 1500}

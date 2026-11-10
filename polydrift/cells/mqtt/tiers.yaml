@@ -1,0 +1,52 @@
+# MQTT cell: axis -> tier, from the tier rule (manuscript 3.3). The consumer is every client of the broker: the
+# acting client's next action, and what other clients receive. Each step is observed on every open connection.
+# Status: DRAFT, not frozen. Edits are free until the cell's freeze commit.
+cell: mqtt
+profile: mqtt-default-v1
+refusal_class: null   # MQTT's refusal is closing the connection, observed as status closed
+axes:
+  decision_class:
+    tier: 1
+    kappa: identity
+    clause: "T1: the client's next action follows the reason class (classes.py)"
+  packet_types:
+    tier: 2
+    kappa: identity
+    clause: "T2: which control packets the acting client receives, in order, decides its protocol state"
+  session_present:
+    tier: 2
+    kappa: identity
+    clause: "T2: Session Present decides whether the client re-subscribes (MQTT 5.0 3.2.2.1.1)"
+  granted:
+    tier: 2
+    kappa: identity
+    clause: "T2: granted QoS per filter decides the delivery guarantee the subscriber gets (3.9.3)"
+  deliveries:
+    tier: 2
+    kappa: deliveries
+    clause: "T2: application messages other clients receive (topic, payload, QoS, retain); per client, unordered across topics"
+  own_publishes:
+    tier: 2
+    kappa: deliveries
+    clause: "T2: application messages the acting client receives (retained on subscribe, own messages without No Local)"
+  forwarded_props:
+    tier: 2
+    kappa: forwarded_props
+    clause: "T2: properties the server must forward unaltered (3.3.2.3): format indicator, content type, response topic, correlation data, user properties in order"
+  peers_closed:
+    tier: 2
+    kappa: sorted_tuple
+    clause: "T2: other clients whose connection the step closed (session take-over, will)"
+  native_codes:
+    tier: 3
+    kappa: identity
+    clause: "T3: reason codes within their decision class"
+  connack_props:
+    tier: 3
+    kappa: connack_props
+    clause: "T3: server capabilities and limits announced in CONNACK; the assigned client identifier is compared as present/absent"
+  retained_after:
+    tier: 2
+    kappa: deliveries
+    end_state: true
+    clause: "T2: the retained store as a new subscriber sees it after the fixture (end state)"

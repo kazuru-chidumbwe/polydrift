@@ -86,14 +86,20 @@ def _msg(p: dict[str, Any], prefix: str) -> tuple:
 
 
 def classify(obs: dict[str, Any]) -> Status:
+    """A step whose protocol needs no answer (QoS 0 PUBLISH, DISCONNECT, an acknowledgement) is responded when the
+    connection stays up: the broker's silence is then the observation (packet_types empty), not a liveness failure.
+    silent is kept for a step that required an answer and got none, so the core's liveness gate stops there."""
     if obs.get("error"):
         return Status.HARNESS_FAULT
     me = obs["clients"].get(obs["actor"], {})
     if me.get("packets"):
         return Status.RESPONDED
     if me.get("closed_now"):
-        return Status.CLOSED
-    return Status.SILENT
+        # after the client's own DISCONNECT the server closing the connection is the specified outcome (3.14.4)
+        return Status.RESPONDED if obs.get("op") == "disconnect" else Status.CLOSED
+    if obs.get("expects_reply", True):
+        return Status.SILENT
+    return Status.RESPONDED
 
 
 def step_fields(obs: dict[str, Any], spec: CellSpec, prefix: str, version: int) -> dict[str, Field]:

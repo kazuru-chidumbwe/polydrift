@@ -37,6 +37,20 @@ def _subst(value: Any, t: str, c: str) -> Any:
     return value
 
 
+def expects_reply(step: dict[str, Any]) -> bool:
+    """Does the protocol require the broker to answer this step? (CONNACK, SUBACK, UNSUBACK, PINGRESP, PUBACK or
+    PUBREC, PUBCOMP.) A fixture can override with ``expect_reply``; raw bytes default to expecting one."""
+    if "expect_reply" in step:
+        return bool(step["expect_reply"])
+    op = step.get("op", "hex")
+    if op in ("connect", "subscribe", "unsubscribe", "pingreq", "pubrel", "hex"):
+        return True
+    if op == "publish":
+        a = step.get("args") or {}
+        return int(a.get("qos", 0)) > 0 or (int(a.get("flags", 0)) >> 1) & 3 > 0
+    return False
+
+
 @dataclass
 class Client:
     name: str
@@ -138,7 +152,8 @@ def run_script(host: str, port: int, steps: list[dict[str, Any]], *, topic_prefi
             for k in clients.values():
                 if k.sock in ready:
                     k.pump()
-        obs = {"step": i, "actor": name, "op": op, "end": bool(st.get("end")), "error": err, "clients": {}}
+        obs = {"step": i, "actor": name, "op": op, "end": bool(st.get("end")), "error": err,
+               "expects_reply": expects_reply(st), "clients": {}}
         for n, k in clients.items():
             obs["clients"][n] = {
                 "packets": k.inbox[start.get(n, 0):],

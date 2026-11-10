@@ -172,6 +172,8 @@ def to_record(
             continue
         status = classify(obs)
         fields = step_fields(obs, spec, prefix, version) if status != Status.HARNESS_FAULT else {}
+        if aggregate_deliveries:
+            fields.pop("forwarded_props", None)
         if aggregate_deliveries and "deliveries" in fields:
             for n, msgs in dict(fields.pop("deliveries").raw).items():
                 total.setdefault(n, []).extend(list(m) for m in msgs)

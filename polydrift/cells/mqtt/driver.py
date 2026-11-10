@@ -9,7 +9,7 @@ Placeholders in fixture strings: ``{T}`` is a topic prefix and ``{C}`` a client-
 repeat, so fixtures never see each other's retained messages or sessions.
 
 Step keys: ``client``, ``op`` (open, close, sleep, hex, or a builder in codec.BUILDERS), ``args`` (builder
-arguments), ``hex`` (exact bytes for op ``hex``), ``window_ms`` (listen time, default 600), ``end`` (true: the step
+arguments), ``hex`` (exact bytes for op ``hex``), ``window_ms`` (listen time, default 1000; a step that requires an answer waits for it, up to 5 s), ``end`` (true: the step
 belongs to the end-state probe, not to the fixture's steps), ``auto_ack`` (client default true: QoS 1 and 2
 deliveries are acknowledged so the broker's flow completes).
 """
@@ -24,7 +24,9 @@ from typing import Any
 
 from polydrift.cells.mqtt import codec
 
-DEFAULT_WINDOW_MS = 600
+DEFAULT_WINDOW_MS = 1000
+REPLY_MAX_MS = 5000
+SETTLE_MS = 400
 
 
 def _subst(value: Any, t: str, c: str) -> Any:
@@ -139,8 +141,18 @@ def run_script(host: str, port: int, steps: list[dict[str, Any]], *, topic_prefi
             else:
                 err = f"unknown-op {op}"
         start = {n: len(k.inbox) for n, k in clients.items()}
-        deadline = time.monotonic() + st.get("window_ms", DEFAULT_WINDOW_MS) / 1000.0
+        # A step that requires an answer listens until the acting client has one (or is closed), up to REPLY_MAX_MS,
+        # then SETTLE_MS more for packets that follow it; other steps listen for their window. Brokers differ in
+        # latency (a JVM broker under load answers its first CONNECTs after 600 ms), and a reply that arrives one
+        # step late would otherwise be recorded as silence.
+        t0 = time.monotonic()
+        need = err is None and expects_reply(st) and "window_ms" not in st
+        deadline = t0 + (REPLY_MAX_MS if need else st.get("window_ms", DEFAULT_WINDOW_MS)) / 1000.0
+        settled = False
         while True:
+            if need and not settled and (len(c.inbox) > start.get(name, 0) or c.closed):
+                deadline = min(deadline, time.monotonic() + SETTLE_MS / 1000.0)
+                settled = True
             left = deadline - time.monotonic()
             if left <= 0:
                 break

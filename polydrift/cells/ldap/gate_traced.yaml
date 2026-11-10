@@ -1,2 +1,8 @@
 # Control-fixture divergences traced to the server itself, with the trace.
-traced: []
+traced:
+  - impls: [lldap-stable]
+    fixtures: [bind_anonymous, rootdse_read, search_before_bind, unbind_ends_session]
+    axis: decision_class
+    trace: "lldap answers an anonymous simple bind with resultCode 48 (inappropriateAuthentication), diagnostic
+      'Anonymous bind not allowed' (smoke 10 Nov 2026, raw.jsonl). RFC 4513 Section 2: servers MUST support the
+      anonymous authentication mechanism of the simple Bind. Server behaviour, not harness."

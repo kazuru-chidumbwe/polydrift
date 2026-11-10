@@ -21,7 +21,6 @@ fixtures:
 
   rootdse_read:
     kind: control
-    value_attrs: [supportedldapversion]
     spec_refs:
       - {req_id: LDAP-b47fa8b8, keyword: MUST, axis: entries, step: 2, allowed: [["{B}"]], note: "root DSE has the empty DN"}
     steps:

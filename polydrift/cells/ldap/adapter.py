@@ -58,7 +58,8 @@ def classify(obs: dict[str, Any]) -> Status:
     if me.get("messages"):
         return Status.RESPONDED
     if me.get("closed_now"):
-        return Status.CLOSED
+        # after the client's UnbindRequest the server closing the connection is the specified outcome (4.3)
+        return Status.RESPONDED if obs.get("op") == "unbind" else Status.CLOSED
     return Status.SILENT if obs.get("expects_reply") else Status.RESPONDED
 
 

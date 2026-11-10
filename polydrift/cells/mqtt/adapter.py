@@ -137,7 +137,9 @@ def step_fields(obs: dict[str, Any], spec: CellSpec, prefix: str, version: int) 
         for p in c.get("packets") or []:
             if p.get("type") == "PUBLISH":
                 pr = p.get("properties") or {}
-                fwd.setdefault(n, []).append(tuple((k, str(pr[k])) for k in FORWARDED if k in pr))
+                # topic-valued properties carry the per-repeat fixture prefix; compare them without it
+                fwd.setdefault(n, []).append(tuple((k, _strip(str(pr[k]), prefix) if k == "response_topic" else str(pr[k]))
+                                                   for k in FORWARDED if k in pr))
     values["forwarded_props"] = fwd
     values["peers_closed"] = [n for n, c in obs["clients"].items() if n != actor and c.get("closed_now")]
     return {name: spec.axis(name).field(raw) for name, raw in values.items()}

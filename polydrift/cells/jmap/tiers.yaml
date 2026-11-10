@@ -1,0 +1,46 @@
+# JMAP cell: axis -> tier (manuscript 3.3). Consumer: the JMAP client and the mail application behind it.
+# Status: DRAFT, not frozen.
+cell: jmap
+profile: jmap-default-v1
+refusal_class: null
+axes:
+  decision_class:
+    tier: 1
+    kappa: identity
+    clause: "T1: the client's next action follows the request-level status or the first method error (adapter.py)"
+  request_error:
+    tier: 2
+    kappa: identity
+    clause: "T2: the problem-details type of a rejected request (RFC 8620 3.6.1) decides how the client repairs it"
+  method_names:
+    tier: 2
+    kappa: identity
+    clause: "T2: response methods, in order (3.4: same order as the calls)"
+  method_errors:
+    tier: 2
+    kappa: identity
+    clause: "T2: per response, the method-level error type, or null (3.6.2)"
+  set_outcome:
+    tier: 2
+    kappa: identity
+    clause: "T2: per /set response, which creation keys and ids were created, updated, destroyed or refused, with the SetError type"
+  get_shape:
+    tier: 2
+    kappa: identity
+    clause: "T2: per /get response, the number of records and of ids not found"
+  query_shape:
+    tier: 2
+    kappa: identity
+    clause: "T2: per /query response, the number of ids returned and whether total is present"
+  changes_shape:
+    tier: 2
+    kappa: identity
+    clause: "T2: per /changes response, counts of created, updated and destroyed ids and hasMoreChanges"
+  http_status:
+    tier: 3
+    kappa: identity
+    clause: "T3: HTTP status within its decision class"
+  state_present:
+    tier: 3
+    kappa: identity
+    clause: "T3: whether each response carries a state string (values are opaque)"

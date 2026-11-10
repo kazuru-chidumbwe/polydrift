@@ -1,0 +1,190 @@
+# JMAP fixtures (manuscript 3.1, 4.4), first batch. Each names the ledger rows it exercises (req_id,
+# ledger/jmap.ledger.csv) where a keyword sentence exists; request-level error types that RFC 8620 defines without a
+# keyword sentence (notJSON, notRequest, unknownCapability, unknownMethod) carry `clause` only.
+# Placeholders: {acct} mail account, {U} unique name, {id:k} id of creation key k (driver.py).
+cell: jmap
+
+fixtures:
+
+  # ---------------- controls ----------------
+  echo:
+    kind: control
+    steps:
+      - {op: call, using: ["urn:ietf:params:jmap:core"], calls: [["Core/echo", {hello: true, n: 7}, c0]]}
+
+  session_core_capability:
+    kind: control
+    spec_refs:
+      - {req_id: JMAP-e769d602, keyword: MUST, axis: http_status, step: 1, allowed: [200]}
+      - {req_id: JMAP-3a20381e, keyword: MUST, axis: http_status, step: 1, allowed: [200]}
+    steps:
+      - {op: session}
+
+  mailbox_get_all:
+    kind: control
+    steps:
+      - {op: call, calls: [["Mailbox/get", {accountId: "{acct}", ids: null, properties: [name, role]}, c0]]}
+
+  mailbox_create_get_destroy:
+    kind: stateful
+    spec_refs:
+      - {req_id: JMAP-8b9e51f5, keyword: MUST, axis: method_names, step: 1}
+      - {req_id: JMAP-03421c3b, keyword: MUST, axis: method_names, step: 1}
+    steps:
+      - {op: call, calls: [["Mailbox/set", {accountId: "{acct}", create: {m1: {name: "{U}a"}}}, c0],
+                           ["Mailbox/get", {accountId: "{acct}", "#ids": {resultOf: c0, name: Mailbox/set, path: /created/m1/id}, properties: [name]}, c1]]}
+      - {op: call, calls: [["Mailbox/set", {accountId: "{acct}", destroy: ["{id:m1}"]}, c0]]}
+
+  # ---------------- request-level errors (RFC 8620 3.6.1) ----------------
+  request_not_json:
+    kind: probe
+    clause: "RFC 8620 3.6.1 notJSON"
+    steps:
+      - {op: raw, body: "{\"using\": [\"urn:ietf:params:jmap:core\"], \"methodCalls\": [", content_type: application/json}
+
+  request_not_request:
+    kind: probe
+    clause: "RFC 8620 3.6.1 notRequest"
+    steps:
+      - {op: raw, body: "{\"methodCalls\": []}", content_type: application/json}
+
+  request_unknown_capability:
+    kind: probe
+    clause: "RFC 8620 3.6.1 unknownCapability"
+    steps:
+      - {op: call, using: ["urn:ietf:params:jmap:core", "urn:example:pd:unknown"], calls: [["Core/echo", {}, c0]]}
+
+  request_unknown_top_level_property:
+    kind: probe
+    spec_refs:
+      - {req_id: JMAP-6c07d30c, keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+    steps:
+      - {op: raw, body: "{\"using\": [\"urn:ietf:params:jmap:core\"], \"methodCalls\": [[\"Core/echo\", {}, \"c0\"]], \"pdExtra\": 1}", content_type: application/json}
+
+  request_duplicate_json_member:
+    kind: probe
+    spec_refs:
+      - {req_id: JMAP-8db81e48, keyword: MUST, axis: decision_class, step: 1, note: "I-JSON forbids duplicate member names"}
+    steps:
+      - {op: raw, body: "{\"using\": [\"urn:ietf:params:jmap:core\"], \"using\": [\"urn:ietf:params:jmap:core\"], \"methodCalls\": [[\"Core/echo\", {}, \"c0\"]]}", content_type: application/json}
+
+  request_unauthenticated:
+    kind: security
+    tags: [authentication]
+    steps:
+      - {op: unauth, calls: [["Mailbox/get", {accountId: "{acct}", ids: null}, c0]]}
+
+  # ---------------- method-level errors (3.6.2) ----------------
+  method_unknown:
+    kind: probe
+    clause: "RFC 8620 3.6.2 unknownMethod"
+    steps:
+      - {op: call, calls: [["Mailbox/pdNoSuchMethod", {accountId: "{acct}"}, c0], ["Core/echo", {after: 1}, c1]]}
+
+  method_invalid_arguments:
+    kind: probe
+    spec_refs:
+      - {req_id: JMAP-45bd69f1, keyword: MUST, axis: method_errors, step: 1, allowed: [[invalidArguments]]}
+    steps:
+      - {op: call, calls: [["Mailbox/get", {accountId: "{acct}", ids: "not-a-list"}, c0]]}
+
+  method_invalid_property:
+    kind: probe
+    spec_refs:
+      - {req_id: JMAP-4ad1dd7b, keyword: MUST, axis: method_errors, step: 1, allowed: [[invalidArguments]]}
+    steps:
+      - {op: call, calls: [["Mailbox/get", {accountId: "{acct}", ids: null, properties: [name, pdNoSuchProperty]}, c0]]}
+
+  method_unknown_account:
+    kind: probe
+    clause: "RFC 8620 3.6.2 accountNotFound"
+    steps:
+      - {op: call, calls: [["Mailbox/get", {accountId: "pd-no-such-account", ids: null}, c0]]}
+
+  result_reference_unresolved:
+    kind: probe
+    spec_refs:
+      - {req_id: JMAP-ceb10383, keyword: MUST, axis: method_errors, step: 1, allowed: [[null, invalidResultReference]]}
+    steps:
+      - {op: call, calls: [["Mailbox/get", {accountId: "{acct}", ids: [], properties: [name]}, c0],
+                           ["Mailbox/get", {accountId: "{acct}", "#ids": {resultOf: c9, name: Mailbox/get, path: /list/*/id}}, c1]]}
+
+  argument_normal_and_referenced:
+    kind: probe
+    spec_refs:
+      - {req_id: JMAP-6067f627, keyword: MUST, axis: method_errors, step: 1, allowed: [[null, invalidArguments]]}
+    steps:
+      - {op: call, calls: [["Mailbox/get", {accountId: "{acct}", ids: [], properties: [name]}, c0],
+                           ["Mailbox/get", {accountId: "{acct}", ids: [], "#ids": {resultOf: c0, name: Mailbox/get, path: /list/*/id}}, c1]]}
+
+  # ---------------- /get, /set, /changes semantics (5.1 to 5.3) ----------------
+  get_duplicate_ids:
+    kind: probe
+    spec_refs:
+      - {req_id: JMAP-09c1ce0a, keyword: MUST, axis: get_shape, step: 1, allowed: [[[0, 1]]]}
+    steps:
+      - {op: call, calls: [["Mailbox/get", {accountId: "{acct}", ids: [pdNoSuchId, pdNoSuchId]}, c0]]}
+
+  set_destroy_not_found:
+    kind: probe
+    spec_refs:
+      - {req_id: JMAP-8657ff73, keyword: MUST, axis: set_outcome, step: 1}
+    steps:
+      - {op: call, calls: [["Mailbox/set", {accountId: "{acct}", destroy: [pdNoSuchId]}, c0]]}
+
+  set_update_not_found:
+    kind: probe
+    spec_refs:
+      - {req_id: JMAP-8657ff73, keyword: MUST, axis: set_outcome, step: 1}
+    steps:
+      - {op: call, calls: [["Mailbox/set", {accountId: "{acct}", update: {pdNoSuchId: {name: x}}}, c0]]}
+
+  mailbox_sibling_same_name:
+    kind: probe
+    spec_refs:
+      - {req_id: JMAP-0ee2aaa8, keyword: MUST, axis: set_outcome, step: 1, note: "the second sibling with the same name is refused"}
+    steps:
+      - {op: call, calls: [["Mailbox/set", {accountId: "{acct}", create: {m1: {name: "{U}dup"}, m2: {name: "{U}dup"}}}, c0]]}
+
+  mailbox_second_role:
+    kind: probe
+    spec_refs:
+      - {req_id: JMAP-dfdde9dd, keyword: MUST, axis: set_outcome, step: 1, note: "a second Mailbox with role inbox is refused"}
+    steps:
+      - {op: call, calls: [["Mailbox/set", {accountId: "{acct}", create: {m1: {name: "{U}inbox2", role: inbox}}}, c0]]}
+
+  mailbox_sort_order_range:
+    kind: probe
+    spec_refs:
+      - {req_id: JMAP-20baa166, keyword: MUST, axis: set_outcome, step: 1, note: "sortOrder 2^31 is outside the range"}
+    steps:
+      - {op: call, calls: [["Mailbox/set", {accountId: "{acct}", create: {m1: {name: "{U}so", sortOrder: 2147483648}}}, c0]]}
+
+  changes_bad_state:
+    kind: probe
+    spec_refs:
+      - {req_id: JMAP-73799634, keyword: MUST, axis: method_errors, step: 1, allowed: [[cannotCalculateChanges]]}
+    steps:
+      - {op: call, calls: [["Mailbox/changes", {accountId: "{acct}", sinceState: "pd-not-a-state"}, c0]]}
+
+  changes_max_changes_zero:
+    kind: probe
+    spec_refs:
+      - {req_id: JMAP-d12dbb59, keyword: MUST, axis: method_errors, step: 2, allowed: [[invalidArguments]]}
+    steps:
+      - {op: call, calls: [["Mailbox/get", {accountId: "{acct}", ids: []}, c0]]}
+      - {op: call, calls: [["Mailbox/changes", {accountId: "{acct}", sinceState: "pd-not-a-state", maxChanges: 0}, c0]]}
+
+  state_stable_without_change:
+    kind: control
+    spec_refs:
+      - {req_id: JMAP-3024085c, keyword: SHOULD, axis: state_present, step: 1}
+    steps:
+      - {op: call, calls: [["Mailbox/get", {accountId: "{acct}", ids: []}, c0], ["Mailbox/get", {accountId: "{acct}", ids: []}, c1]]}
+
+  email_query_negative_position:
+    kind: probe
+    spec_refs:
+      - {req_id: JMAP-849289e9, keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+    steps:
+      - {op: call, calls: [["Email/query", {accountId: "{acct}", position: -5, calculateTotal: true}, c0]]}

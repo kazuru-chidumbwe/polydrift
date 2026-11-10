@@ -1,0 +1,202 @@
+# LDAP fixtures (manuscript 3.1, 4.4), phase 1: protocol fixtures that need no write access. Each names the ledger
+# rows it exercises (req_id, ledger/ldap.ledger.csv), the axis, the step and the values the clause allows.
+# Placeholders: {B} base DN, {A} admin DN, {P} admin password, {U} unique name (driver.py).
+# Status: first batch (10 Nov 2026). Phase 2 (add, modify, delete, modify DN, schema rules) follows.
+cell: ldap
+
+fixtures:
+
+  # ---------------- controls ----------------
+  bind_anonymous:
+    kind: control
+    spec_refs:
+      - {req_id: LDAP-bbb04d54, keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+    steps:
+      - {op: bind, args: {dn: "", password: ""}}
+
+  bind_admin:
+    kind: control
+    steps:
+      - {op: bind, args: {dn: "{A}", password: "{P}"}}
+
+  rootdse_read:
+    kind: control
+    value_attrs: [supportedldapversion]
+    spec_refs:
+      - {req_id: LDAP-b47fa8b8, keyword: MUST, axis: entries, step: 2, allowed: [["{B}"]], note: "root DSE has the empty DN"}
+    steps:
+      - {op: bind, args: {dn: "", password: ""}}
+      - {op: search, args: {base: "", scope: base, filter: [present, objectClass], attributes: [supportedLDAPVersion]}}
+
+  search_before_bind:
+    kind: control
+    spec_refs:
+      - {req_id: LDAP-652b8b73, keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+      - {req_id: LDAP-7eaf7f98, keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+    steps:
+      - {op: search, args: {base: "", scope: base, filter: [present, objectClass], attributes: [supportedLDAPVersion]}}
+
+  unbind_ends_session:
+    kind: control
+    steps:
+      - {op: bind, args: {dn: "", password: ""}}
+      - {op: unbind, window_ms: 800}
+
+  # ---------------- bind ----------------
+  bind_version_2:
+    kind: probe
+    spec_refs:
+      - {req_id: LDAP-204c5f23, keyword: MUST, axis: native_codes, step: 1, allowed: [[2]]}
+    steps:
+      - {op: bind, args: {version: 2, dn: "", password: ""}}
+
+  bind_version_4:
+    kind: probe
+    spec_refs:
+      - {req_id: LDAP-204c5f23, keyword: MUST, axis: native_codes, step: 1, allowed: [[2]]}
+    steps:
+      - {op: bind, args: {version: 4, dn: "", password: ""}}
+
+  bind_sasl_empty_mechanism:
+    kind: probe
+    spec_refs:
+      - {req_id: LDAP-888e985f, keyword: MUST, axis: native_codes, step: 1, allowed: [[7]]}
+    steps:
+      - {op: bind, args: {dn: "", sasl: {mechanism: ""}}}
+
+  bind_wrong_password:
+    kind: security
+    tags: [authentication]
+    spec_refs:
+      - {req_id: LDAP-521b9618, keyword: MUST, axis: native_codes, step: 1, allowed: [[49]]}
+    steps:
+      - {op: bind, args: {dn: "{A}", password: "pd-not-the-password"}}
+
+  bind_unauthenticated:
+    kind: security
+    tags: [authentication]
+    spec_refs:
+      - {req_id: LDAP-885ca99e, keyword: SHOULD, axis: native_codes, step: 1, allowed: [[53]]}
+    steps:
+      - {op: bind, args: {dn: "{A}", password: ""}}
+
+  bind_trailing_component:
+    kind: probe
+    spec_refs:
+      - {req_id: LDAP-f75c2053, keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+    steps:
+      - {op: hex, hex: "30 11 02 01 01 60 0c 02 01 03 04 00 80 00 04 03 61 62 63", expect_reply: true}
+
+  # ---------------- controls (RFC 4511 4.1.11) ----------------
+  control_unknown_critical:
+    kind: probe
+    spec_refs:
+      - {req_id: LDAP-f9246cdf, keyword: MUST, axis: native_codes, step: 1, allowed: [[12]]}
+    steps:
+      - {op: search, args: {base: "", scope: base}, controls: [{oid: 1.3.6.1.4.1.99999.7.1, critical: true}]}
+
+  control_unknown_noncritical:
+    kind: probe
+    spec_refs:
+      - {req_id: LDAP-8b68c174, keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+    steps:
+      - {op: search, args: {base: "", scope: base}, controls: [{oid: 1.3.6.1.4.1.99999.7.1}]}
+
+  control_value_zero_bytes:
+    kind: probe
+    spec_refs:
+      - {req_id: LDAP-80b8521f, keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+    steps:
+      - {op: search, args: {base: "", scope: base}, controls: [{oid: 1.3.6.1.4.1.99999.7.2, value: "00ff0000", hex: true}]}
+
+  # ---------------- abandon, extended ----------------
+  abandon_unknown_id:
+    kind: probe
+    spec_refs:
+      - {req_id: LDAP-333eae07, keyword: MUST, axis: response_ops, step: 1, allowed: [[]]}
+    steps:
+      - {op: abandon, args: {id: 999}}
+      - {op: search, args: {base: "", scope: base}}
+
+  extended_unknown_oid:
+    kind: probe
+    spec_refs:
+      - {req_id: LDAP-f8531903, keyword: MUST, axis: native_codes, step: 1, allowed: [[2]]}
+    steps:
+      - {op: extended, args: {oid: 1.3.6.1.4.1.99999.9.9, value: "\u0000\u0001\u0000"}}
+
+  # ---------------- malformed PDUs (RFC 4511 4.1.1, 5.1, 6) ----------------
+  pdu_set_instead_of_sequence:
+    kind: probe
+    spec_refs:
+      - {req_id: LDAP-e6a29a58, keyword: MUST, axis: status, step: 1, allowed: [closed, notice]}
+    steps:
+      - {op: hex, hex: "31 0c 02 01 01 60 07 02 01 03 04 00 80 00", expect_reply: true}
+
+  pdu_unknown_operation:
+    kind: probe
+    spec_refs:
+      - {req_id: LDAP-06500410, keyword: MUST, axis: native_codes, step: 1, allowed: [[2]]}
+      - {req_id: LDAP-4db0f908, keyword: SHOULD, axis: status, step: 1, allowed: [closed]}
+    steps:
+      - {op: hex, hex: "30 07 02 01 01 7a 02 04 00", expect_reply: true}
+
+  pdu_indefinite_length:
+    kind: probe
+    spec_refs:
+      - {req_id: LDAP-01a99b4b, keyword: MUST, axis: status, step: 1, allowed: [closed]}
+      - {req_id: LDAP-986dc844, keyword: MUST, axis: status, step: 1, allowed: [closed, responded]}
+    steps:
+      - {op: hex, hex: "30 80 02 01 01 60 07 02 01 03 04 00 80 00 00 00", expect_reply: true}
+
+  # ---------------- search semantics (RFC 4511 4.5) ----------------
+  filter_unknown_attribute:
+    kind: probe
+    spec_refs:
+      - {req_id: LDAP-2840ebef, keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+    steps:
+      - {op: search, args: {base: "", scope: base, filter: [eq, pdNoSuchAttribute, x]}}
+
+  filter_not_undefined:
+    kind: probe
+    spec_refs:
+      - {req_id: LDAP-f12b819b, keyword: MUST, axis: entries, step: 1, allowed: [[]]}
+    steps:
+      - {op: search, args: {base: "", scope: base, filter: [not, [eq, pdNoSuchAttribute, x]]}}
+
+  filter_extensible_no_rule:
+    kind: probe
+    spec_refs:
+      - {req_id: LDAP-c3c37d12, keyword: MUST, axis: entries, step: 1, allowed: [["{B}"]]}
+    steps:
+      - {op: search, args: {base: "", scope: base, filter: [ext, "", objectClass, top, false]}}
+
+  attribute_unknown_option:
+    kind: probe
+    spec_refs:
+      - {req_id: LDAP-b443bc7f, keyword: MUST, axis: entry_attrs, step: 1, note: "objectClass;x-pd-unknown is unrecognized, so it returns nothing"}
+    steps:
+      - {op: search, args: {base: "", scope: base, attributes: ["objectClass;x-pd-unknown"]}}
+
+  base_not_found_no_reference:
+    kind: probe
+    spec_refs:
+      - {req_id: LDAP-f91a778c, keyword: MUST, axis: response_ops, step: 1, allowed: [[SearchResultDone]]}
+    steps:
+      - {op: search, args: {base: "cn={U},{B}", scope: sub}}
+
+  rootdse_sasl_mechanisms_anonymous:
+    kind: probe
+    spec_refs:
+      - {req_id: LDAP-67c76af7, keyword: SHOULD, axis: entry_attrs, step: 2, note: "supportedSASLMechanisms readable by an anonymous client"}
+    steps:
+      - {op: bind, args: {dn: "", password: ""}}
+      - {op: search, args: {base: "", scope: base, attributes: [supportedSASLMechanisms]}}
+
+  rootdse_excluded_from_subtree:
+    kind: probe
+    spec_refs:
+      - {req_id: LDAP-cdfceb2d, keyword: MUST, axis: entries, step: 2, note: "the root DSE (empty DN) is not among the entries"}
+    steps:
+      - {op: bind, args: {dn: "{A}", password: "{P}"}}
+      - {op: search, args: {base: "", scope: one, filter: [present, objectClass], size_limit: 50}}

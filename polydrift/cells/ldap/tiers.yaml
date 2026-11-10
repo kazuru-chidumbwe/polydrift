@@ -1,0 +1,34 @@
+# LDAP cell: axis -> tier (manuscript 3.3). Consumer: the LDAP client library and the application behind it.
+# Status: DRAFT, not frozen.
+cell: ldap
+profile: ldap-default-v1
+refusal_class: null   # a server's refusal is a resultCode (protocolError) or closing the session, both observed
+axes:
+  decision_class:
+    tier: 1
+    kappa: identity
+    clause: "T1: the client's next action follows the result class (classes.py)"
+  response_ops:
+    tier: 2
+    kappa: identity
+    clause: "T2: which response messages the client receives, in order, decides what the library returns"
+  entries:
+    tier: 2
+    kappa: dn_set
+    clause: "T2: the entries a search returns (DNs, case-insensitive, base DN removed) are the data the application gets"
+  entry_attrs:
+    tier: 2
+    kappa: attr_map
+    clause: "T2: attribute types returned per entry (names case-folded); values compared for the attributes a fixture names"
+  notice_of_disconnection:
+    tier: 2
+    kappa: identity
+    clause: "T2: an unsolicited Notice of Disconnection ends the session (RFC 4511 4.4.1)"
+  native_codes:
+    tier: 3
+    kappa: identity
+    clause: "T3: resultCode within its decision class"
+  diagnostic_present:
+    tier: 4
+    kappa: identity
+    clause: "T4: diagnosticMessage is for humans (4.1.9); compared as present/absent"

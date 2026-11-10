@@ -154,10 +154,15 @@ def to_record(
     repeat: int = 1,
     impl_version: str = "",
     harness_commit: str = "",
+    aggregate_deliveries: bool = False,
 ) -> ObservationRecord:
+    """``aggregate_deliveries``: the fixture's clause fixes what is delivered but not in which step (MQTT 5.0 4.3.3
+    lets a QoS 2 receiver forward on PUBLISH or on PUBREL), so per-step deliveries are dropped and their union over
+    the fixture is compared as the end-state axis ``deliveries_total``."""
     steps = []
     end: dict[str, Field] = {}
     retained: dict[str, list] = {}
+    total: dict[str, list] = {}
     for obs in observations:
         if obs.get("end"):
             for n, c in obs["clients"].items():
@@ -167,7 +172,12 @@ def to_record(
             continue
         status = classify(obs)
         fields = step_fields(obs, spec, prefix, version) if status != Status.HARNESS_FAULT else {}
+        if aggregate_deliveries and "deliveries" in fields:
+            for n, msgs in dict(fields.pop("deliveries").raw).items():
+                total.setdefault(n, []).extend(list(m) for m in msgs)
         steps.append(StepRecord(status=status, fields=fields, detail=str(obs.get("error") or "")))
+    if aggregate_deliveries:
+        end["deliveries_total"] = spec.axis("deliveries_total").field(total)
     if any(o.get("end") for o in observations):
         end["retained_after"] = spec.axis("retained_after").field(retained)
     return ObservationRecord(

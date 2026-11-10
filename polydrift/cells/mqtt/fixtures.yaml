@@ -48,6 +48,7 @@ fixtures:
 
   pubsub_qos2:
     kind: control
+    aggregate_deliveries: true   # 4.3.3: forward on PUBLISH (method A) or on PUBREL (method B)
     spec_refs:
       - {native: MQTT-2.2.1-6, keyword: MUST, axis: packet_types, step: 4, allowed: [[PUBREC]]}
       - {native: MQTT-2.2.1-6, keyword: MUST, axis: packet_types, step: 5, allowed: [[PUBCOMP]]}

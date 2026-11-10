@@ -1,0 +1,9 @@
+# Control-fixture divergences that were traced to the broker itself (not configuration or adapter), with the trace.
+# The smoke gate (gate.py) accepts a control whose minority classes contain only brokers listed here for it.
+traced:
+  - impls: [nanomq-0.21.10]
+    fixtures: [pubsub_qos0, pubsub_qos1, subscribe_suback, unsubscribe_unsuback, forward_user_properties_order,
+               forward_request_response_props, no_local]
+    axis: granted
+    trace: "SUBACK grants QoS 2 for every filter whatever the requested QoS (requested 0,1,2 -> [2,2,2]); smoke
+      10 Nov 2026, raw.jsonl subscribe_suback. Current NanoMQ grants [0,1,2]. Broker behaviour, not harness."

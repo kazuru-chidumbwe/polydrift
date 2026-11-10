@@ -104,37 +104,45 @@ def main() -> int:
     log(f"start: {len(targets)} brokers x {len(fixtures)} fixtures x {a.repeats} repeats, harness {commit}")
     for t in targets:
         for r in range(1, a.repeats + 1):
-            name = f"pdcell-mqtt-{t['key']}"
-            try:
-                port = start(t, name)
-            except Exception as e:  # noqa: BLE001
-                log(f"{t['key']} repeat {r}: {e}")
-                continue
-            ok_start = wait_ready(port, t.get("ready", 180), f"{t['key']}-r{r}")
-            image_id = sh(["docker", "image", "inspect", "-f", "{{.Id}}", t["image"]]).stdout.strip()
-            batch = []
-            for fid, fx in fixtures.items():
-                tp, cp = f"pd/{fid}/r{r}/", f"pd-{fid[:20]}-r{r}-"
+            for attempt in (1, 2):   # a repeat whose canary fails is redone once; the failed attempt is kept
+                name = f"pdcell-mqtt-{t['key']}"
                 try:
-                    obs = driver.run_script("127.0.0.1", port, fx["steps"], topic_prefix=tp, client_prefix=cp)
+                    port = start(t, name)
                 except Exception as e:  # noqa: BLE001
-                    obs = [{"step": 1, "actor": "a", "op": "?", "end": False, "error": f"driver: {e!r}", "clients": {}}]
-                batch.append((fid, tp, obs, int(fx.get("version", 5))))
-            ok_end = ok_start and canary("127.0.0.1", port, f"{t['key']}-r{r}-end")
-            with (out / "raw.jsonl").open("a") as rawf, (out / "records.jsonl").open("a") as recf:
-                for fid, tp, obs, ver in batch:
-                    rawf.write(json.dumps({"impl": t["key"], "repeat": r, "fixture": fid, "image_id": image_id,
-                                           "canary": [ok_start, ok_end], "obs": obs}) + "\n")
-                    if ok_start and ok_end:
-                        rec = adapter.to_record(obs, t["key"], fid, spec=spec, prefix=tp, version=ver, repeat=r,
-                                                impl_version=t.get("version", ""), harness_commit=commit)
-                    else:
-                        rec = ObservationRecord(cell="mqtt", impl=t["key"], impl_version=t.get("version", ""),
-                                                fixture=fid, repeat=r, harness_commit=commit,
-                                                steps=(StepRecord(status=Status.HARNESS_FAULT, detail="canary failed"),))
-                    recf.write(rec.to_json() + "\n")
-            log(f"{t['key']} repeat {r}: canary start={ok_start} end={ok_end}, {len(batch)} fixtures, image {image_id[:19]}")
-            sh(["docker", "rm", "-f", name])
+                    log(f"{t['key']} repeat {r}: {e}")
+                    break
+                ok_start = wait_ready(port, t.get("ready", 180), f"{t['key']}-r{r}")
+                image_id = sh(["docker", "image", "inspect", "-f", "{{.Id}}", t["image"]]).stdout.strip()
+                batch = []
+                for fid, fx in fixtures.items():
+                    tp, cp = f"pd/{fid}/r{r}/", f"pd-{fid[:20]}-r{r}-"
+                    try:
+                        obs = driver.run_script("127.0.0.1", port, fx["steps"], topic_prefix=tp, client_prefix=cp)
+                    except Exception as e:  # noqa: BLE001
+                        obs = [{"step": 1, "actor": "a", "op": "?", "end": False, "error": f"driver: {e!r}", "clients": {}}]
+                    batch.append((fid, tp, obs, int(fx.get("version", 5)), bool(fx.get("aggregate_deliveries"))))
+                ok_end = ok_start and canary("127.0.0.1", port, f"{t['key']}-r{r}-end")
+                final = (ok_start and ok_end) or attempt == 2
+                with (out / ("raw.jsonl" if final else "raw-failed.jsonl")).open("a") as rawf,                         (out / ("records.jsonl" if final else "records-failed.jsonl")).open("a") as recf:
+                    for fid, tp, obs, ver, agg in batch:
+                        rawf.write(json.dumps({"impl": t["key"], "repeat": r, "fixture": fid, "image_id": image_id,
+                                               "canary": [ok_start, ok_end], "obs": obs}) + "\n")
+                        if ok_start and ok_end:
+                            rec = adapter.to_record(obs, t["key"], fid, spec=spec, prefix=tp, version=ver, repeat=r,
+                                                    impl_version=t.get("version", ""), harness_commit=commit,
+                                                    aggregate_deliveries=agg)
+                        else:
+                            rec = ObservationRecord(cell="mqtt", impl=t["key"], impl_version=t.get("version", ""),
+                                                    fixture=fid, repeat=r, harness_commit=commit,
+                                                    steps=(StepRecord(status=Status.HARNESS_FAULT, detail="canary failed"),))
+                        recf.write(rec.to_json() + "\n")
+                log(f"{t['key']} repeat {r} attempt {attempt}: canary start={ok_start} end={ok_end}, {len(batch)} fixtures, image {image_id[:19]}")
+                lg = sh(["docker", "logs", "--tail", "400", name])
+                state = sh(["docker", "inspect", "-f", "{{.State.Status}} exit={{.State.ExitCode}} oom={{.State.OOMKilled}}", name]).stdout.strip()
+                (out / f"container-{t['key']}-r{r}-a{attempt}.log").write_text(f"# {state}\n" + lg.stdout + lg.stderr)
+                sh(["docker", "rm", "-f", name])
+                if final:
+                    break
     log("DONE")
     (out / "DONE").touch()
     return 0

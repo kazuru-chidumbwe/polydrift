@@ -10,6 +10,9 @@ from __future__ import annotations
 import argparse
 import collections
 
+import yaml
+from pathlib import Path
+
 from polydrift.cells.mqtt.runner import load_fixtures
 from polydrift.core.oracle import behaviour_key, partition
 from polydrift.core.record import Status, Tier, read_jsonl
@@ -37,6 +40,11 @@ def main() -> int:
         if r.repeat == 1:
             by[r.fixture].append(r)
     faults = sorted({(r.impl, r.fixture) for r in recs if any(s.status == Status.HARNESS_FAULT for s in r.steps)})
+    traced = yaml.safe_load((Path(__file__).with_name("gate_traced.yaml")).read_text(encoding="utf-8"))["traced"]
+    ok_minority = collections.defaultdict(set)
+    for t in traced:
+        for f in t["fixtures"]:
+            ok_minority[f] |= set(t["impls"])
     bad_controls = []
     for fid in fx:
         rs = by.get(fid, [])
@@ -46,7 +54,9 @@ def main() -> int:
         kind = fx[fid].get("kind", "")
         print(f"{fid:42s} {kind:9s} {len(parts)} classes  {where:28s} " + " | ".join(",".join(sorted(p)) for p in parts))
         if kind == "control" and len(parts) > 1:
-            bad_controls.append(fid)
+            minority = set().union(*parts[1:])
+            if not minority <= ok_minority[fid]:
+                bad_controls.append(fid)
     print(f"\nharness faults: {len(faults)} {faults[:10]}")
     print(f"GATE {'PASS' if not bad_controls and not faults else 'FAIL'}: controls with more than one class: {bad_controls}")
     return 0

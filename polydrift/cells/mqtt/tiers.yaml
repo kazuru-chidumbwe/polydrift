@@ -50,3 +50,8 @@ axes:
     kappa: deliveries
     end_state: true
     clause: "T2: the retained store as a new subscriber sees it after the fixture (end state)"
+  deliveries_total:
+    tier: 2
+    kappa: deliveries
+    end_state: true
+    clause: "T2: deliveries to other clients summed over the fixture, for clauses that fix the delivery but not its step (4.3.3)"

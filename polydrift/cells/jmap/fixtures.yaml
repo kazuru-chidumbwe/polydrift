@@ -25,8 +25,15 @@ fixtures:
   mailbox_inbox_by_role:
     kind: control
     steps:
-      - {op: call, calls: [["Mailbox/query", {accountId: "{acct}", filter: {role: inbox}, calculateTotal: true}, c0],
+      - {op: call, calls: [["Mailbox/query", {accountId: "{acct}", filter: {role: inbox}}, c0],
                            ["Mailbox/get", {accountId: "{acct}", "#ids": {resultOf: c0, name: Mailbox/query, path: /ids}, properties: [role]}, c1]]}
+
+  # Probe split out of the control (smoke 10 Nov 17:43): with calculateTotal true, James omitted `total`.
+  query_calculate_total:
+    kind: probe
+    clause: "RFC 8620 5.5 calculateTotal / total"
+    steps:
+      - {op: call, calls: [["Mailbox/query", {accountId: "{acct}", filter: {role: inbox}, calculateTotal: true}, c0]]}
 
   mailbox_create_get_destroy:
     kind: stateful

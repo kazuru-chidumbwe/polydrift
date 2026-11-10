@@ -20,10 +20,13 @@ fixtures:
     steps:
       - {op: session}
 
-  mailbox_get_all:
+  # Was mailbox_get_all (ids: null): the default mailbox set is server provisioning (Stalwart 5, James 7, Cyrus 1),
+  # so the count split the control in smoke 10 Nov. Every server has exactly one inbox-role mailbox (RFC 8621 2).
+  mailbox_inbox_by_role:
     kind: control
     steps:
-      - {op: call, calls: [["Mailbox/get", {accountId: "{acct}", ids: null, properties: [name, role]}, c0]]}
+      - {op: call, calls: [["Mailbox/query", {accountId: "{acct}", filter: {role: inbox}, calculateTotal: true}, c0],
+                           ["Mailbox/get", {accountId: "{acct}", "#ids": {resultOf: c0, name: Mailbox/query, path: /ids}, properties: [role]}, c1]]}
 
   mailbox_create_get_destroy:
     kind: stateful

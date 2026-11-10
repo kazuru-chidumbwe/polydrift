@@ -84,7 +84,11 @@ def james(container: str, base: str, admin_base: str) -> tuple[str, str]:
 
 def cyrus(container: str, base: str) -> tuple[str, str]:
     r = subprocess.run(["docker", "exec", "-i", container, "sh", "-c",
-                        f"echo '{PASSWORD}' | saslpasswd2 -p -c {USER} && chown cyrus:mail /etc/sasldb2 && echo ok"],
+                        f"echo '{PASSWORD}' | saslpasswd2 -p -c {USER} && chown cyrus:mail /etc/sasldb2 && "
+                        # Cyrus creates the INBOX on IMAP login (autocreate_quota: 0); an HTTP login does not, and
+                        # without it every JMAP call, even Core/echo, returns accountNotFound (hand test 10 Nov).
+                        f"printf 'lm\n' | TERM=dumb cyradm --user {USER} -w '{PASSWORD}' --auth plain localhost "
+                        f"| grep -q INBOX && echo ok"],
                        capture_output=True, text=True)
     return USER, (r.stdout + r.stderr).strip()[-120:]
 

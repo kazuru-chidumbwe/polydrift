@@ -20,13 +20,15 @@ fixtures:
     steps:
       - {op: session}
 
-  # Was mailbox_get_all (ids: null): the default mailbox set is server provisioning (Stalwart 5, James 7, Cyrus 1),
-  # so the count split the control in smoke 10 Nov. Every server has exactly one inbox-role mailbox (RFC 8621 2).
-  mailbox_inbox_by_role:
-    kind: control
+  # No mailbox-count or query control: the default mailbox set is server provisioning (Stalwart 5, James 7, Cyrus 1)
+  # and `total` presence differs by server (smokes 10 Nov 17:41-17:46), so both are probes below.
+  # state_stable_without_change is the mail-method control.
+
+  query_total_not_requested:
+    kind: probe
+    clause: "RFC 8620 5.5 total (only if requested)"
     steps:
-      - {op: call, calls: [["Mailbox/query", {accountId: "{acct}", filter: {role: inbox}}, c0],
-                           ["Mailbox/get", {accountId: "{acct}", "#ids": {resultOf: c0, name: Mailbox/query, path: /ids}, properties: [role]}, c1]]}
+      - {op: call, calls: [["Mailbox/query", {accountId: "{acct}", filter: {role: inbox}}, c0]]}
 
   # Probe split out of the control (smoke 10 Nov 17:43): with calculateTotal true, James omitted `total`.
   query_calculate_total:

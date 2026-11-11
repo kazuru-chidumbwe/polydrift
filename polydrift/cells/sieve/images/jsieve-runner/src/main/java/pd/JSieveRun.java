@@ -53,6 +53,7 @@ public final class JSieveRun {
         else if (x instanceof ActionRedirect) intent.add("redirect:" + ((ActionRedirect) x).getAddress());
         else if (x instanceof ActionReject) intent.add("reject");
         else if (x instanceof ActionKeep) intent.add("keep");
+        else if (x.getClass().getSimpleName().equals("ActionDiscard")) intent.add("discard");
         else intent.add("other:" + x.getClass().getSimpleName());
       }
     }

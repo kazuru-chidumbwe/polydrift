@@ -74,6 +74,35 @@ def emitted() -> list[dict]:
     return out
 
 
+def classify(m) -> str:
+    ctype = (m.get("Content-Type") or "").lower()
+    auto = (m.get("Auto-Submitted") or "").lower()
+    if "disposition-notification" in ctype or "report-type=disposition" in ctype:
+        return "reject"
+    if "delivery-status" in ctype:
+        return "dsn"
+    if auto.startswith("auto-replied") or m.get("X-Sieve-Vacation"):
+        return "vacation"
+    if m.get("X-Sieve-Redirected-From") or (m.get("Message-ID") and not auto):
+        return "redirect"
+    return "other"
+
+
+def emitted_from_text(txt: str) -> list[dict]:
+    """sieve-test -e prints each outgoing message (starting with an X-Sieve: header) and a RECIPIENT: line for its
+    envelope recipient instead of sending it; pair them in order."""
+    lines = txt.splitlines()
+    starts = [i for i, ln in enumerate(lines) if ln.startswith("X-Sieve:")]
+    rcpts = [ln.split(":", 1)[1].strip() for ln in lines if ln.startswith("RECIPIENT:")]
+    out = []
+    for k, i in enumerate(starts):
+        end = next((j for j in range(i, len(lines)) if lines[j] == ""), len(lines))
+        m = email.message_from_string("\n".join(lines[i:end]) + "\n\n", policy=policy.compat32)
+        to = [rcpts[k]] if k < len(rcpts) else sorted(x.strip().strip("<>") for x in (m.get("To") or "").split(",") if "@" in x)
+        out.append({"kind": classify(m), "to": sorted(to), "auto_submitted": (m.get("Auto-Submitted") or "").lower() or None})
+    return out
+
+
 def maildir_counts(root: Path) -> dict[str, int]:
     counts = {}
     for d in [root, *sorted(p for p in root.glob(".*") if p.is_dir() and p.name not in (".", ".."))]:
@@ -111,12 +140,16 @@ mail_driver = maildir
 mail_path = {maildir}
 mail_inbox_path = {maildir}
 mail_home = /tmp/pd-home
+mail_uid = 1000
+mail_gid = 1000
 postmaster_address = postmaster@lab.test
 sendmail_path = /lab/capture.sh
 """)
     else:
         c.write_text(f"""mail_location = maildir:{maildir}
 mail_home = /tmp/pd-home
+mail_uid = 1000
+mail_gid = 1000
 postmaster_address = postmaster@lab.test
 sendmail_path = /lab/capture.sh
 """)
@@ -128,15 +161,15 @@ def pigeonhole(fx: Path, meta: dict) -> dict:
     s, m = Path("/tmp/s.sieve"), Path("/tmp/m.eml")
     shutil.copy(fx / "script.sieve", s)
     shutil.copy(fx / "msg.eml", m)
-    rc, txt = sh(["sievec", str(s), "/tmp/s.svbin"])
-    res = {"engine_version": f"dovecot {ver}", "compile": "ok" if rc == 0 else "refused",
-           "compile_class": None if rc == 0 else compile_class(txt), "compile_text": txt.strip()[-300:]}
-    if rc != 0:
-        return res
     maildir = Path("/tmp/Maildir")
     make_maildir(maildir, meta.get("folders", ["INBOX"]))
     Path("/tmp/pd-home").mkdir(exist_ok=True)
     conf = ph_conf(ver, maildir)
+    rc, txt = sh(["sievec", "-c", str(conf), str(s), "/tmp/s.svbin"])
+    res = {"engine_version": f"dovecot {ver}", "compile": "ok" if rc == 0 else "refused",
+           "compile_class": None if rc == 0 else compile_class(txt), "compile_text": txt.strip()[-300:]}
+    if rc != 0:
+        return res
     env_args = ["-f", meta.get("from", "sender@example.invalid"), "-r", meta.get("to", "user@lab.test")]
     rc, txt = sh(["sieve-test", "-c", str(conf), *env_args, str(s), str(m)])
     intent, section = [], None
@@ -161,7 +194,7 @@ def pigeonhole(fx: Path, meta: dict) -> dict:
     if rc != 0:
         res["runtime_error"] = " | ".join(ln.strip() for ln in txt.splitlines() if "error" in ln.lower())[-300:] or f"rc {rc}"
     rc, txt = sh(["sieve-test", "-c", str(conf), "-e", *env_args, str(s), str(m)])
-    res["effect"] = {"stored": maildir_counts(maildir), "emitted": emitted(), "rc": rc,
+    res["effect"] = {"stored": maildir_counts(maildir), "emitted": emitted() + emitted_from_text(txt), "rc": rc,
                      "result": (re.findall(r"final result:\s*(.+)", txt) or [""])[-1].strip()}
     return res
 
@@ -222,7 +255,9 @@ def exim(fx: Path, meta: dict) -> dict:
     # Exim treats a filter file as Sieve only when its first line is "# Sieve filter" (Exim spec, filter chapter)
     s = Path("/tmp/s.sieve")
     s.write_bytes(b"# Sieve filter" + bytes([10]) + (fx / "script.sieve").read_bytes())
-    rc, txt = sh(["exim", "-v", "-bf", str(s), "-f", meta.get("from", "sender@example.invalid")],
+    to = meta.get("to", "user@lab.test")
+    rc, txt = sh(["exim", "-v", "-bf", str(s), "-f", meta.get("from", "sender@example.invalid"),
+                  "-bfl", to.split("@")[0], "-bfd", to.split("@")[-1]],
                  stdin=(fx / "msg.eml").read_bytes())
     res = {"engine_version": ver, "intent_rc": rc}
     if re.search(r"sieve error|filter error|error in sieve|error in (forward|filter) file", txt, re.I) or rc != 0:
@@ -248,7 +283,8 @@ def exim(fx: Path, meta: dict) -> dict:
             intent.append("discard" if "Discard" in line else "keep-implicit")
         if re.search(r"Normal delivery will occur", line, re.I):
             intent.append("keep")
-        if re.search(r"Sieve vacation|vacation", line, re.I) and "Sieve" in line:
+        if re.search(r"\bvacation\b", line, re.I) and not re.search(r"ignore|not personal", line, re.I) \
+                and "Sieve" in line:
             intent.append("vacation")
     if not intent and "No implicit keep" not in txt:
         intent.append("keep")
@@ -288,6 +324,13 @@ def main() -> int:
         res = ENGINES[a.engine](fx, meta)
     except Exception as e:  # noqa: BLE001
         res = {"harness_error": repr(e)[:300]}
+    # keep is filing into the default mailbox (RFC 5228 4.3); Exim reports it as fileinto `inbox'.
+    # No action and no implicit keep means the message is dropped: the same outcome as discard (RFC 5228 4.4).
+    if isinstance(res.get("intent"), list):
+        norm = {"keep" if x.lower() == "fileinto:inbox" else
+                ("redirect:" + x.split(":", 1)[1].strip().strip("<>") if x.startswith("redirect:") else x)
+                for x in res["intent"]}
+        res["intent"] = sorted(norm) or ["discard"]
     print(json.dumps(res, sort_keys=True))
     return 0
 

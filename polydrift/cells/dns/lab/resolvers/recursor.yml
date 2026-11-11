@@ -1,0 +1,10 @@
+# PowerDNS Recursor 5.x, lab deviations only: root hints, validation off, queries from the lab net, and dont_query
+# cleared because the default list blocks the private lab addresses.
+recursor:
+  hint_file: /conf/root.hints
+dnssec:
+  validation: "off"
+incoming:
+  allow_from: [0.0.0.0/0]
+outgoing:
+  dont_query: []

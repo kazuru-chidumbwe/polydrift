@@ -159,7 +159,9 @@ def fault_class(
         return None
     if artefact:
         return FaultClass.HARNESS_ARTEFACT
-    bad = conflicting_refs(fixture.spec_refs)
+    # A clause on an axis that was not reproducible for either side (3.5 rule 1) cannot carry a label.
+    bad = conflicting_refs(fixture.spec_refs) | {
+        i for i, ref in enumerate(fixture.spec_refs) if ref["axis"] in set(pair.excluded_axes)}
     lb = _broken(left, fixture, bad, refusal_class)
     rb = _broken(right, fixture, bad, refusal_class)
     differing = {(d.axis, d.step) for d in pair.diffs}

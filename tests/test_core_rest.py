@@ -261,3 +261,11 @@ def test_shared_breach_on_differing_axis_is_a_violation():
     fx = _fixture([{"clause": "C1", "keyword": "MUST", "axis": "x", "allowed": [1]}])
     a, b = rec("a", step(x=f(1, 2))), rec("b", step(x=f(1, 3)))
     assert fault_class(compare_pair(a, b), a, b, fx) == FaultClass.VIOLATION
+
+
+def test_breach_on_flaky_axis_does_not_label():
+    fx = _fixture([{"clause": "C1", "keyword": "MUST", "axis": "x", "allowed": [1]}])
+    a = rec("a", step(x=f(1, 2), y=f(3, "p")))
+    b = rec("b", step(x=f(1, 1), y=f(3, "q")))
+    pr = compare_pair(a, b, flaky={("a", "F1", "x")})
+    assert fault_class(pr, a, b, fx) == FaultClass.UNSPECIFIED

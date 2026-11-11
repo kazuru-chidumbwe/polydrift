@@ -1,0 +1,315 @@
+# DNS fixtures, recursive role (manuscript 3.1, 4.4, 4.5). Each fixture is a script of queries the lab client sends to
+# the resolver under test (lab/driver.py); the lab authorities (lab/zones.yaml) answer, misbehaving on purpose for
+# the names listed under `behaviours`. spec_refs name the ledger rows (ledger/dns.ledger.csv) a fixture exercises,
+# with the axis, the step and the values the clause allows. Fixtures without spec_refs are probes of behaviour the
+# RFCs leave open. Every fixture uses its own names, so one fixture's cache entries cannot answer another's.
+# Status: first batch (11 Nov 2026).
+cell: dns
+
+fixtures:
+
+  # ---------------- controls ----------------
+  a_record:
+    kind: control
+    steps:
+      - {qname: a.pd.pdlab, qtype: A}
+
+  txt_record:
+    kind: control
+    steps:
+      - {qname: txt.pd.pdlab, qtype: TXT}
+
+  nxdomain_plain:
+    kind: control
+    steps:
+      - {qname: nope.pd.pdlab, qtype: A}
+
+  nodata_plain:
+    kind: control
+    steps:
+      - {qname: mail.pd.pdlab, qtype: MX}
+
+  # ---------------- aliases ----------------
+  cname_in_zone:
+    kind: probe
+    spec_refs:
+      - {req_id: DNS-1f458462, keyword: SHOULD, axis: decision_class, step: 1, allowed: [proceed]}
+    steps:
+      - {qname: c1.pd.pdlab, qtype: A}
+
+  cname_out_of_zone:
+    kind: probe
+    spec_refs:
+      - {req_id: DNS-1f458462, keyword: SHOULD, axis: decision_class, step: 1, allowed: [proceed]}
+    steps:
+      - {qname: cout.pd.pdlab, qtype: A}
+
+  cname_qtype_cname:
+    kind: probe
+    spec_refs:
+      - {req_id: DNS-6aaf79ba, keyword: SHOULD, axis: answers, step: 1, allowed: [["c1.pd.pdlab cname a.pd.pdlab"]]}
+      - {req_id: DNS-22a9063b, keyword: SHOULD, axis: answers, step: 1, allowed: [["c1.pd.pdlab cname a.pd.pdlab"]]}
+    steps:
+      - {qname: c1.pd.pdlab, qtype: CNAME}
+
+  cname_to_nxdomain:
+    kind: probe
+    spec_refs:
+      - {req_id: DNS-9b57eaea, keyword: SHOULD, axis: response_type, step: 1, allowed: [nxdomain]}
+    steps:
+      - {qname: cnx.pd.pdlab, qtype: A}
+
+  cname_loop:
+    kind: probe
+    spec_refs:
+      - {req_id: DNS-9b57eaea, keyword: SHOULD, axis: decision_class, step: 1, allowed: [retry-later]}
+      - {req_id: DNS-1f458462, keyword: SHOULD, axis: decision_class, step: 1, allowed: [retry-later, stop, proceed]}
+    steps:
+      - {qname: loop1.pd.pdlab, qtype: A}
+
+  cname_chain_12:
+    kind: probe
+    spec_refs:
+      - {req_id: DNS-1f458462, keyword: SHOULD, axis: decision_class, step: 1, allowed: [proceed]}
+    steps:
+      - {qname: l1.pd.pdlab, qtype: A}
+
+  dname_synthesis:
+    kind: probe
+    spec_refs:
+      - {req_id: DNS-ed5693b3, keyword: MUST, axis: response_type, step: 1, allowed: [positive]}
+      - {req_id: DNS-0df02732, keyword: MUST, axis: response_type, step: 1, allowed: [positive]}
+    steps:
+      - {qname: x.dn.pd.pdlab, qtype: A}
+
+  # ---------------- wildcards, empty non-terminals ----------------
+  wildcard_match:
+    kind: probe
+    steps:
+      - {qname: q.wild.pd.pdlab, qtype: A}
+
+  wildcard_nodata:
+    kind: probe
+    steps:
+      - {qname: r.wild.pd.pdlab, qtype: MX}
+
+  empty_non_terminal:
+    kind: probe
+    steps:
+      - {qname: b.ent.pd.pdlab, qtype: A}
+
+  # ---------------- negative caching ----------------
+  rfc8020_below_nxdomain:
+    kind: probe
+    spec_refs:
+      - {req_id: DNS-2bbc4480, keyword: SHOULD, axis: response_type, step: 2, allowed: [nxdomain]}
+      - {req_id: DNS-d55a673d, keyword: SHOULD, axis: response_type, step: 2, allowed: [nxdomain]}
+    steps:
+      - {qname: nx8020.pd.pdlab, qtype: A}
+      - {qname: y.nx8020.pd.pdlab, qtype: A}
+
+  negative_cache_expiry:
+    kind: probe
+    spec_refs:
+      - {req_id: DNS-ac77b41a, keyword: MUST, axis: authority_soa, step: 2, allowed: [true]}
+      - {req_id: DNS-03a76844, keyword: MUST, axis: response_type, step: 3, allowed: [positive]}
+    steps:
+      - {qname: flip.pd.pdlab, qtype: A}
+      - {op: sleep, ms: 1000}
+      - {qname: flip.pd.pdlab, qtype: A}
+      - {op: sleep, ms: 6000}
+      - {qname: flip.pd.pdlab, qtype: A}
+
+  # ---------------- size, truncation, TCP ----------------
+  auth_truncates_udp:
+    kind: probe
+    spec_refs:
+      - {req_id: DNS-736bc0e0, keyword: SHOULD, axis: response_type, step: 1, allowed: [positive]}
+    steps:
+      - {qname: trunc.pd.pdlab, qtype: A}
+
+  large_answer_edns_1232:
+    kind: probe
+    spec_refs:
+      - {req_id: DNS-dedf64ce, keyword: MUST, axis: tc, step: 1, allowed: [true]}
+    steps:
+      - {qname: big.pd.pdlab, qtype: TXT, payload: 1232}
+
+  large_answer_no_edns:
+    kind: probe
+    spec_refs:
+      - {req_id: DNS-dedf64ce, keyword: MUST, axis: tc, step: 1, allowed: [true]}
+    steps:
+      - {qname: big.pd.pdlab, qtype: TXT, edns: null}
+
+  large_answer_tcp:
+    kind: probe
+    steps:
+      - {qname: big.pd.pdlab, qtype: TXT, tcp: true}
+
+  edns_payload_below_512:
+    kind: probe
+    spec_refs:
+      - {req_id: DNS-f764f5ab, keyword: MUST, axis: tc, step: 1, allowed: [false]}
+    steps:
+      - {qname: l1.pd.pdlab, qtype: A, payload: 100}
+
+  # ---------------- EDNS ----------------
+  edns_opt_echoed:
+    kind: probe
+    spec_refs:
+      - {req_id: DNS-3cd8e55b, keyword: MUST, axis: edns, step: 1, allowed: [true]}
+    steps:
+      - {qname: v6.pd.pdlab, qtype: AAAA}
+
+  edns_absent_not_added:
+    kind: probe
+    spec_refs:
+      - {req_id: DNS-c6248097, keyword: MUST, axis: edns, step: 1, allowed: [false]}
+    steps:
+      - {qname: v6.pd.pdlab, qtype: AAAA, edns: null}
+
+  edns_version_1:
+    kind: probe
+    spec_refs:
+      - {req_id: DNS-23e45874, keyword: MUST, axis: native_code, step: 1, allowed: [BADVERS]}
+    steps:
+      - {qname: mx.pd.pdlab, qtype: MX, ednsver: 1}
+
+  edns_two_opt:
+    kind: probe
+    spec_refs:
+      - {req_id: DNS-36858fc1, keyword: MUST, axis: native_code, step: 1, allowed: [FORMERR]}
+    steps:
+      - {op: raw, build: two_opt, qname: a.pd.pdlab}
+
+  edns_unknown_option:
+    kind: probe
+    spec_refs:
+      - {req_id: DNS-ee32fb34, keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+    steps:
+      - {qname: a2.pd.pdlab, qtype: A, ednsopt: 65001}
+
+  auth_edns_formerr:
+    kind: probe
+    spec_refs:
+      - {req_id: DNS-80721e86, keyword: MAY, axis: response_type, step: 1, allowed: [positive]}
+    steps:
+      - {qname: ednsfe.pd.pdlab, qtype: A}
+
+  # ---------------- misbehaving authorities ----------------
+  auth_formerr:
+    kind: probe
+    steps:
+      - {qname: formerr.pd.pdlab, qtype: A}
+
+  auth_servfail:
+    kind: probe
+    steps:
+      - {qname: servfail.pd.pdlab, qtype: A}
+
+  auth_refused:
+    kind: probe
+    steps:
+      - {qname: refused.pd.pdlab, qtype: A}
+
+  auth_notimp:
+    kind: probe
+    steps:
+      - {qname: notimp.pd.pdlab, qtype: A}
+
+  auth_answer_without_aa:
+    kind: probe
+    steps:
+      - {qname: noaa.pd.pdlab, qtype: A}
+
+  reply_id_mismatch:
+    kind: probe
+    spec_refs:
+      - {req_id: DNS-ab5c16a2, keyword: SHOULD, axis: response_type, step: 1, allowed: [null]}
+      - {req_id: DNS-a673ac50, keyword: SHOULD, axis: response_type, step: 1, allowed: [null]}
+    steps:
+      - {qname: qid.pd.pdlab, qtype: A, timeout: 12}
+
+  reply_question_mismatch:
+    kind: probe
+    steps:
+      - {qname: qmis.pd.pdlab, qtype: A, timeout: 12}
+
+  delegation_all_lame:
+    kind: probe
+    steps:
+      - {qname: x.lame.pdlab, qtype: A, timeout: 15}
+
+  delegation_half_lame:
+    kind: probe
+    steps:
+      - {qname: x.halflame.pdlab, qtype: A, timeout: 15}
+
+  # ---------------- cache trust (security) ----------------
+  unrelated_answer_rr:
+    kind: security
+    spec_refs:
+      - {req_id: DNS-b8c36d2a, keyword: SHOULD, axis: answers, step: 2, allowed: [["victim.other.pdlab a 10.9.0.1"]]}
+    steps:
+      - {qname: poison.pd.pdlab, qtype: A}
+      - {qname: victim.other.pdlab, qtype: A}
+
+  additional_out_of_bailiwick:
+    kind: security
+    spec_refs:
+      - {req_id: DNS-39154305, keyword: SHOULD, axis: answers, step: 2, allowed: [["victim2.other.pdlab a 10.9.0.2"]]}
+      - {req_id: DNS-b8c36d2a, keyword: SHOULD, axis: answers, step: 2, allowed: [["victim2.other.pdlab a 10.9.0.2"]]}
+    steps:
+      - {qname: addpoison.pd.pdlab, qtype: A}
+      - {qname: victim2.other.pdlab, qtype: A}
+
+  additional_in_bailiwick:
+    kind: security
+    spec_refs:
+      - {req_id: DNS-39154305, keyword: SHOULD, axis: answers, step: 2, allowed: [["a2.pd.pdlab a 10.0.0.22"]]}
+      - {req_id: DNS-ff8464b8, keyword: SHOULD, axis: answers, step: 2, allowed: [["a2.pd.pdlab a 10.0.0.22"]]}
+    steps:
+      - {qname: inbail.pd.pdlab, qtype: A}
+      - {qname: a2.pd.pdlab, qtype: A}
+
+  # ---------------- query forms ----------------
+  unknown_rr_type:
+    kind: probe
+    steps:
+      - {qname: unk.pd.pdlab, qtype: TYPE65280}
+
+  qtype_any:
+    kind: probe
+    steps:
+      - {qname: a.pd.pdlab, qtype: ANY}
+
+  rd_clear_uncached:
+    kind: probe
+    steps:
+      - {qname: mail.pd.pdlab, qtype: A, rd: false}
+
+  do_bit_unsigned:
+    kind: probe
+    steps:
+      - {qname: txt.pd.pdlab, qtype: TXT, do: true}
+
+  cd_bit:
+    kind: probe
+    steps:
+      - {qname: ok.pd.pdlab, qtype: TXT, cd: true}
+
+  client_qdcount_zero:
+    kind: probe
+    steps:
+      - {op: raw, build: qdcount0, qname: a.pd.pdlab}
+
+  client_opcode_15:
+    kind: probe
+    steps:
+      - {op: raw, build: opcode15, qname: a.pd.pdlab}
+
+  client_update:
+    kind: probe
+    steps:
+      - {op: raw, build: update, qname: a.pd.pdlab}

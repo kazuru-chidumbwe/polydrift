@@ -37,6 +37,7 @@ RCODE_CLASS = {
     "NOTIMP": "fix-request",
     "SERVFAIL": "retry-later",
     "REFUSED": "retry-later",
+    "BADVERS": "fix-request",  # RFC 6891 6.1.3: the requester must lower its EDNS version
 }
 
 
@@ -96,10 +97,42 @@ def response_type(rcode: str | None, answers: Any) -> str | None:
     return None
 
 
-def decision(rcode: str | None, answers: Any) -> str | None:
+def decision(rcode: str | None, answers: Any, tc: bool = False) -> str | None:
+    if tc and not answers:
+        return "no-decision"  # truncated: not a final answer, the stub asks again over TCP (RFC 2181 9)
     if rcode == "NOERROR" and not answers:
         return "stop"  # NODATA: give up on this type
     return RCODE_CLASS.get(rcode or "")
+
+
+def step_record(obs: dict[str, Any], spec: CellSpec) -> StepRecord:
+    """One driver observation (lab/driver.py) as a step: the StackDiff fields plus tc, ad, authority_soa, edns."""
+    status = classify_status(obs)
+    fields: dict[str, Field] = {}
+    if status == Status.RESPONDED:
+        rcode, answers, tc = obs.get("rcode"), obs.get("answers") or [], bool(obs.get("tc"))
+        values = {
+            "decision_class": decision(rcode, answers, tc),
+            "response_type": None if (tc and not answers) else response_type(rcode, answers),
+            "answers": answers,
+            "native_code": rcode,
+            "aa": obs.get("aa"),
+            "ra": obs.get("ra"),
+            "additional": obs.get("additional"),
+            "tc": tc,
+            "ad": obs.get("ad"),
+            "authority_soa": obs.get("authority_soa"),
+            "edns": obs.get("edns"),
+        }
+        for name, raw in values.items():
+            fields[name] = spec.axis(name).field(raw)
+    return StepRecord(status=status, fields=fields, detail=str(obs.get("error") or ""))
+
+
+def to_record_script(observations: list[dict[str, Any]], impl: str, fixture: str, *, spec: CellSpec,
+                     repeat: int = 1, impl_version: str = "", harness_commit: str = "") -> ObservationRecord:
+    return ObservationRecord(cell="dns", impl=impl, impl_version=impl_version, fixture=fixture, repeat=repeat,
+                             harness_commit=harness_commit, steps=tuple(step_record(o, spec) for o in observations))
 
 
 def to_record(

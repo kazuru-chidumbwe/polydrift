@@ -35,6 +35,22 @@ axes:
     tier: 3
     kappa: additional
     clause: "T3 for the stub; glue acceptance is observed as cache content (end state)"
+  tc:
+    tier: 2
+    kappa: identity
+    clause: "T2: a truncated reply makes the stub repeat the query over TCP (RFC 2181 9); the class records it as no-decision"
+  ad:
+    tier: 3
+    kappa: identity
+    clause: "T3: on unsigned lab zones the stub has nothing to act on; AD set without validation is a probe finding"
+  authority_soa:
+    tier: 3
+    kappa: identity
+    clause: "T3: the SOA in a negative answer sets how long a downstream cache keeps it (RFC 2308 5); the stub itself does not act on it"
+  edns:
+    tier: 3
+    kappa: identity
+    clause: "T3: OPT present in the reply; an EDNS client may fall back without it (RFC 6891 7)"
   glue_cache_accept:
     tier: 2
     kappa: identity

@@ -9,4 +9,5 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
  && echo "deb [signed-by=/usr/share/keyrings/cznic-labs-pkg.gpg] https://pkg.labs.nic.cz/knot-resolver trixie main" \
       > /etc/apt/sources.list.d/cznic-labs-knot-resolver.list \
  && apt-get update && apt-get install -y --no-install-recommends "${PKG}=${VER}" \
- && rm -rf /var/lib/apt/lists/*
+ && rm -rf /var/lib/apt/lists/*  && mkdir -p /run/knot-resolver /var/cache/knot-resolver  && (chown knot-resolver:knot-resolver /run/knot-resolver /var/cache/knot-resolver || true)
+# systemd creates /run/knot-resolver on a host; in a container the image has to (as the CZ.NIC image does).

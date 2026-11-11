@@ -11,5 +11,5 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
  && gpg --batch --no-default-keyring --keyring ./kr.gpg --verify mailutils-${VER}.tar.xz.sig mailutils-${VER}.tar.xz \
  && sha256sum mailutils-${VER}.tar.xz \
  && tar xJf mailutils-${VER}.tar.xz && cd mailutils-${VER} \
- && ./configure --prefix=/usr/local --without-guile --without-python --disable-nls && make -j16 && make install \
+ && ./configure --prefix=/usr/local --without-guile --without-python --disable-nls && (make -j16 || make) && make install \
  && ldconfig && cd / && rm -rf /tmp/mailutils-* /tmp/kr.gpg && rm -rf /var/lib/apt/lists/*

@@ -4,7 +4,7 @@
 FROM debian:bookworm
 ARG VER
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates curl \
-      gnupg xz-utils build-essential pkg-config libpcre2-dev libdb-dev libssl-dev python3 \
+      gnupg xz-utils build-essential pkg-config libpcre2-dev libdb-dev libssl-dev libfile-fcntllock-perl python3 \
  && useradd -r -s /usr/sbin/nologin exim \
  && cd /tmp && (curl -fsSLO https://ftp.exim.org/pub/exim/exim4/exim-${VER}.tar.xz \
       && curl -fsSLO https://ftp.exim.org/pub/exim/exim4/exim-${VER}.tar.xz.asc \

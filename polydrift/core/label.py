@@ -97,6 +97,11 @@ def conflicting_refs(refs: Iterable[Mapping[str, Any]]) -> set[int]:
     return bad
 
 
+def _broken(rec: ObservationRecord, fixture: FixtureSpec, bad: set[int], refusal_class: str | None) -> set[int]:
+    return {i for i, ref in enumerate(fixture.spec_refs)
+            if i not in bad and strength(ref["keyword"]) in ("MUST", "SHOULD") and not inside(rec, ref, refusal_class)}
+
+
 @dataclass
 class ImplLabel:
     impl: str
@@ -154,13 +159,19 @@ def fault_class(
         return None
     if artefact:
         return FaultClass.HARNESS_ARTEFACT
-    ll = label_impl(left, fixture, refusal_class)
-    rl = label_impl(right, fixture, refusal_class)
-    if ll.must_broken or rl.must_broken:
-        return FaultClass.VIOLATION
-    if ll.should_broken or rl.should_broken:
-        return FaultClass.DEVIATION
     bad = conflicting_refs(fixture.spec_refs)
+    lb = _broken(left, fixture, bad, refusal_class)
+    rb = _broken(right, fixture, bad, refusal_class)
+    differing = {(d.axis, d.step) for d in pair.diffs}
+    # A breach belongs to this divergence when it separates the two sides (one breaks the clause, the other does
+    # not) or when the clause constrains an axis on which they differ. A breach both sides share on an axis where
+    # they agree is a unanimous violation (reported on its own), not the cause of this divergence.
+    own = (lb ^ rb) | {i for i in lb & rb if (fixture.spec_refs[i]["axis"], _step_of(fixture.spec_refs[i])) in differing}
+    kinds = {strength(fixture.spec_refs[i]["keyword"]) for i in own}
+    if "MUST" in kinds:
+        return FaultClass.VIOLATION
+    if "SHOULD" in kinds:
+        return FaultClass.DEVIATION
     constrained = {
         (ref["axis"], _step_of(ref)) for i, ref in enumerate(fixture.spec_refs) if i not in bad
     }

@@ -247,3 +247,17 @@ def test_alpha_rename_is_consistent_not_deleting():
 def test_lws_and_digest():
     assert collapse_lws("SIP/2.0/UDP\r\n  host") == "SIP/2.0/UDP host"
     assert digest_after(normalise_line_endings, "v=0\r\n") == digest_after(normalise_line_endings, "v=0  \n\n")
+
+
+def test_shared_breach_on_agreeing_axis_does_not_label_the_divergence():
+    fx = _fixture([{"clause": "C1", "keyword": "MUST", "axis": "x", "allowed": [1]}])
+    a = rec("a", step(x=f(1, 2), y=f(3, "p")))
+    b = rec("b", step(x=f(1, 2), y=f(3, "q")))
+    assert fault_class(compare_pair(a, b), a, b, fx) == FaultClass.UNSPECIFIED
+    assert unanimous_violations([a, b], fx) == ["C1"]
+
+
+def test_shared_breach_on_differing_axis_is_a_violation():
+    fx = _fixture([{"clause": "C1", "keyword": "MUST", "axis": "x", "allowed": [1]}])
+    a, b = rec("a", step(x=f(1, 2))), rec("b", step(x=f(1, 3)))
+    assert fault_class(compare_pair(a, b), a, b, fx) == FaultClass.VIOLATION

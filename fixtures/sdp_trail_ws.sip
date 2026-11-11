@@ -6,7 +6,7 @@ To: <sip:bob@example.com>
 Call-ID: polydrift-sdp-ws@example.com
 CSeq: 1 INVITE
 Content-Type: application/sdp
-Content-Length: 143
+Content-Length: 144
 
 v=0  
 o=alice 2890844526 2890844526 IN IP4 192.0.2.1

@@ -7,3 +7,5 @@ results/**/*.json text eol=lf
 *.py text eol=lf
 *.toml text eol=lf
 *.cff text eol=lf
+# SIP fixtures are wire bytes: CRLF line ends (RFC 3261 Section 7) and exact Content-Length. Never normalise.
+fixtures/*.sip -text

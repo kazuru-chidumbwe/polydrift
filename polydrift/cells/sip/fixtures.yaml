@@ -8,9 +8,10 @@
 #  - SHOULD rows carry keyword SHOULD and label as Deviation, never Violation.
 #  - declarative (keywordless) rows, when added from the sample, carry keyword `declarative`.
 #
-# IN PROGRESS: 7 of 53 fixtures authored (confirmed req_ids). The remaining fixtures, the folded-header
-# LWS row, and the census fixtures for the other testable rows are added before the SIP Zenodo deposit;
-# the deposit (freeze.py) happens only when all 53 are mapped and reviewed.
+# 11 Nov 2026: all 53 fixtures listed. A fixture without spec_refs is a probe: no keyword sentence in the census
+# scope binds that behaviour (grammar-only cases such as LWS before a colon, or response-parsing controls), so its
+# divergences are reported but carry no fault-class label. Rows from the 11 Nov scope extension (Sections 11, 14,
+# 15, 18, 19, 21) are in ledger/sipx.ledger.csv. Fixtures are CRLF wire bytes (tests/test_fixture_wire.py).
 
 cell: sip
 
@@ -26,9 +27,8 @@ fixtures:
     # 7.3.3: a compact header-name form MAY substitute the long form. The clause predicate below is the MAY
     # acceptance; that the parsed `via` equals the long form is enforced by the axis canonicalisation (3.2) and
     # the cross-implementation comparison, not by a clause predicate, so it is not a spec_ref.
-    # TODO: locate the receiver-side MUST to accept both forms before the deposit (SIP-7aa019b5/201cb2a0 are sender MAY).
     spec_refs:
-      - {req_id: SIP-7aa019b5, clause: "RFC 3261 7.3.3", keyword: MAY, axis: decision_class, step: 1, allowed: [proceed]}
+      - {req_id: SIP-b7edfe98, clause: "RFC 3261 7.3.3", keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
 
   lower_sip_version:
     cell: sip
@@ -59,3 +59,208 @@ fixtures:
     # a request with no header fields violates the minimum-header-set MUST and the CRLF/empty-line rule.
     spec_refs:
       - {req_id: SIP-dfabd7a8, clause: "RFC 3261 8.1.1", keyword: MUST, axis: decision_class, step: 1, allowed: [fix-request]}
+
+  ack_min:
+    cell: sip
+    spec_refs:
+      - {req_id: SIP-9faefe1e, clause: "RFC 3261 7", keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+
+  bye_min:
+    cell: sip
+    spec_refs:
+      - {req_id: SIP-9faefe1e, clause: "RFC 3261 7", keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+
+  cancel_min:
+    cell: sip
+    spec_refs:
+      - {req_id: SIP-9faefe1e, clause: "RFC 3261 7", keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+
+  info_min:
+    cell: sip
+    spec_refs:
+      - {req_id: SIP-9faefe1e, clause: "RFC 3261 7", keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+
+  message_min:
+    cell: sip
+    spec_refs:
+      - {req_id: SIP-42100ada, clause: "RFC 3261 18.3", keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+
+  notify_min:
+    cell: sip
+    spec_refs:
+      - {req_id: SIP-9faefe1e, clause: "RFC 3261 7", keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+
+  options_min:
+    cell: sip
+    spec_refs:
+      - {req_id: SIP-be25cd74, clause: "RFC 3261 11", keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+
+  register_min:
+    cell: sip
+    spec_refs:
+      - {req_id: SIP-9faefe1e, clause: "RFC 3261 7", keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+
+  subscribe_min:
+    cell: sip
+    spec_refs:
+      - {req_id: SIP-9faefe1e, clause: "RFC 3261 7", keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+
+  invite_sdp:
+    cell: sip
+    spec_refs:
+      - {req_id: SIP-95992cb1, clause: "RFC 3261 7.4.1", keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+
+  message_body:
+    cell: sip
+    spec_refs:
+      - {req_id: SIP-95992cb1, clause: "RFC 3261 7.4.1", keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+
+  compact_ctype:
+    cell: sip
+    spec_refs:
+      - {req_id: SIP-b7edfe98, clause: "RFC 3261 7.3.3", keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+
+  torture_unrecog_hdr:
+    cell: sip
+    spec_refs:
+      - {req_id: SIP-d4d3dbbe, clause: "RFC 3261 8.2.2", keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+
+  torture_unknown_scheme:
+    cell: sip
+    spec_refs:
+      - {req_id: SIP-3bad9f61, clause: "RFC 3261 8.2.2.1", keyword: SHOULD, axis: decision_class, step: 1, allowed: [proceed]}
+
+  torture_long_uri:
+    cell: sip
+    spec_refs:
+      - {req_id: SIP-fba94d46, clause: "RFC 3261 18.1.1", keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+
+  torture_bad_clen:
+    cell: sip
+    spec_refs:
+      - {req_id: SIP-51e06990, clause: "RFC 3261 18.3", keyword: SHOULD, axis: decision_class, step: 1, allowed: [fix-request]}
+
+  junk_after_message:
+    cell: sip
+    spec_refs:
+      - {req_id: SIP-42100ada, clause: "RFC 3261 18.3", keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+
+  torture_null_claim:
+    cell: sip
+    spec_refs:
+      - {req_id: SIP-a1fca146, clause: "RFC 3261 7.4.1", keyword: MAY, axis: decision_class, step: 1, allowed: [proceed]}
+
+  torture_nonascii_reason:
+    cell: sip
+    spec_refs:
+      - {req_id: SIP-205aa22b, clause: "RFC 3261 7.2", keyword: MAY, axis: decision_class, step: 1, allowed: [retry-later]}
+
+  malformed_start:
+    cell: sip
+    spec_refs:
+      - {req_id: SIP-9faefe1e, clause: "RFC 3261 7", keyword: MUST, axis: decision_class, step: 1, allowed: [fix-request]}
+
+  response_100_trying:
+    cell: sip
+    spec_refs:
+      - {req_id: SIP-586dd6d5, clause: "RFC 3261 8.1.3.2", keyword: MUST, axis: decision_class, step: 1, allowed: [no-decision]}
+
+  bad_status_code:
+    cell: sip
+    # probe: no keyword sentence in scope binds this case
+
+  folded_via:
+    cell: sip
+    # probe: no keyword sentence in scope binds this case
+
+  no_headers:
+    cell: sip
+    # probe: no keyword sentence in scope binds this case
+
+  sdp_trail_ws:
+    cell: sip
+    # probe: no keyword sentence in scope binds this case
+
+  spaces_start:
+    cell: sip
+    # probe: no keyword sentence in scope binds this case
+
+  tab_sep_headers:
+    cell: sip
+    # probe: no keyword sentence in scope binds this case
+
+  torture_display_name:
+    cell: sip
+    # probe: no keyword sentence in scope binds this case
+
+  torture_dup_cseq_via:
+    cell: sip
+    # probe: no keyword sentence in scope binds this case
+
+  torture_empty_subject:
+    cell: sip
+    # probe: no keyword sentence in scope binds this case
+
+  torture_escaped_uri:
+    cell: sip
+    # probe: no keyword sentence in scope binds this case
+
+  torture_ipv6_via:
+    cell: sip
+    # probe: no keyword sentence in scope binds this case
+
+  torture_lws_colon:
+    cell: sip
+    # probe: no keyword sentence in scope binds this case
+
+  torture_multi_clen:
+    cell: sip
+    # probe: no keyword sentence in scope binds this case
+
+  torture_no_magic:
+    cell: sip
+    # probe: no keyword sentence in scope binds this case
+
+  torture_ruri_param:
+    cell: sip
+    # probe: no keyword sentence in scope binds this case
+
+  torture_ws_end:
+    cell: sip
+    # probe: no keyword sentence in scope binds this case
+
+  unknown_method:
+    cell: sip
+    # probe: no keyword sentence in scope binds this case
+
+  response_180_ringing:
+    cell: sip
+    # probe: no keyword sentence in scope binds this case
+
+  response_200_min:
+    cell: sip
+    # probe: no keyword sentence in scope binds this case
+
+  response_200_sdp:
+    cell: sip
+    # probe: no keyword sentence in scope binds this case
+
+  response_401_auth:
+    cell: sip
+    # probe: no keyword sentence in scope binds this case
+
+  response_404_notfound:
+    cell: sip
+    # probe: no keyword sentence in scope binds this case
+
+  response_486_busy:
+    cell: sip
+    # probe: no keyword sentence in scope binds this case
+
+  response_503_unavail:
+    cell: sip
+    # probe: no keyword sentence in scope binds this case
+
+  response_603_decline:
+    cell: sip
+    # probe: no keyword sentence in scope binds this case

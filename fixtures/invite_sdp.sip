@@ -7,7 +7,7 @@ Call-ID: polydrift-invite-sdp@example.com
 CSeq: 1 INVITE
 Contact: <sip:alice@192.0.2.1:5060>
 Content-Type: application/sdp
-Content-Length: 139
+Content-Length: 140
 
 v=0
 o=alice 2890844526 2890844526 IN IP4 192.0.2.1

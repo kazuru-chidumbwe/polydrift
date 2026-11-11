@@ -31,6 +31,8 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("records")
     ap.add_argument("--tier", type=int, default=2)
+    ap.add_argument("--drift", action="store_true",
+                    help="drift run: check each control within an implementation family, not across peers")
     a = ap.parse_args()
     tier = Tier(a.tier)
     recs = read_jsonl(a.records)
@@ -53,7 +55,15 @@ def main() -> int:
         where = first_difference(list(keys.values())) if len(parts) > 1 else "-"
         kind = fx[fid].get("kind", "")
         print(f"{fid:42s} {kind:9s} {len(parts)} classes  {where:28s} " + " | ".join(",".join(sorted(p)) for p in parts))
-        if kind == "control" and len(parts) > 1:
+        if kind == "control" and a.drift:
+            fam = collections.defaultdict(list)
+            for r in rs:
+                fam[r.impl.rsplit("-", 1)[0]].append(r)
+            for name, frs in fam.items():
+                fparts = partition(frs, tier)
+                if len(fparts) > 1 and not set().union(*fparts[1:]) <= ok_minority[fid]:
+                    bad_controls.append(f"{fid}[{name}]")
+        elif kind == "control" and len(parts) > 1:
             minority = set().union(*parts[1:])
             if not minority <= ok_minority[fid]:
                 bad_controls.append(fid)

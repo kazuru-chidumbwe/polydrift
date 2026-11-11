@@ -36,8 +36,10 @@ def load_fixtures() -> dict[str, dict[str, Any]]:
     return yaml.safe_load(FIXTURES_PATH.read_text(encoding="utf-8"))["fixtures"]
 
 
-def canary(host: str, port: int, tag: str) -> bool:
-    obs = driver.run_script(host, port, CANARY, topic_prefix=f"pd/{tag}/", client_prefix=f"pd-{tag}-")
+def canary(host: str, port: int, tag: str, version: int = 5) -> bool:
+    # A broker that predates MQTT 5 (Mosquitto 1.5) gets a 3.1.1 canary: target field canary_version.
+    script = [dict(CANARY[0], args=dict(CANARY[0]["args"], version=version)), CANARY[1]]
+    obs = driver.run_script(host, port, script, topic_prefix=f"pd/{tag}/", client_prefix=f"pd-{tag}-")
     pk = obs[0]["clients"]["a"]["packets"]
     return bool(pk) and pk[0].get("type") == "CONNACK" and pk[0].get("reason_code") == 0
 
@@ -63,11 +65,11 @@ def start(t: dict[str, Any], name: str) -> int:
     return port
 
 
-def wait_ready(port: int, seconds: int, tag: str) -> bool:
+def wait_ready(port: int, seconds: int, tag: str, version: int = 5) -> bool:
     t0 = time.time()
     while time.time() - t0 < seconds:
         try:
-            if canary("127.0.0.1", port, tag):
+            if canary("127.0.0.1", port, tag, version):
                 return True
         except OSError:
             pass
@@ -111,7 +113,8 @@ def main() -> int:
                 except Exception as e:  # noqa: BLE001
                     log(f"{t['key']} repeat {r}: {e}")
                     break
-                ok_start = wait_ready(port, t.get("ready", 180), f"{t['key']}-r{r}")
+                cv = int(t.get("canary_version", 5))
+                ok_start = wait_ready(port, t.get("ready", 180), f"{t['key']}-r{r}", cv)
                 image_id = sh(["docker", "image", "inspect", "-f", "{{.Id}}", t["image"]]).stdout.strip()
                 batch = []
                 for fid, fx in fixtures.items():
@@ -121,7 +124,7 @@ def main() -> int:
                     except Exception as e:  # noqa: BLE001
                         obs = [{"step": 1, "actor": "a", "op": "?", "end": False, "error": f"driver: {e!r}", "clients": {}}]
                     batch.append((fid, tp, obs, int(fx.get("version", 5)), bool(fx.get("aggregate_deliveries"))))
-                ok_end = ok_start and canary("127.0.0.1", port, f"{t['key']}-r{r}-end")
+                ok_end = ok_start and canary("127.0.0.1", port, f"{t['key']}-r{r}-end", cv)
                 final = (ok_start and ok_end) or attempt == 2
                 with (out / ("raw.jsonl" if final else "raw-failed.jsonl")).open("a") as rawf,                         (out / ("records.jsonl" if final else "records-failed.jsonl")).open("a") as recf:
                     for fid, tp, obs, ver, agg in batch:

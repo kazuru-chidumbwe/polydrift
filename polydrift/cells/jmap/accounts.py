@@ -3,8 +3,9 @@
 Each server is provisioned with nothing but its image defaults (provisioning recipes in the lab folder); the account
 the fixtures use is created here, after every clean restart, through the server's own administration path:
 
-* Stalwart: the first-run temporary administrator printed in the container log, then the management API
-  (POST /api/principal: domain lab.test, individual pd with an e-mail address).
+* Stalwart 0.x: the first-run temporary administrator printed in the container log, then the management API
+  (POST /api/principal: domain lab.test, individual pd with an e-mail address). Stalwart >= 0.16: a JSON config
+  file (lab/stalwart-config.json) and a fixed admin (STALWART_RECOVERY_ADMIN), then JMAP x:Domain/set, x:Account/set.
 * James (memory): the web administration API on port 8000 (PUT /domains/lab.test, PUT /users/pd@lab.test), with the
   WebAdmin password the image generates per run and writes to its log.
 * Cyrus: saslpasswd2 in the container (sasl_pwcheck_method auxprop); the mailbox is created on first login, since
@@ -45,7 +46,35 @@ def session(base: str, user: str, pw: str) -> tuple[int, str]:
     return _req("GET", base + "/.well-known/jmap", user, pw)
 
 
+RECOVERY_ADMIN_PW = "Lab-Admin-2026"
+
+
+def _recovery_admin(container: str) -> bool:
+    env = subprocess.run(["docker", "inspect", "-f", "{{json .Config.Env}}", container],
+                         capture_output=True, text=True).stdout
+    return "STALWART_RECOVERY_ADMIN=" in env
+
+
+def stalwart_v1(base: str) -> tuple[str, str]:
+    """Stalwart >= 0.16: the server starts from a JSON config file (data store only; no file means bootstrap mode)
+    with a fixed administrator from STALWART_RECOVERY_ADMIN; domain and account are created with the JMAP methods
+    x:Domain/set and x:Account/set (stalw.art docs, read 11 Nov 2026). The login is the full address."""
+    jmap = lambda calls: _req("POST", base + "/jmap/", "admin", RECOVERY_ADMIN_PW,  # noqa: E731
+                              {"using": ["urn:ietf:params:jmap:core", "urn:stalwart:jmap"], "methodCalls": calls})
+    c1, t1 = jmap([["x:Domain/set", {"create": {"d1": {"name": DOMAIN}}}, "c0"]])
+    try:
+        dom = json.loads(t1)["methodResponses"][0][1]["created"]["d1"]["id"]
+    except Exception as e:  # noqa: BLE001
+        raise RuntimeError(f"stalwart v1: domain create {c1} {t1[:150]}") from e
+    c2, t2 = jmap([["x:Account/set", {"create": {"a1": {"@type": "User", "name": USER, "domainId": dom,
+                                                         "credentials": {"0": {"@type": "Password", "secret": PASSWORD}}}}},
+                    "c0"]])
+    return f"{USER}@{DOMAIN}", f"{c1}:{t1[:60]};{c2}:{t2[:60]}"
+
+
 def stalwart(container: str, base: str) -> tuple[str, str]:
+    if _recovery_admin(container):
+        return stalwart_v1(base)
     logs = subprocess.run(["docker", "logs", container], capture_output=True, text=True).stdout + \
         subprocess.run(["docker", "logs", container], capture_output=True, text=True).stderr
     m = re.search(r"password:\s*(\S+)", logs) or re.search(r"with password '([^']+)'", logs)

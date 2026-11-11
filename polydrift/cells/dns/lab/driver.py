@@ -123,7 +123,8 @@ def run(server: str, steps: list[dict]) -> list[dict]:
                 opts = []
                 if st.get("ednsopt") is not None:
                     opts = [dns.edns.GenericOption(int(st["ednsopt"]), b"\x00\x00\x00\x00")]
-                q = dns.message.make_query(st["qname"], st.get("qtype", "A"), use_edns=edns,
+                # dnspython turns EDNS on when use_edns is None and a payload is given; False means no OPT at all.
+                q = dns.message.make_query(st["qname"], st.get("qtype", "A"), use_edns=False if edns is None else edns,
                                            payload=int(st.get("payload", 1232)), want_dnssec=bool(st.get("do")),
                                            options=opts if edns is not None else None)
                 if edns is not None and st.get("ednsver"):

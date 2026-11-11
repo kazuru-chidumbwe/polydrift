@@ -114,11 +114,11 @@ fixtures:
       - {req_id: DNS-ac77b41a, keyword: MUST, axis: authority_soa, step: 2, allowed: [true]}
       - {req_id: DNS-03a76844, keyword: MUST, axis: response_type, step: 3, allowed: [positive]}
     steps:
-      - {qname: flip.pd.pdlab, qtype: A}
+      - {qname: flip.neg.pdlab, qtype: A}
       - {op: sleep, ms: 1000}
-      - {qname: flip.pd.pdlab, qtype: A}
+      - {qname: flip.neg.pdlab, qtype: A}
       - {op: sleep, ms: 8000}
-      - {qname: flip.pd.pdlab, qtype: A}
+      - {qname: flip.neg.pdlab, qtype: A}
 
   # ---------------- size, truncation, TCP ----------------
   auth_truncates_udp:

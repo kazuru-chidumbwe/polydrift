@@ -1,6 +1,8 @@
 # DNS cell lab tree (manuscript 4.5). Internal network 172.31.53.0/24, no route out.
 # root .10 (.), test .11 (pdlab.), pd .12 (pd.pdlab.), dead .13 (no server), other .14 (other.pdlab.),
-# half .15 (halflame.pdlab.), resolver under test .53, client .99.
+# half .15 (halflame.pdlab.), neg .16 (neg.pdlab.), resolver under test .53, client .99.
+# neg.pdlab. holds only the negative-caching fixture: no other fixture touches its SOA, so a resolver that reuses the
+# remaining TTL of a cached SOA for a new negative answer (Unbound does) cannot make the fixture order-dependent.
 # Every zone is unsigned; resolvers run with validation off for the lab root (the only deviation besides root hints,
 # query access and, for PowerDNS Recursor, permission to query private addresses).
 servers:
@@ -30,6 +32,8 @@ servers:
       - "halflame 3600 NS ns1.halflame"
       - "halflame 3600 NS ns2.halflame"
       - "ns1.halflame 3600 A 172.31.53.13"
+      - "neg 3600 NS ns.neg"
+      - "ns.neg 3600 A 172.31.53.16"
       - "ns2.halflame 3600 A 172.31.53.15"
   pd:
     ip: 172.31.53.12
@@ -69,7 +73,6 @@ servers:
       - "unk 300 TYPE65280 \\# 4 0a000001"
       - "trunc 300 A 10.0.4.1"
       - "ednsfe 300 A 10.0.6.1"
-      - "flip 300 A 10.0.7.1"
       - "poison 300 A 10.0.8.1"
       - "addpoison 300 A 10.0.8.2"
       - "inbail 300 A 10.0.8.3"
@@ -84,7 +87,6 @@ servers:
       trunc: {kind: truncate_udp}
       noaa: {kind: answer, answer: ["noaa.pd.pdlab. 300 A 10.0.5.1"], noaa: true}
       ednsfe: {kind: edns_formerr}
-      flip: {kind: flip, negative_seconds: 0.5}
       poison: {kind: extra_answer, answer: ["victim.other.pdlab. 300 A 6.6.6.6"]}
       addpoison: {kind: extra_additional, additional: ["victim2.other.pdlab. 300 A 6.6.6.7"]}
       inbail: {kind: extra_additional, additional: ["a2.pd.pdlab. 300 A 6.6.6.8"]}
@@ -112,3 +114,13 @@ servers:
       - "ns1 3600 A 172.31.53.13"
       - "ns2 3600 A 172.31.53.15"
       - "x 300 A 10.10.0.1"
+  neg:
+    ip: 172.31.53.16
+    zone: "neg.pdlab."
+    records:
+      - "@ 3600 SOA ns.neg.pdlab. host.neg.pdlab. 1 3600 600 86400 5"
+      - "@ 3600 NS ns"
+      - "ns 3600 A 172.31.53.16"
+      - "flip 300 A 10.0.7.1"
+    behaviours:
+      flip: {kind: flip, negative_seconds: 0.5}

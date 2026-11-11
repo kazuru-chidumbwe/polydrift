@@ -1,0 +1,9 @@
+From: alice@example.invalid
+To: user@lab.test
+Subject: =?UTF-8?B?UmVjaG51bmcgw7xiZXJmw6RsbGln?=
+Date: Mon, 09 Nov 2026 10:00:00 +0000
+Message-ID: <enc@example.invalid>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Encoded subject.

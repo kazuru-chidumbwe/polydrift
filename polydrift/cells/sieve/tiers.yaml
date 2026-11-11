@@ -1,0 +1,30 @@
+# Sieve cell: axis -> tier (manuscript 3.3). Consumer: the mail user (where the message is, what was sent on their
+# behalf) and the operator who wrote the script.
+cell: sieve
+refusal_class: null
+axes:
+  decision_class:
+    tier: 1
+    kappa: identity
+    clause: "T1: a script that does not compile leaves the operator to fix it (fix-request); one that compiles runs (proceed)"
+  outcome:
+    tier: 1
+    kappa: identity
+    clause: "T1: ok, refused at compile time, or failed at run time; the operator acts on each differently"
+  compile_class:
+    tier: 3
+    kappa: identity
+    clause: "T3: which kind of compile error (unknown extension, syntax, other); the operator fixes the script either way"
+  intent:
+    tier: 2
+    kappa: identity
+    clause: "T2: the action set the interpreter decides on (keep, fileinto, redirect, reject, discard, vacation)"
+  stored:
+    tier: 2
+    kappa: identity
+    clause: "T2: the folders the message is in after delivery; the user finds it there or does not (effect layer)"
+  emitted:
+    tier: 2
+    kappa: identity
+    clause: "T2: messages sent on the user's behalf (redirect, reject, vacation, DSN), by kind and recipients (effect layer)"
+volatile: []

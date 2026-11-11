@@ -17,6 +17,7 @@ import socket
 import socketserver
 import struct
 import threading
+import time
 
 import dns.edns
 import dns.exception
@@ -31,7 +32,7 @@ import dns.rdatatype
 import dns.rrset
 import yaml
 
-STATE: dict[str, int] = {}
+STATE: dict[str, float] = {}
 LOCK = threading.Lock()
 
 
@@ -203,10 +204,12 @@ def respond(zone: Zone, wire: bytes, transport: str) -> bytes | None:
             resp.flags |= dns.flags.TC | dns.flags.AA
             return resp.to_wire()
         if kind == "flip":
+            # time-based: NXDOMAIN until `negative_seconds` after the first query for the name, then the record.
+            # (A count-based flip broke when a resolver sent two upstream queries for one client query.)
+            now = time.monotonic()
             with LOCK:
-                n = STATE.get(qname.to_text(), 0)
-                STATE[qname.to_text()] = n + 1
-            if n < int(beh.get("negative_first", 1)):
+                first = STATE.setdefault(qname.to_text(), now)
+            if now - first < float(beh.get("negative_seconds", 0.5)):
                 resp.flags |= dns.flags.AA
                 resp.set_rcode(dns.rcode.NXDOMAIN)
                 resp.authority.append(zone.negative_soa())

@@ -84,7 +84,7 @@ servers:
       trunc: {kind: truncate_udp}
       noaa: {kind: answer, answer: ["noaa.pd.pdlab. 300 A 10.0.5.1"], noaa: true}
       ednsfe: {kind: edns_formerr}
-      flip: {kind: flip, negative_first: 1}
+      flip: {kind: flip, negative_seconds: 0.5}
       poison: {kind: extra_answer, answer: ["victim.other.pdlab. 300 A 6.6.6.6"]}
       addpoison: {kind: extra_additional, additional: ["victim2.other.pdlab. 300 A 6.6.6.7"]}
       inbail: {kind: extra_additional, additional: ["a2.pd.pdlab. 300 A 6.6.6.8"]}

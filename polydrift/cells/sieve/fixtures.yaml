@@ -1,0 +1,334 @@
+# Sieve fixtures (manuscript 3.1, 4.4, 4.5). Each fixture is one script run on one message (lab/messages) with an
+# envelope and a set of existing folders. Every engine run gives two records: `<id>` (compile and intent, all
+# engines) and `<id>@effect` (where the message ended up and what was sent, engines that execute). spec_refs name
+# ledger rows (ledger/sieve.ledger.csv); `layer: effect` refs apply to the @effect record. Fixtures without
+# spec_refs probe behaviour the RFCs leave open.
+# Status: first batch (11 Nov 2026).
+cell: sieve
+defaults: {from: attacker@example.invalid, to: user@lab.test, folders: [INBOX]}
+
+fixtures:
+
+  # ---------------- controls ----------------
+  empty_script_keeps:
+    kind: control
+    message: clean.eml
+    script: |
+      # nothing: implicit keep
+
+  explicit_keep:
+    kind: control
+    message: clean.eml
+    script: |
+      keep;
+
+  fileinto_existing:
+    kind: control
+    message: phishing.eml
+    folders: [INBOX, INBOX.Quarantine]
+    script: |
+      require "fileinto";
+      fileinto "INBOX.Quarantine";
+
+  discard_plain:
+    kind: control
+    message: clean.eml
+    script: |
+      discard;
+
+  # ---------------- core actions and require ----------------
+  redirect_without_require:
+    kind: probe
+    message: review.eml
+    spec_refs:
+      - {req_id: SIEVE-49748ec9, keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+    script: |
+      redirect "review@example.invalid";
+
+  require_unknown_extension:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {req_id: SIEVE-51cd7779, keyword: MUST, axis: decision_class, step: 1, allowed: [fix-request]}
+    script: |
+      require "x-pd-no-such-extension";
+      keep;
+
+  fileinto_without_require:
+    kind: probe
+    message: phishing.eml
+    folders: [INBOX, INBOX.Quarantine]
+    spec_refs:
+      - {req_id: SIEVE-42a6156f, keyword: MUST, axis: decision_class, step: 1, allowed: [fix-request]}
+    script: |
+      fileinto "INBOX.Quarantine";
+
+  require_after_command:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {req_id: SIEVE-8506f896, keyword: MUST, axis: decision_class, step: 1, allowed: [fix-request]}
+    script: |
+      keep;
+      require "fileinto";
+
+  elsif_without_if:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {req_id: SIEVE-cf55c106, keyword: MUST, axis: decision_class, step: 1, allowed: [fix-request]}
+    script: |
+      elsif true { keep; }
+
+  # ---------------- fileinto ----------------
+  fileinto_missing_folder:
+    kind: security
+    message: phishing.eml
+    spec_refs:
+      - {req_id: SIEVE-1ebcd14f, keyword: MAY, axis: stored, step: 1, layer: effect,
+         allowed: [[[INBOX, 1]], [[INBOX.Quarantine, 1]]]}
+    script: |
+      require "fileinto";
+      if header :contains "subject" "verify your account" {
+        fileinto "INBOX.Quarantine";
+        stop;
+      }
+
+  fileinto_twice_same_folder:
+    kind: probe
+    message: phishing.eml
+    folders: [INBOX, INBOX.Quarantine]
+    spec_refs:
+      - {req_id: SIEVE-adce47a5, keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+      - {req_id: SIEVE-6184b5d0, keyword: SHOULD, axis: stored, step: 1, layer: effect, allowed: [[[INBOX.Quarantine, 1]]]}
+    script: |
+      require "fileinto";
+      fileinto "INBOX.Quarantine";
+      fileinto "INBOX.Quarantine";
+
+  # ---------------- discard, redirect ----------------
+  discard_is_silent:
+    kind: probe
+    message: phishing.eml
+    spec_refs:
+      - {req_id: SIEVE-ce7edc23, keyword: MUST, axis: emitted, step: 1, layer: effect, allowed: [[]]}
+    script: |
+      discard;
+
+  redirect_keeps_nothing:
+    kind: probe
+    message: review.eml
+    script: |
+      redirect "review@example.invalid";
+
+  # ---------------- tests ----------------
+  core_tests_combined:
+    kind: probe
+    message: phishing.eml
+    folders: [INBOX, INBOX.Quarantine]
+    spec_refs:
+      - {req_id: SIEVE-40f39d16, keyword: MUST, axis: intent, step: 1, allowed: [[fileinto:INBOX.Quarantine]]}
+    script: |
+      require "fileinto";
+      if allof (exists "subject", not false, anyof (true, header :is "x-none" "y"),
+                address :domain :is "from" "example.invalid", size :under 1M) {
+        fileinto "INBOX.Quarantine";
+      }
+
+  comparator_octet_case:
+    kind: probe
+    message: phishing.eml
+    folders: [INBOX, INBOX.Quarantine]
+    spec_refs:
+      - {req_id: SIEVE-7670d657, keyword: MUST, axis: intent, step: 1, allowed: [[keep]]}
+    script: |
+      require "fileinto";
+      if header :comparator "i;octet" :contains "subject" "VERIFY" {
+        fileinto "INBOX.Quarantine";
+      }
+
+  size_suffix_k:
+    kind: probe
+    message: big.eml
+    folders: [INBOX, INBOX.Big]
+    spec_refs:
+      - {req_id: SIEVE-624f0acf, keyword: MAY, axis: intent, step: 1, allowed: [[fileinto:INBOX.Big]]}
+    script: |
+      require "fileinto";
+      if size :over 10K { fileinto "INBOX.Big"; }
+
+  invalid_header_name:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {req_id: SIEVE-dc9654cd, keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+    script: |
+      if header :contains "bad header:name" "x" { discard; }
+
+  encoded_subject_match:
+    kind: probe
+    message: encoded.eml
+    folders: [INBOX, INBOX.Bills]
+    spec_refs:
+      - {req_id: SIEVE-9aba2c0b, keyword: SHOULD, axis: intent, step: 1, allowed: [[fileinto:INBOX.Bills]]}
+      - {req_id: SIEVE-f9611ce8, keyword: MUST, axis: intent, step: 1, allowed: [[fileinto:INBOX.Bills]]}
+    script: |
+      require "fileinto";
+      if header :contains "subject" "überfällig" { fileinto "INBOX.Bills"; }
+
+  nesting_fifteen:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {req_id: SIEVE-a3f32976, keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+    script: |
+      if true { if true { if true { if true { if true { if true { if true { if true {
+      if true { if true { if true { if true { if true { if true { if true { keep; }
+      } } } } } } } } } } } } } }
+
+  envelope_from_test:
+    kind: probe
+    message: return-path.eml
+    folders: [INBOX, INBOX.Quarantine]
+    spec_refs:
+      - {req_id: SIEVE-2f9e4407, keyword: SHOULD, axis: intent, step: 1, allowed: [[fileinto:INBOX.Quarantine]]}
+    script: |
+      require ["envelope", "fileinto"];
+      if envelope :is "from" "attacker@example.invalid" { fileinto "INBOX.Quarantine"; }
+
+  body_contains:
+    kind: probe
+    message: phishing.eml
+    folders: [INBOX, INBOX.Quarantine]
+    script: |
+      require ["body", "fileinto"];
+      if body :text :contains "Click here" { fileinto "INBOX.Quarantine"; }
+
+  # ---------------- reject (RFC 5429) ----------------
+  reject_phishing:
+    kind: security
+    message: phishing.eml
+    spec_refs:
+      - {req_id: SIEVE-b8699dab, keyword: MUST, axis: emitted, step: 1, layer: effect,
+         allowed: [[[reject, [attacker@example.invalid]]]]}
+    script: |
+      require "reject";
+      if header :contains "subject" "verify your account" {
+        reject "Message rejected by local policy.";
+      }
+
+  reject_twice:
+    kind: probe
+    message: phishing.eml
+    spec_refs:
+      - {req_id: SIEVE-d2744728, keyword: MUST, axis: outcome, step: 1, allowed: [refused, runtime-error]}
+    script: |
+      require "reject";
+      reject "one";
+      reject "two";
+
+  reject_with_vacation:
+    kind: probe
+    message: to-user.eml
+    spec_refs:
+      - {req_id: SIEVE-873ba023, keyword: MUST, axis: outcome, step: 1, allowed: [refused, runtime-error]}
+    script: |
+      require ["reject", "vacation"];
+      vacation "Away.";
+      reject "No.";
+
+  ereject_phishing:
+    kind: probe
+    message: phishing.eml
+    script: |
+      require "ereject";
+      ereject "Rejected at delivery.";
+
+  # ---------------- vacation (RFC 5230) ----------------
+  vacation_addressed:
+    kind: probe
+    message: to-user.eml
+    spec_refs:
+      - {req_id: SIEVE-34b25e13, keyword: SHOULD, axis: emitted, step: 1, layer: effect,
+         allowed: [[[vacation, [alice@example.invalid]]]]}
+    script: |
+      require "vacation";
+      vacation :days 1 "I am away.";
+
+  vacation_not_addressed:
+    kind: probe
+    message: not-addressed.eml
+    spec_refs:
+      - {req_id: SIEVE-28a0229e, keyword: MUST, axis: emitted, step: 1, layer: effect, allowed: [[]]}
+    script: |
+      require "vacation";
+      vacation :days 1 "I am away.";
+
+  vacation_mailer_daemon:
+    kind: probe
+    message: daemon.eml
+    spec_refs:
+      - {req_id: SIEVE-49ac459c, keyword: MUST, axis: emitted, step: 1, layer: effect, allowed: [[]]}
+    script: |
+      require "vacation";
+      vacation :days 1 "I am away.";
+
+  vacation_list_message:
+    kind: probe
+    message: list.eml
+    spec_refs:
+      - {req_id: SIEVE-af3c6889, keyword: SHOULD, axis: emitted, step: 1, layer: effect, allowed: [[]]}
+    script: |
+      require "vacation";
+      vacation :days 1 "I am away.";
+
+  vacation_auto_submitted:
+    kind: probe
+    message: autosub.eml
+    spec_refs:
+      - {req_id: SIEVE-99ca3d1a, keyword: SHOULD, axis: emitted, step: 1, layer: effect, allowed: [[]]}
+    script: |
+      require "vacation";
+      vacation :days 1 "I am away.";
+
+  vacation_twice:
+    kind: probe
+    message: to-user.eml
+    spec_refs:
+      - {req_id: SIEVE-b48950f0, keyword: MUST, axis: outcome, step: 1, allowed: [refused, runtime-error]}
+    script: |
+      require "vacation";
+      vacation "One.";
+      vacation "Two.";
+
+  vacation_with_fileinto:
+    kind: probe
+    message: to-user.eml
+    folders: [INBOX, INBOX.Away]
+    spec_refs:
+      - {req_id: SIEVE-28b4954e, keyword: MUST, axis: outcome, step: 1, allowed: [ok]}
+    script: |
+      require ["vacation", "fileinto"];
+      vacation "Away.";
+      fileinto "INBOX.Away";
+
+  # ---------------- imap4flags (RFC 5232) ----------------
+  flags_on_keep:
+    kind: probe
+    message: legal-hold.eml
+    spec_refs:
+      - {req_id: SIEVE-e30667ff, keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+    script: |
+      require "imap4flags";
+      addflag "\\Flagged";
+      keep;
+
+  flags_empty_string:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {req_id: SIEVE-ae93174b, keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+    script: |
+      require "imap4flags";
+      setflag ["", "\\Seen"];
+      keep;

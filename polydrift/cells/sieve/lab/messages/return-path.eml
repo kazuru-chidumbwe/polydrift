@@ -1,0 +1,10 @@
+Return-Path: <evil@example.invalid>
+From: not-evil@example.invalid
+To: user@example.invalid
+Subject: Invoice
+Date: Mon, 14 Sep 2026 19:00:00 +0000
+Message-ID: <rp@example.invalid>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Please see attached invoice.

@@ -33,8 +33,10 @@ from pathlib import Path
 OUT = Path("/tmp/pd-out")
 
 
-def sh(args: list[str], stdin: bytes | None = None, timeout: int = 60, env: dict | None = None) -> tuple[int, str]:
-    r = subprocess.run(args, input=stdin, capture_output=True, timeout=timeout, env={**os.environ, **(env or {})})
+def sh(args: list[str], stdin: bytes | None = None, timeout: int = 60, env: dict | None = None,
+       cwd: str | None = None) -> tuple[int, str]:
+    r = subprocess.run(args, input=stdin, capture_output=True, timeout=timeout, env={**os.environ, **(env or {})},
+                       cwd=cwd)
     return r.returncode, (r.stdout + r.stderr).decode("utf-8", "replace")
 
 
@@ -66,6 +68,8 @@ def emitted() -> list[dict]:
         else:
             kind = "other"
         rcpt = sorted(a for a in args if "@" in a and not a.startswith("-"))
+        if not rcpt:
+            rcpt = sorted(x.strip().strip("<>") for x in (m.get("To") or "").split(",") if "@" in x)
         out.append({"kind": kind, "to": rcpt, "auto_submitted": auto or None})
     return out
 
@@ -154,6 +158,8 @@ def pigeonhole(fx: Path, meta: dict) -> dict:
                 intent.append("other:" + item[:60])
     res["intent"] = sorted(set(intent))
     res["intent_rc"] = rc
+    if rc != 0:
+        res["runtime_error"] = " | ".join(ln.strip() for ln in txt.splitlines() if "error" in ln.lower())[-300:] or f"rc {rc}"
     rc, txt = sh(["sieve-test", "-c", str(conf), "-e", *env_args, str(s), str(m)])
     res["effect"] = {"stored": maildir_counts(maildir), "emitted": emitted(), "rc": rc,
                      "result": (re.findall(r"final result:\s*(.+)", txt) or [""])[-1].strip()}
@@ -180,9 +186,10 @@ def mailutils(fx: Path, meta: dict) -> dict:
         if f != "INBOX":
             for sub in ("cur", "new", "tmp"):
                 (root / f / sub).mkdir(parents=True, exist_ok=True)
-    common = ["--mbox-url", f"maildir://{src}", "--mailer-url", "prog:///lab/capture.sh",
+    common = ["--no-config", "--mbox-url", f"maildir://{src}", "--mailer", "prog:///lab/capture.sh",
               "--email", meta.get("to", "user@lab.test"), "-v"]
-    rc, txt = sh(["sieve", "--dry-run", *common, str(s)], env={"HOME": "/tmp/mbox", "FOLDER": "/tmp/mbox"})
+    root.mkdir(parents=True, exist_ok=True)
+    rc, txt = sh(["sieve", "--dry-run", *common, str(s)], env={"HOME": "/tmp/mbox"}, cwd=str(root))
     intent = []
     for line in txt.splitlines():
         low = line.lower()
@@ -192,15 +199,19 @@ def mailutils(fx: Path, meta: dict) -> dict:
                 tgt = re.findall(r"(?:delivering into|to)\s+(\S+)", line)
                 intent.append(f"{tag}:{tgt[0]}" if tag in ("fileinto", "redirect") and tgt else tag)
                 break
-    res["intent"] = sorted(set(intent)) or ["keep"]
+    res["intent"] = sorted(set(intent)) if rc == 0 else None
+    res["intent_rc"] = rc
     res["intent_text"] = txt.strip()[-400:]
-    rc, txt = sh(["sieve", *common, str(s)], env={"HOME": "/tmp/mbox", "FOLDER": "/tmp/mbox"})
+    rc, txt = sh(["sieve", *common, str(s)], env={"HOME": "/tmp/mbox"}, cwd=str(root))
     def live(x: Path) -> bool:  # maildir flag T = deleted (discard, or no keep after fileinto)
         return x.is_file() and "T" not in (x.name.split(":2,", 1)[1] if ":2," in x.name else "")
     stored = {"INBOX": sum(1 for sub in ("cur", "new") for x in (src / sub).glob("*") if live(x))}
-    for d in sorted(p for p in root.iterdir() if p.is_dir()) if root.exists() else []:
-        stored["INBOX." + d.name if not d.name.startswith("INBOX") else d.name] = sum(
-            1 for sub in ("cur", "new") for x in (d / sub).glob("*") if x.is_file())
+    for d in sorted(root.iterdir()):
+        name = d.name if d.name.startswith("INBOX") else "INBOX." + d.name
+        if d.is_dir():  # maildir folder made by the lab (meta folders) or by the engine
+            stored[name] = sum(1 for sub in ("cur", "new") for x in (d / sub).glob("*") if x.is_file())
+        elif d.is_file():  # mbox file the engine created for a fileinto target
+            stored[name] = sum(1 for ln in d.read_bytes().split(b"\n") if ln.startswith(b"From "))
     res["effect"] = {"stored": stored, "emitted": emitted(), "rc": rc, "text": txt.strip()[-300:]}
     return res
 
@@ -208,15 +219,25 @@ def mailutils(fx: Path, meta: dict) -> dict:
 # ---------------------------------------------------------------- Exim (filter test mode)
 def exim(fx: Path, meta: dict) -> dict:
     ver = sh(["exim", "-bV"])[1].splitlines()[0]
-    rc, txt = sh(["exim", "-bf", str(fx / "script.sieve"), "-f", meta.get("from", "sender@example.invalid")],
+    # Exim treats a filter file as Sieve only when its first line is "# Sieve filter" (Exim spec, filter chapter)
+    s = Path("/tmp/s.sieve")
+    s.write_bytes(b"# Sieve filter" + bytes([10]) + (fx / "script.sieve").read_bytes())
+    rc, txt = sh(["exim", "-v", "-bf", str(s), "-f", meta.get("from", "sender@example.invalid")],
                  stdin=(fx / "msg.eml").read_bytes())
-    res = {"engine_version": ver}
-    if re.search(r"sieve error|filter error|error in sieve", txt, re.I):
+    res = {"engine_version": ver, "intent_rc": rc}
+    if re.search(r"sieve error|filter error|error in sieve|error in (forward|filter) file", txt, re.I) or rc != 0:
         res.update(compile="refused", compile_class=compile_class(txt), compile_text=txt.strip()[-300:])
         return res
     res["compile"] = "ok"
     intent = []
     for line in txt.splitlines():
+        y = re.search(r"\b(fileinto|redirect)\s+`([^']*)'", line)
+        if y:
+            intent.append(f"{y.group(1)}:{y.group(2)}")
+        if re.search(r"\bdiscard\b", line) and "`" not in line and "Sieve" not in line:
+            intent.append("discard")
+        if re.search(r"\bkeep\b", line) and "implicit" not in line.lower():
+            intent.append("keep")
         x = re.match(r"\s*Save message to:\s*(\S+)", line)
         if x:
             intent.append(f"fileinto:{x.group(1)}")
@@ -229,7 +250,9 @@ def exim(fx: Path, meta: dict) -> dict:
             intent.append("keep")
         if re.search(r"Sieve vacation|vacation", line, re.I) and "Sieve" in line:
             intent.append("vacation")
-    res["intent"] = sorted(set(intent)) or ["keep"]
+    if not intent and "No implicit keep" not in txt:
+        intent.append("keep")
+    res["intent"] = sorted(set(intent))
     res["intent_text"] = txt.strip()[-400:]
     return res
 

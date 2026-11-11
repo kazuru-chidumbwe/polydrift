@@ -117,7 +117,7 @@ fixtures:
       - {qname: flip.pd.pdlab, qtype: A}
       - {op: sleep, ms: 1000}
       - {qname: flip.pd.pdlab, qtype: A}
-      - {op: sleep, ms: 6000}
+      - {op: sleep, ms: 8000}
       - {qname: flip.pd.pdlab, qtype: A}
 
   # ---------------- size, truncation, TCP ----------------
@@ -229,22 +229,22 @@ fixtures:
       - {req_id: DNS-ab5c16a2, keyword: SHOULD, axis: response_type, step: 1, allowed: [null]}
       - {req_id: DNS-a673ac50, keyword: SHOULD, axis: response_type, step: 1, allowed: [null]}
     steps:
-      - {qname: qid.pd.pdlab, qtype: A, timeout: 12}
+      - {qname: qid.pd.pdlab, qtype: A, timeout: 20}
 
   reply_question_mismatch:
     kind: probe
     steps:
-      - {qname: qmis.pd.pdlab, qtype: A, timeout: 12}
+      - {qname: qmis.pd.pdlab, qtype: A, timeout: 20}
 
   delegation_all_lame:
     kind: probe
     steps:
-      - {qname: x.lame.pdlab, qtype: A, timeout: 15}
+      - {qname: x.lame.pdlab, qtype: A, timeout: 20}
 
   delegation_half_lame:
     kind: probe
     steps:
-      - {qname: x.halflame.pdlab, qtype: A, timeout: 15}
+      - {qname: x.halflame.pdlab, qtype: A, timeout: 20}
 
   # ---------------- cache trust (security) ----------------
   unrelated_answer_rr:

@@ -1,0 +1,9 @@
+From: probe@example.invalid
+To: user@example.invalid
+Subject: out of office probe
+Date: Mon, 14 Sep 2026 19:00:00 +0000
+Message-ID: <vac@example.invalid>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Are you there?

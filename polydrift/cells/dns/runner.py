@@ -31,7 +31,7 @@ from polydrift.core.record import ObservationRecord, Status, StepRecord
 CELL_DIR = Path(__file__).resolve().parent
 FIXTURES_PATH = CELL_DIR / "fixtures.yaml"
 NET, SUBNET = "pd-dns", "172.31.53.0/24"
-RESOLVER_IP, CLIENT_IP = "172.31.53.53", "172.31.53.99"
+RESOLVER_IP, CLIENT_IP, UPSTREAM_IP = "172.31.53.53", "172.31.53.99", "172.31.53.54"
 LAB_IMAGE = "pd-dns-py:lab"
 CANARY = [{"qname": "ok.pd.pdlab", "qtype": "A", "timeout": 3}]
 CANARY_ANSWER = ["ok.pd.pdlab A 10.0.0.1"]
@@ -80,12 +80,16 @@ def lab_up(lab: str, zones: dict) -> None:
 def lab_down(zones: dict) -> None:
     for name in zones["servers"]:
         sh(["docker", "rm", "-f", f"pdns-auth-{name}"])
-    sh(["docker", "rm", "-f", "pdns-client", "pdns-res"])
+    sh(["docker", "rm", "-f", "pdns-client", "pdns-res", "pdns-up"])
 
 
-def start_resolver(t: dict[str, Any], lab: str) -> None:
-    sh(["docker", "rm", "-f", "pdns-res"])
-    args = ["docker", "run", "-d", "--name", "pdns-res", "--network", NET, "--ip", RESOLVER_IP, "--cpus=2",
+def start_resolver(t: dict[str, Any], lab: str, name: str = "pdns-res", ip: str = RESOLVER_IP) -> None:
+    """Start the element under test at .53. Forwarding-role targets name an `upstream` (a recursive resolver
+    target, same fields) that is started first at .54; the forwarder's config points at that address."""
+    if name == "pdns-res" and t.get("upstream"):
+        start_resolver(t["upstream"], lab, "pdns-up", UPSTREAM_IP)
+    sh(["docker", "rm", "-f", name])
+    args = ["docker", "run", "-d", "--name", name, "--network", NET, "--ip", ip, "--cpus=2",
             "--memory=2g", "-v", f"{lab}/resolvers:/conf:ro"]
     for f, dst in (t.get("mounts") or {}).items():
         args += ["-v", f"{lab}/resolvers/{f}:{dst}:ro"]

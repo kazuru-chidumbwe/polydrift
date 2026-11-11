@@ -1,0 +1,12 @@
+# NodeLocal DNSCache: the Kubernetes nodelocaldns template (cache, reload, loop, bind, forward), upstream .54.
+.:53 {
+    errors
+    cache {
+        success 9984 30
+        denial 9984 5
+    }
+    reload
+    loop
+    bind 0.0.0.0
+    forward . 172.31.53.54
+}

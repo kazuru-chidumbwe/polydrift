@@ -1,0 +1,5 @@
+# CoreDNS as a forwarder (role chain, manuscript 4.5): forward plus cache with plugin defaults; upstream .54.
+.:53 {
+    forward . 172.31.53.54
+    cache
+}

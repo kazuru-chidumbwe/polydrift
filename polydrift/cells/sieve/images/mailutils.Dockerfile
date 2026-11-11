@@ -1,7 +1,7 @@
 # GNU Mailutils built from the ftp.gnu.org release tarball; the .sig is checked against the GNU keyring
+# (gnu-keyring.gpg from ftp.gnu.org) and the sha256 is printed into the build log.
 # GDBM is enabled in every version: 3.20 cannot build its uidnew Sieve extension without a DBM library, and DBM backs
 # the vacation reply database, so all versions share one configuration.
-# (gnu-keyring.gpg from ftp.gnu.org) and the sha256 is printed into the build log.
 # Build: docker build -f mailutils.Dockerfile --build-arg VER=3.21 -t pd-mailutils:3.21 .
 FROM debian:bookworm
 ARG VER

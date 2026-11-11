@@ -3,9 +3,15 @@
 # The .sha512 file uses the gpg --print-md layout ("name: AF233A1F CB7EAE00 ..." over several lines).
 # Runtime: the distribution's default instance (base dc=example,dc=com, uid=admin,ou=system / secret).
 # Build: docker build -f apacheds.Dockerfile --build-arg VER=2.0.0.AM27 -t pd-apacheds:2.0.0.AM27 .
-FROM debian:trixie
+# 2.0.0.AM26 calls JDK internals removed after JDK 17 (X509CertInfo.set) and needs sun.security.x509 exported:
+#   --build-arg BASE=debian:bookworm --build-arg JDK=17 --build-arg JOPTS=--add-exports=java.base/sun.security.x509=ALL-UNNAMED
+ARG BASE=debian:trixie
+FROM ${BASE}
 ARG VER
-RUN apt-get update && apt-get install -y --no-install-recommends openjdk-21-jre-headless curl ca-certificates gnupg \
+ARG JDK=21
+ARG JOPTS=
+ENV JDK_JAVA_OPTIONS=${JOPTS}
+RUN apt-get update && apt-get install -y --no-install-recommends openjdk-${JDK}-jre-headless curl ca-certificates gnupg \
  && cd /tmp && B=https://archive.apache.org/dist/directory/apacheds/dist/${VER} \
  && curl -fsSLO $B/apacheds-${VER}.tar.gz && curl -fsSLO $B/apacheds-${VER}.tar.gz.asc \
  && curl -fsSLO $B/apacheds-${VER}.tar.gz.sha512 \

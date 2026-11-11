@@ -125,9 +125,9 @@ def label_impl(rec: ObservationRecord, fixture: FixtureSpec, refusal_class: str 
             continue
         s = strength(ref["keyword"])
         if s == "MUST":
-            out.must_broken.append(ref["clause"])
+            out.must_broken.append(ref.get("clause") or ref.get("req_id", "?"))
         elif s == "SHOULD":
-            out.should_broken.append(ref["clause"])
+            out.should_broken.append(ref.get("clause") or ref.get("req_id", "?"))
         prop = ref.get("security")
         if prop and prop in sec_tags:
             out.security_broken.append(prop)

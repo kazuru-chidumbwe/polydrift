@@ -88,6 +88,17 @@ def main(argv: list[str] | None = None) -> int:
         help="Run without a deposited oracle spec; output is marked provisional and is not a study result.",
     )
     cell_an.add_argument("--min-repeats", type=int, default=3)
+
+    cell_rep = subparsers.add_parser(
+        "cell-report",
+        help="Full cell report: peers, fault classes, consequences, baselines, drift (any cell).",
+    )
+    cell_rep.add_argument("--cell", required=True, choices=("sip", "dns", "mqtt", "ldap", "jmap", "sieve"))
+    cell_rep.add_argument("records", nargs="+", help="JSONL record files.")
+    cell_rep.add_argument("--current", default="", help="Comma list of impl keys that are the current peers "
+                          "(default: highest version of each family).")
+    cell_rep.add_argument("--min-repeats", type=int, default=3)
+    cell_rep.add_argument("--out", required=True, help="Output JSON.")
     cell_an.add_argument("--out", required=True, help="Output JSON.")
 
     args = parser.parse_args(argv)
@@ -112,6 +123,22 @@ def main(argv: list[str] | None = None) -> int:
         )
         write_jsonl(args.out, records)
         print(f"{len(records)} records -> {args.out}")
+        return 0
+
+    if args.command == "cell-report":
+        import json
+
+        from polydrift.core.record import read_jsonl
+        from polydrift.report import report
+
+        records = [r for path in args.records for r in read_jsonl(path)]
+        cur = set(args.current.split(",")) if args.current else None
+        result = report(records, args.cell, current=cur, min_repeats=args.min_repeats)
+        nl = chr(10)
+        with open(args.out, "w", encoding="utf-8", newline=nl) as handle:
+            json.dump(result, handle, indent=2, sort_keys=True, ensure_ascii=False, default=str)
+            handle.write(nl)
+        print(json.dumps({k: result[k] for k in ("summary", "fault_classes", "consequences")}, sort_keys=True))
         return 0
 
     if args.command == "cell-analyse":

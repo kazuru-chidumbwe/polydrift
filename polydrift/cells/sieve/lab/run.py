@@ -132,6 +132,8 @@ PH_ACTION = [
 
 
 def ph_conf(ver: str, maildir: Path) -> Path:
+    # The lab builds Courier-style folders (.Quarantine is INBOX.Quarantine), so Dovecot gets the matching
+    # namespace: prefix INBOX., separator ".". Without it .Quarantine is the mailbox "Quarantine".
     c = Path("/tmp/pd-dovecot.conf")
     if ver.startswith("2.4"):
         c.write_text(f"""dovecot_config_version = 2.4.0
@@ -139,6 +141,11 @@ dovecot_storage_version = 2.4.0
 mail_driver = maildir
 mail_path = {maildir}
 mail_inbox_path = {maildir}
+namespace inbox {{
+  inbox = yes
+  prefix = INBOX.
+  separator = .
+}}
 mail_home = /tmp/pd-home
 mail_uid = 1000
 mail_gid = 1000
@@ -147,6 +154,11 @@ sendmail_path = /lab/capture.sh
 """)
     else:
         c.write_text(f"""mail_location = maildir:{maildir}
+namespace inbox {{
+  inbox = yes
+  prefix = INBOX.
+  separator = .
+}}
 mail_home = /tmp/pd-home
 mail_uid = 1000
 mail_gid = 1000
@@ -164,6 +176,9 @@ def pigeonhole(fx: Path, meta: dict) -> dict:
     maildir = Path("/tmp/Maildir")
     make_maildir(maildir, meta.get("folders", ["INBOX"]))
     Path("/tmp/pd-home").mkdir(exist_ok=True)
+    # sieve-test runs as mail_uid 1000 and writes Dovecot index files in the maildir and home.
+    for p in (maildir, Path("/tmp/pd-home")):
+        sh(["chown", "-R", "1000:1000", str(p)])
     conf = ph_conf(ver, maildir)
     rc, txt = sh(["sievec", "-c", str(conf), str(s), "/tmp/s.svbin"])
     res = {"engine_version": f"dovecot {ver}", "compile": "ok" if rc == 0 else "refused",

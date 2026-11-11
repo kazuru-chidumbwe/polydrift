@@ -57,7 +57,9 @@ public final class JSieveRun {
         else intent.add("other:" + x.getClass().getSimpleName());
       }
     }
-    if (rt == null && intent.isEmpty()) intent.add("keep");
+    // SieveFactory adds ActionKeep itself while implicit keep stands (0.6 to 0.8), so no action at all means the
+    // script cancelled implicit keep without another action: discard (jSieve before 0.7 has no ActionDiscard).
+    if (rt == null && intent.isEmpty()) intent.add("discard");
     StringBuilder sb = new StringBuilder();
     for (String s : intent) sb.append(sb.length() == 0 ? "" : ",").append('"').append(esc(s)).append('"');
     System.out.println("{\"engine_version\":\"jsieve " + ver + "\",\"compile\":\"ok\",\"intent\":[" + sb

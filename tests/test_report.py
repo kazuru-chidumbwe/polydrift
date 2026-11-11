@@ -1,11 +1,11 @@
 """Cell report helpers: family/version split and the Tier 2 drift restriction."""
 from polydrift.core.oracle import AxisDiff, Outcome, PairResult
-from polydrift.core.record import ObservationRecord, Tier
+from polydrift.core.record import ObservationRecord, Status, StepRecord, Tier
 from polydrift.report import at_tier, family_version, family_version_key
 
 
 def rec(impl):
-    return ObservationRecord(cell="x", impl=impl, fixture="f", repeat=1, steps=())
+    return ObservationRecord(cell="x", impl=impl, fixture="f", repeat=1, steps=(StepRecord(status=Status.RESPONDED),))
 
 
 def test_family_version():

@@ -10,6 +10,7 @@
   </properties>
   <dependencies>
     <dependency><groupId>org.apache.james</groupId><artifactId>apache-jsieve-core</artifactId><version>${jsieve.version}</version></dependency>
+    <dependency><groupId>org.apache.james</groupId><artifactId>apache-jsieve-util</artifactId><version>${jsieve.version}</version></dependency>
     <dependency><groupId>com.sun.mail</groupId><artifactId>javax.mail</artifactId><version>1.6.2</version></dependency>
   </dependencies>
 </project>

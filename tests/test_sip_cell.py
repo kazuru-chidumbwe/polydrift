@@ -43,6 +43,8 @@ def test_status_classification():
     assert classify_status(obs("p"), sig) == Status.RESPONDED
     assert classify_status(obs("p", ok=False, detail="pjsip_parse_msg failed"), sig) == Status.REFUSED_INPUT
     assert classify_status(obs("s", ok=False, detail="msg_make failed"), sig) == Status.REFUSED_INPUT
+    assert (classify_status(obs("s", ok=False, detail="no request/status line (errors=0 complete=1)"), sig)
+            == Status.REFUSED_INPUT)
     assert classify_status(obs("p", ok=False, detail="pjsip_observe missing: /x"), sig) == Status.HARNESS_FAULT
     assert classify_status(obs("p", ok=False, detail="no json line rc=-11 err="), sig) == Status.CRASHED
     assert classify_status(obs("k", ok=False, detail="no observation file from kamailio at /tmp/x"), sig) == Status.SILENT

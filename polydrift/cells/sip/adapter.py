@@ -150,6 +150,9 @@ _INSTRUMENT = (
 _REFUSED = (
     re.compile(r"pjsip_parse_msg failed"),
     re.compile(r"msg_make failed"),
+    # Sofia parsed the bytes into a message with neither a request nor a status line. Its transaction layer
+    # counts such a message as bad and drops it (nta.c, agent_recv_garbage), so the library refused the input.
+    re.compile(r"no request/status line"),
 )
 _RC = re.compile(r"rc=(-?\d+)")
 

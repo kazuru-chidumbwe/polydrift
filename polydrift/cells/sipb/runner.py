@@ -52,10 +52,17 @@ def sh(args: list[str], timeout: int = 300, stdin: str | None = None) -> subproc
 
 def drive(steps: list[dict], unique: str, domain: str, creds: dict | None = None,
           ctl: dict | None = None) -> list[dict]:
-    budget = 30 + sum(st.get("window_ms", 1500) / 1000 + st.get("ms", 0) / 1000 for st in steps)
-    r = sh(["docker", "exec", "-i", "psipb-client", "python3", "/lab/driver.py"], timeout=int(budget),
-           stdin=json.dumps({"eut": EUT_IP, "eut_port": 5060, "lab": CLIENT_IP, "domain": domain, "unique": unique,
-                             "creds": creds or {}, "ctl": ctl or {}, "steps": steps}))
+    # with credentials a challenged send listens a second window after the authenticated resend
+    k = 2 if creds else 1
+    budget = 30 + sum(k * st.get("window_ms", 1500) / 1000 + st.get("ms", 0) / 1000 for st in steps)
+    try:
+        r = sh(["docker", "exec", "-i", "psipb-client", "python3", "/lab/driver.py"], timeout=int(budget),
+               stdin=json.dumps({"eut": EUT_IP, "eut_port": 5060, "lab": CLIENT_IP, "domain": domain,
+                                 "unique": unique, "creds": creds or {}, "ctl": ctl or {}, "steps": steps}))
+    except subprocess.TimeoutExpired:
+        # the exec'd driver keeps running inside the client and holds the party ports; stop it before going on
+        sh(["docker", "exec", "psipb-client", "pkill", "-f", "/lab/driver.py"], timeout=30)
+        raise
     if r.returncode != 0:
         raise RuntimeError(f"driver exit {r.returncode}: {r.stderr.strip()[-300:]}")
     return json.loads(r.stdout)

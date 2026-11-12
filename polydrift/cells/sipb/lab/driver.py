@@ -461,7 +461,7 @@ def authenticate(lab: "Lab", st: dict, start: int) -> str | None:
     p = lab.parties[party]
     ch = next((m for m in p.inbox[start:] if m.get("kind") == "resp" and m.get("code") in (401, 407)), None)
     if ch is None:
-        return None
+        return "no-challenge"
     hname = "www-authenticate" if ch["code"] == 401 else "proxy-authenticate"
     challenge = (ch["hdr"].get(hname) or [""])[0]
     sent = lab.last_raw.get(party, "")
@@ -505,8 +505,13 @@ def run(req: dict) -> list[dict]:
             # the element requires authentication (target credentials): answer its challenge once
             st = {**st, "auth": {"user": party, "password": lab.creds[party]}}
         if op == "send" and st.get("auth") and err is None:
+            # listen a second window only when a challenge was answered (the authenticated request is a new
+            # transaction); without a challenge the step keeps its single window
             err = authenticate(lab, st, start[st.get("from", "alice")])
-            lab.listen(int(st.get("window_ms", 1500)))
+            if err == "no-challenge":
+                err = None
+            else:
+                lab.listen(int(st.get("window_ms", 1500)))
         got = {n: p.inbox[start[n]:] for n, p in lab.parties.items()}
         obs = {"step": i, "op": op, "actor": st.get("from", "alice" if op != "reply" else "bob"), "error": err,
                "got": got, "ms": int((time.time() - t0) * 1000)}

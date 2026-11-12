@@ -360,7 +360,7 @@ def _walk(cur, parts):
     return cur
 
 
-FN = r"^(len|keys|type|has|eq|ne|in|re|allre|allin|sorted|lower|ge|le|hasall|count|codes|methods|same|nre):"
+FN = r"^(len|keys|type|has|eq|ne|in|re|allre|allin|sorted|lower|ge|le|hasall|count|codes|methods|same|nre|ncodes):"
 
 
 def _lit(s):
@@ -390,6 +390,9 @@ def evaluate(expr: str, ctx: dict):
         return len(v) if isinstance(v, (list, dict, str)) else 0 if missing else None
     if fn == "codes":   # final and provisional status codes in a party's inbox, in order
         return [m.get("code") for m in v or [] if m.get("kind") == "resp"]
+    if fn == "ncodes":
+        # ncodes:party=code: how many responses with that status code the party received (retransmissions)
+        return sum(1 for m in v or [] if m.get("kind") == "resp" and m.get("code") == int(lit))
     if fn == "methods":
         return [m.get("method") for m in v or [] if m.get("kind") == "req"]
     if fn == "keys":

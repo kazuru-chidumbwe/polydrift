@@ -703,3 +703,442 @@ fixtures:
       - {"op": "uac", "action": "hangup", "window_ms": 2500, "extract": {"x1": "methods:bob"}}
       - {"op": "reply", "from": "bob", "code": 200, "window_ms": 800}
 
+
+  # ---------------- census: user-agent server side (12 Nov 2026) ----------------
+  # Generated with the census authoring aid; roles uas (auto-answer), uas-ring (does not answer), uac.
+  uas_options_response:
+    kind: control
+    roles: ["uas"]
+    spec_refs:
+      - {"req_id": "SIP-0ffea2dc", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-f15440cd", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-f134785a", "keyword": "MUST", "axis": "x3", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-fcebc1e4", "keyword": "MUST", "axis": "x4", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-a9c95f54", "keyword": "MUST", "axis": "x5", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-44d93bc3", "keyword": "SHOULD", "axis": "x6", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-bf43a972", "keyword": "SHOULD", "axis": "x7", "step": 1, "allowed": [[200]]}
+      - {"req_id": "SIP-698ca63b", "keyword": "SHOULD", "axis": "x7", "step": 1, "allowed": [[200]]}
+      - {"req_id": "SIP-cb4c39d2", "keyword": "SHOULD", "axis": "x7", "step": 1, "allowed": [[200]]}
+      - {"req_id": "SIP-9f027663", "keyword": "SHOULD", "axis": "x8", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-e866c185", "keyword": "SHOULD", "axis": "x8", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-17c75fdc", "keyword": "MUST", "axis": "x7", "step": 1, "note": "same code as an INVITE would get; comparison only"}
+      - {"req_id": "SIP-1dd65436", "keyword": "MAY", "axis": "x6", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-2e625a45", "keyword": "MAY", "axis": "x6", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-0feb1d36", "keyword": "MAY", "axis": "x8", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-695cf3bb", "keyword": "SHOULD", "axis": "x8", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-2caca8cd", "keyword": "SHOULD", "axis": "x8", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-c9ea4e1b", "keyword": "MUST", "axis": "x6", "step": 1, "note": "Allow lists ACK and CANCEL; comparison only"}
+      - {"req_id": "SIP-0949c2a7", "keyword": "MUST", "axis": "x6", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-ba71098f", "keyword": "MUST", "axis": "x6", "step": 1, "note": "option tags in Supported; comparison only"}
+      - {"req_id": "SIP-4581ad86", "keyword": "SHOULD", "axis": "x7", "step": 1, "note": "unknown header parameter ignored; comparison only"}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nX-Pd-Param: v;pdunknown=1\nAccept: application/sdp\nContent-Length: {clen}\n\n", "extract": {"x1": "same:alice/0/hdr/from,sent/alice/hdr/from", "x2": "same:alice/0/hdr/call-id,sent/alice/hdr/call-id", "x3": "same:alice/0/hdr/cseq,sent/alice/hdr/cseq", "x4": "same:alice/0/hdr/via,sent/alice/hdr/via", "x5": "re:alice/0/hdr/to/0=<sip:uas@{eut}>.*", "x6": "hasall:alice/0/hdr=[\"allow\", \"accept\", \"accept-encoding\", \"accept-language\", \"supported\"]", "x7": "codes:alice", "x8": "re:alice/0/body=(?s).*m=audio.*"}}
+
+  uas_options_max_forwards_zero:
+    kind: probe
+    roles: ["uas"]
+    spec_refs:
+      - {"req_id": "SIP-0cf84234", "keyword": "MAY", "axis": "x1", "step": 1, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 0\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
+
+  uas_options_accept_encoding:
+    kind: probe
+    roles: ["uas"]
+    spec_refs:
+      - {"req_id": "SIP-6eaada15", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [false]}
+      - {"req_id": "SIP-84013c0a", "keyword": "MAY", "axis": "x1", "step": 1, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nAccept-Encoding: identity\nContent-Length: {clen}\n\n", "extract": {"x1": "has:alice/0/hdr/content-encoding"}}
+
+  uas_method_not_supported:
+    kind: probe
+    roles: ["uas"]
+    spec_refs:
+      - {"req_id": "SIP-dcb808be", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [[405], [501]]}
+      - {"req_id": "SIP-0c5d0af4", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-60c7a181", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-d8fe7710", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-66d8715d", "keyword": "MUST", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-cebe6245", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "PUBLISH sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 PUBLISH\nContact: <sip:alice@{lab}:{port:alice}>\nEvent: presence\nExpires: 60\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice", "x2": "has:alice/0/hdr/allow"}}
+
+  uas_require_unknown:
+    kind: probe
+    roles: ["uas"]
+    spec_refs:
+      - {"req_id": "SIP-ab4e962f", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [[420]]}
+      - {"req_id": "SIP-2531afaf", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [[420]]}
+      - {"req_id": "SIP-68686c1a", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [[420]]}
+      - {"req_id": "SIP-71e00b33", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-dc0e185d", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nRequire: x-pd-unknown-ext\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice", "x2": "re:alice/0/hdr/unsupported/0=.*x-pd-unknown-ext.*"}}
+
+  uas_require_in_ack_cancel_ignored:
+    kind: probe
+    roles: ["uas"]
+    spec_refs:
+      - {"req_id": "SIP-efb0937b", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-72ae9052", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-813aaddd", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 1200, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "CANCEL sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 CANCEL\nContact: <sip:alice@{lab}:{port:alice}>\nRequire: x-pd-unknown-ext\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
+      - {"op": "ack", "from": "alice", "window_ms": 800}
+
+  uas_unsupported_content:
+    kind: probe
+    roles: ["uas"]
+    spec_refs:
+      - {"req_id": "SIP-0ac0a4ab", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [[415]]}
+      - {"req_id": "SIP-42319eb0", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-3ffcb304", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-90044650", "keyword": "MUST", "axis": "x3", "step": 2, "allowed": [true, "null"]}
+      - {"req_id": "SIP-c5b1b4c4", "keyword": "MUST", "axis": "x4", "step": 3, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/x-pd-census\nContent-Length: {clen}\n\npd", "extract": {"x1": "codes:alice", "x2": "has:alice/0/hdr/accept"}}
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 2 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Encoding: x-pd-enc\nContent-Type: application/sdp\nContent-Length: {clen}\n\npd", "extract": {"x3": "has:alice/0/hdr/accept-encoding"}}
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 3 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Language: x-pd\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x4": "codes:alice"}}
+
+  uas_unsupported_scheme:
+    kind: probe
+    roles: ["uas"]
+    spec_refs:
+      - {"req_id": "SIP-8d607a95", "keyword": "SHOULD", "axis": "x1", "step": 1, "allowed": [[416]]}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "OPTIONS xpd:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
+
+  uas_not_my_address:
+    kind: probe
+    roles: ["uas"]
+    spec_refs:
+      - {"req_id": "SIP-125e7717", "keyword": "SHOULD", "axis": "x1", "step": 1, "allowed": [[404]]}
+      - {"req_id": "SIP-2b982591", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-28959526", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "OPTIONS sip:pd-nobody@pd-elsewhere.example SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
+
+  uas_extensions_in_response:
+    kind: probe
+    roles: ["uas"]
+    spec_refs:
+      - {"req_id": "SIP-0f649f35", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-c1ef223d", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-833b2673", "keyword": "MUST", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-ac4b19e8", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-99af968f", "keyword": "MAY", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-c75cce62", "keyword": "MUST", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-b5bd83c2", "keyword": "MUST", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-3a570bc9", "keyword": "SHOULD", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-a4b666ce", "keyword": "SHOULD", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-762afc06", "keyword": "SHOULD", "axis": "x2", "step": 1, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nSupported:\nX-Pd-Broken: ;;;\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "nre:alice/-1/hdr/require/0=.+", "x2": "codes:alice"}}
+      - {"op": "ack", "from": "alice", "window_ms": 800}
+
+  uas_merged_request:
+    kind: probe
+    roles: ["uas"]
+    spec_refs:
+      - {"req_id": "SIP-0ab9b990", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-5d6ce1e1", "keyword": "SHOULD", "axis": "x1", "step": 2, "allowed": [[482]]}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 200, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:first};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 800, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:second};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
+
+  uas_invite_answer:
+    kind: control
+    roles: ["uas"]
+    spec_refs:
+      - {"req_id": "SIP-82e87ed2", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-4fee8697", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-647a40fd", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-10831295", "keyword": "SHOULD", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-70a4cce9", "keyword": "MUST", "axis": "x3", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-1b6a1526", "keyword": "MUST", "axis": "x3", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-e3022da7", "keyword": "MUST", "axis": "x4", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-734331b0", "keyword": "MUST", "axis": "x4", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-9559f2bb", "keyword": "SHOULD", "axis": "x5", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-322499cf", "keyword": "MUST", "axis": "x6", "step": 1, "allowed": [true, "null"]}
+      - {"req_id": "SIP-a4452268", "keyword": "MUST", "axis": "x7", "step": 1, "note": "100 Trying unless a response comes within 200 ms; comparison only"}
+      - {"req_id": "SIP-c3f2d180", "keyword": "SHOULD", "axis": "x7", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-12fb2a6f", "keyword": "MUST", "axis": "x4", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-82e0c687", "keyword": "MUST", "axis": "x4", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-ffcda20c", "keyword": "MUST", "axis": "x4", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-a9751c57", "keyword": "MUST", "axis": "x8", "step": 3, "allowed": [[200]]}
+      - {"req_id": "SIP-336a6816", "keyword": "MAY", "axis": "x7", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-835dae11", "keyword": "MUST", "axis": "x7", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-27c57292", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-7f2c7e96", "keyword": "MUST", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-97a0e548", "keyword": "MUST", "axis": "x3", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-3ea4a557", "keyword": "MUST", "axis": "x8", "step": 3, "allowed": [[200]]}
+      - {"req_id": "SIP-d15b8c28", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-f019db89", "keyword": "MUST", "axis": "x8", "step": 3, "allowed": [[200]]}
+      - {"req_id": "SIP-ae906176", "keyword": "MUST", "axis": "x8", "step": 3, "allowed": [[200]]}
+      - {"req_id": "SIP-63ddbb25", "keyword": "MUST", "axis": "x8", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-af5a6bc8", "keyword": "MUST", "axis": "x8", "step": 3, "allowed": [[200]]}
+      - {"req_id": "SIP-74ef8975", "keyword": "MUST", "axis": "x8", "step": 3, "allowed": [[200]]}
+      - {"req_id": "SIP-191474f0", "keyword": "MUST", "axis": "x8", "step": 3, "allowed": [[200]]}
+      - {"req_id": "SIP-1ac13f9c", "keyword": "MUST", "axis": "x8", "step": 3, "allowed": [[200]]}
+      - {"req_id": "SIP-46d0b4a0", "keyword": "MUST", "axis": "x8", "step": 3, "allowed": [[200]]}
+      - {"req_id": "SIP-c057ebcd", "keyword": "SHOULD", "axis": "x6", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-4685fe11", "keyword": "MUST", "axis": "x6", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-ff237f40", "keyword": "MUST", "axis": "x8", "step": 3, "allowed": [[200]]}
+      - {"req_id": "SIP-b29ee7b1", "keyword": "SHOULD", "axis": "x4", "step": 1, "note": "SDP without Content-Disposition is a session; comparison only"}
+      - {"req_id": "SIP-6e6abd28", "keyword": "SHOULD", "axis": "x4", "step": 1, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 3000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nRecord-Route: <sip:{lab}:{port:dave};lr;pdrr=1>\nTimestamp: 54\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "re:alice/-1/hdr/record-route/0=.*pdrr=1.*", "x2": "re:alice/-1/hdr/contact/0=<?sips?:[^,]*", "x3": "re:alice/-1/hdr/to/0=.*;tag=.*", "x4": "re:alice/-1/body=(?s).*m=audio.*", "x5": "hasall:alice/-1/hdr=[\"allow\", \"supported\"]", "x6": "alice/0/hdr/timestamp/0", "x7": "codes:alice"}}
+      - {"op": "ack", "from": "alice", "window_ms": 800}
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "BYE {lasturi:alice:Contact} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: {last:alice:To}\nCall-ID: {callid}\nCSeq: 2 BYE\nContact: <sip:alice@{lab}:{port:alice}>\nRoute: <sip:{lab}:{port:dave};lr;pdrr=1>\nContent-Length: {clen}\n\n", "extract": {"x8": "codes:alice"}}
+
+  uas_invite_without_offer:
+    kind: probe
+    roles: ["uas"]
+    spec_refs:
+      - {"req_id": "SIP-9b310f18", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-e06757a1", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-356e34ce", "keyword": "MUST", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-db54848c", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-f11256dd", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 3000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "re:alice/-1/body=(?s).*m=audio.*"}}
+      - {"op": "send", "from": "alice", "window_ms": 800, "msg": "ACK {lasturi:alice:Contact} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: {last:alice:To}\nCall-ID: {callid}\nCSeq: 1 ACK\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "BYE {lasturi:alice:Contact} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: {last:alice:To}\nCall-ID: {callid}\nCSeq: 2 BYE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n"}
+
+  uas_from_without_tag:
+    kind: probe
+    roles: ["uas"]
+    spec_refs:
+      - {"req_id": "SIP-af31408b", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [[200]]}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
+
+  uas_in_dialog_cseq:
+    kind: probe
+    roles: ["uas"]
+    spec_refs:
+      - {"req_id": "SIP-ee90e857", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [[500]]}
+      - {"req_id": "SIP-594cd610", "keyword": "SHOULD", "axis": "x2", "step": 4, "allowed": [[200]]}
+      - {"req_id": "SIP-aca4bb29", "keyword": "MUST", "axis": "x2", "step": 4, "note": "comparison only"}
+      - {"req_id": "SIP-4ccfad95", "keyword": "MUST", "axis": "x2", "step": 4, "note": "comparison only"}
+      - {"req_id": "SIP-daefae6c", "keyword": "MAY", "axis": "x2", "step": 4, "note": "comparison only"}
+      - {"req_id": "SIP-887514c8", "keyword": "MUST", "axis": "x3", "step": 5, "allowed": [[481]]}
+      - {"req_id": "SIP-15df0bcb", "keyword": "SHOULD", "axis": "x3", "step": 5, "allowed": [[481]]}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 2500, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
+      - {"op": "ack", "from": "alice", "window_ms": 800}
+      - {"op": "send", "from": "alice", "window_ms": 1000, "msg": "INFO {lasturi:alice:Contact} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: {last:alice:To}\nCall-ID: {callid}\nCSeq: 1 INFO\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
+      - {"op": "send", "from": "alice", "window_ms": 1000, "msg": "INFO {lasturi:alice:Contact} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: {last:alice:To}\nCall-ID: {callid}\nCSeq: 9 INFO\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x2": "codes:alice"}}
+      - {"op": "send", "from": "alice", "window_ms": 1000, "msg": "BYE {lasturi:alice:Contact} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>;tag=pd-no-such-dialog\nCall-ID: pd-other-{U}@{lab}\nCSeq: 10 BYE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x3": "codes:alice"}}
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "BYE {lasturi:alice:Contact} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: {last:alice:To}\nCall-ID: {callid}\nCSeq: 11 BYE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n"}
+
+  uas_target_refresh:
+    kind: probe
+    roles: ["uac"]
+    spec_refs:
+      - {"req_id": "SIP-ec294766", "keyword": "MUST", "axis": "x1", "step": 5, "allowed": [["BYE"]]}
+      - {"req_id": "SIP-bed224cc", "keyword": "MUST", "axis": "x2", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-ca363fe4", "keyword": "MAY", "axis": "x2", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-111a760b", "keyword": "MAY", "axis": "x2", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-bc969ee7", "keyword": "MAY", "axis": "x2", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-ec6a553c", "keyword": "MAY", "axis": "x2", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-b0fbc180", "keyword": "MUST", "axis": "x2", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-c230a09d", "keyword": "SHOULD", "axis": "x2", "step": 3, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 2500, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
+      - {"op": "ack", "from": "alice", "window_ms": 800}
+      - {"op": "send", "from": "alice", "window_ms": 2500, "msg": "INVITE {lasturi:alice:Contact} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: {last:alice:To}\nCall-ID: {callid}\nCSeq: 2 INVITE\nContact: <sip:alice@{lab}:{port:carol}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x2": "codes:alice"}}
+      - {"op": "ack", "from": "alice", "window_ms": 800}
+      - {"op": "uac", "action": "hangup", "window_ms": 1500, "extract": {"x1": "methods:carol"}}
+
+  uas_reinvite_overlap:
+    kind: probe
+    roles: ["uas"]
+    spec_refs:
+      - {"req_id": "SIP-21bc9ebe", "keyword": "MUST", "axis": "x1", "step": 4, "allowed": [[500]]}
+      - {"req_id": "SIP-af6aac70", "keyword": "MUST", "axis": "x1", "step": 4, "note": "comparison only"}
+      - {"req_id": "SIP-e2fe95d5", "keyword": "SHOULD", "axis": "x1", "step": 4, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 2500, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
+      - {"op": "ack", "from": "alice", "window_ms": 800}
+      - {"op": "send", "from": "alice", "window_ms": 10, "msg": "INVITE {lasturi:alice:Contact} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: {last:alice:To}\nCall-ID: {callid}\nCSeq: 3 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "INVITE {lasturi:alice:Contact} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: {last:alice:To}\nCall-ID: {callid}\nCSeq: 2 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "codes:alice"}}
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "BYE {lasturi:alice:Contact} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: {last:alice:To}\nCall-ID: {callid}\nCSeq: 4 BYE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n"}
+
+  uas_cancel_unknown:
+    kind: probe
+    roles: ["uas"]
+    spec_refs:
+      - {"req_id": "SIP-94f79e7d", "keyword": "SHOULD", "axis": "x1", "step": 1, "allowed": [[481]]}
+      - {"req_id": "SIP-f67adc87", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "CANCEL sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:none};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 CANCEL\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
+
+  uas_ringing_cancel:
+    kind: probe
+    roles: ["uas-ring"]
+    spec_refs:
+      - {"req_id": "SIP-17962251", "keyword": "SHOULD", "axis": "x1", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-24964e58", "keyword": "SHOULD", "axis": "x2", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-c55bcbfe", "keyword": "MUST", "axis": "x3", "step": 2, "allowed": [[180], [100, 180], [180, 180]]}
+      - {"req_id": "SIP-332e4a83", "keyword": "MUST", "axis": "x3", "step": 2, "allowed": [[180], [100, 180], [180, 180]]}
+      - {"req_id": "SIP-53a750da", "keyword": "MAY", "axis": "x3", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-a53270d1", "keyword": "MUST", "axis": "x3", "step": 2, "note": "a provisional every minute; not reached; comparison only"}
+      - {"req_id": "SIP-e902fa4f", "keyword": "SHOULD", "axis": "x3", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-5669801c", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-d58f53ab", "keyword": "MUST", "axis": "x4", "step": 4, "note": "comparison only"}
+      - {"req_id": "SIP-fc4d96a2", "keyword": "SHOULD", "axis": "x4", "step": 4, "note": "comparison only"}
+      - {"req_id": "SIP-ba004fd6", "keyword": "MUST", "axis": "x4", "step": 4, "note": "comparison only"}
+      - {"req_id": "SIP-3d49cb0e", "keyword": "MUST", "axis": "x4", "step": 4, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:inv};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
+      - {"op": "send", "from": "alice", "window_ms": 800, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:inv};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x3": "codes:alice"}}
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "CANCEL sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:inv};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 CANCEL\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "in:alice/0/hdr/cseq/0=CANCEL", "x2": "same:alice/-1/hdr/to/0,alice/0/hdr/to/0"}}
+      - {"op": "ack", "from": "alice", "window_ms": 800, "extract": {"x4": "codes:alice"}}
+
+  uas_invite_2xx_retransmission:
+    kind: probe
+    roles: ["uas"]
+    spec_refs:
+      - {"req_id": "SIP-b6aaaa74", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [2, 3, 4, 5, 6]}
+      - {"req_id": "SIP-fec3e1f8", "keyword": "SHOULD", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-ff0abd55", "keyword": "SHOULD", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-2c770245", "keyword": "MUST", "axis": "x2", "step": 2, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 4000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "ncodes:alice=200"}}
+      - {"op": "ack", "from": "alice", "window_ms": 800, "extract": {"x2": "codes:alice"}}
+
+  uas_non_invite_retransmission:
+    kind: probe
+    roles: ["uas"]
+    spec_refs:
+      - {"req_id": "SIP-e713c84b", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [[200]]}
+      - {"req_id": "SIP-c2d35f1f", "keyword": "MUST", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-6708907f", "keyword": "MUST", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-11835b44", "keyword": "MUST", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-6bee34e6", "keyword": "MUST", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-1e8ac344", "keyword": "MUST", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-1b76dadc", "keyword": "MUST", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-6f72c1a6", "keyword": "MUST", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-3aeed68b", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-53af39bb", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 600, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:o};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x2": "codes:alice"}}
+      - {"op": "send", "from": "alice", "window_ms": 600, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:o};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
+
+  uas_response_routing:
+    kind: probe
+    roles: ["uas"]
+    spec_refs:
+      - {"req_id": "SIP-39b0bc14", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [[200]]}
+      - {"req_id": "SIP-7c06bf89", "keyword": "MUST", "axis": "x2", "step": 2, "allowed": [[200]]}
+      - {"req_id": "SIP-1dff6ca1", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [[200]]}
+      - {"req_id": "SIP-613a9068", "keyword": "SHOULD", "axis": "x3", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-cc8526bc", "keyword": "SHOULD", "axis": "x3", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-ff8f8032", "keyword": "SHOULD", "axis": "x2", "step": 2, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:dave};branch={branch}\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:dave"}}
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:dave};branch={branch};received={lab}\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 2 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x2": "codes:dave"}}
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/TCP {lab}:{port:carol};branch={branch}\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 3 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "transport": "tcp", "extract": {"x3": "codes:alice"}}
+
+  ua_bye_from_callee_route_set:
+    kind: probe
+    roles: ["uac"]
+    spec_refs:
+      - {"req_id": "SIP-fc5b95b0", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-dfe5f7e6", "keyword": "MUST", "axis": "x2", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-9f214fe9", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-72494511", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-61cc28ff", "keyword": "MUST", "axis": "x4", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-27d9d9d8", "keyword": "MUST", "axis": "x5", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-3d9c67f1", "keyword": "MUST", "axis": "x6", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-4788825d", "keyword": "MUST", "axis": "x7", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-6a96b00b", "keyword": "MUST", "axis": "x6", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-e06c648b", "keyword": "MUST", "axis": "x7", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-90c4c344", "keyword": "MUST", "axis": "x7", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-b9bb6d33", "keyword": "MUST", "axis": "x5", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-ae7a19b7", "keyword": "MUST", "axis": "x5", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-7bb8841f", "keyword": "MUST", "axis": "x8", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-cfdaa7b7", "keyword": "MUST", "axis": "x8", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-4733ad85", "keyword": "MUST", "axis": "x8", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-69188367", "keyword": "MUST", "axis": "x2", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-d08af2c8", "keyword": "MAY", "axis": "x5", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-b9c45532", "keyword": "MAY", "axis": "x5", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-f45f017f", "keyword": "MUST", "axis": "x5", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-e686a27e", "keyword": "SHOULD", "axis": "x5", "step": 3, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 2500, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nRecord-Route: <sip:{lab}:{port:dave};lr>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
+      - {"op": "ack", "from": "alice", "window_ms": 800}
+      - {"op": "uac", "action": "hangup", "window_ms": 2500, "extract": {"x1": "re:dave/0/hdr/to/0=<sip:alice@{domain}>.*", "x2": "re:dave/0/hdr/to/0=.*;tag={tag:alice}.*", "x3": "re:dave/0/hdr/from/0=.*;tag=.*", "x4": "eq:dave/0/hdr/call-id/0={callid}", "x5": "eq:dave/0/method=BYE", "x6": "re:dave/0/ruri=sip:alice@{lab}:{port:alice}.*", "x7": "re:dave/0/hdr/route/0=<sip:{lab}:{port:dave};lr>", "x8": "dave/0/hdr/cseq/0"}}
+      - {"op": "reply", "from": "dave", "code": 200, "window_ms": 500}
+
+  ua_bye_strict_route:
+    kind: probe
+    roles: ["uac"]
+    spec_refs:
+      - {"req_id": "SIP-52dd8c4a", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-867ab8ad", "keyword": "MUST", "axis": "x2", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-49a5277c", "keyword": "SHOULD", "axis": "x3", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-dad828af", "keyword": "MUST", "axis": "x3", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-cced168e", "keyword": "SHOULD", "axis": "x3", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-77d49680", "keyword": "SHOULD", "axis": "x3", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-12fb2a6f", "keyword": "MUST", "axis": "x3", "step": 3, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 2500, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nRecord-Route: <sip:{lab}:{port:dave}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
+      - {"op": "ack", "from": "alice", "window_ms": 800}
+      - {"op": "uac", "action": "hangup", "window_ms": 2500, "extract": {"x1": "re:dave/0/ruri=sip:{lab}:{port:dave}", "x2": "re:dave/0/hdr/route/-1=<sip:alice@{lab}:{port:alice}>", "x3": "dave/0/method"}}
+      - {"op": "reply", "from": "dave", "code": 200, "window_ms": 500}
+
+  uas_response_codes:
+    kind: probe
+    roles: ["uas"]
+    spec_refs:
+      - {"req_id": "SIP-64496d4d", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-2bc4b7e9", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-4e68c05c", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-479a9511", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-d1afe16c", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-7b196f53", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-3c5bb9a4", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-d9066853", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-35e3ffa1", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-665ff9b9", "keyword": "MUST", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-73029ec7", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-7fe54f4e", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-71fc27d4", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-0b4fd8c3", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-d38133c9", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-d0bdb471", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-11471e8c", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-b598828c", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-7b3532bc", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-24a5bd39", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-a7f99733", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-3bbc630a", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-4c009e7f", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-313b4926", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-25607c54", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-1c0912f7", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-7568b2c6", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-bf5971a0", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-d293aa4a", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-61562e67", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 3000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=video 40000 RTP/AVP 126\n", "extract": {"x1": "codes:alice"}}
+      - {"op": "ack", "from": "alice", "window_ms": 800}
+
+  ua_dialog_no_record_route:
+    kind: probe
+    roles: ["uac"]
+    spec_refs:
+      - {"req_id": "SIP-df0fdeb2", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-aa3e7dd0", "keyword": "MUST", "axis": "x2", "step": 4, "allowed": [false], "note": "no Record-Route: empty route set, so the BYE carries no Route"}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 2500, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
+      - {"op": "ack", "from": "alice", "window_ms": 800}
+      - {"op": "send", "from": "alice", "window_ms": 1000, "msg": "INFO {lasturi:alice:Contact} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: {last:alice:To}\nCall-ID: {callid}\nCSeq: 2 INFO\nContent-Length: {clen}\n\n", "extract": {"x1": "same:alice/0/hdr/to,sent/alice/hdr/to"}}
+      - {"op": "uac", "action": "hangup", "window_ms": 2500, "extract": {"x2": "has:alice/0/hdr/route", "x3": "eq:alice/0/method=BYE"}}
+      - {"op": "reply", "from": "alice", "code": 200, "window_ms": 500}
+

@@ -199,3 +199,429 @@ fixtures:
     steps:
       - {op: bind, args: {dn: "{A}", password: "{P}"}}
       - {op: search, args: {base: "", scope: one, filter: [present, objectClass], size_limit: 50}}
+
+  # ---------------- census (12 Nov 2026): every testable ledger row not named above ----------------
+  # Generated with the census authoring aid. Write fixtures bind as the target's admin and work under {B};
+  # {U} is unique per fixture. Axes added the same day: attr_names, objectclasses, subschema_rdn_attr,
+  # referral_shape, referral_uris, sasl_creds_present (tiers.yaml); driver ops burst and {@attr}.
+  census_diagnostic_message:
+    kind: control
+    spec_refs:
+      - {"req_id": "LDAP-e1fc8d1b", "keyword": "MUST", "axis": "diagnostic_present", "step": 1, "note": "empty or text; comparison only"}
+    steps:
+      - {"op": "bind", "args": {"dn": "", "password": ""}}
+
+  census_referral_object:
+    kind: probe
+    spec_refs:
+      - {"req_id": "LDAP-e7e0f45a", "keyword": "MUST", "axis": "referral_shape", "step": 3, "allowed": ["none", "uris"]}
+      - {"req_id": "LDAP-e7e0f45a", "keyword": "MUST", "axis": "referral_shape", "step": 4, "allowed": ["none", "uris"]}
+      - {"req_id": "LDAP-6c0c2b59", "keyword": "MUST", "axis": "referral_uris", "step": 3, "note": "dn part present; comparison only"}
+      - {"req_id": "LDAP-bf9b278e", "keyword": "SHOULD", "axis": "referral_uris", "step": 3, "note": "scope part; comparison only"}
+      - {"req_id": "LDAP-3e4afe57", "keyword": "MUST", "axis": "referral_uris", "step": 3, "note": "% escaping of the DN with a space; comparison only"}
+      - {"req_id": "LDAP-0ee75f01", "keyword": "SHOULD", "axis": "referral_uris", "step": 4, "note": "dn part; comparison only"}
+      - {"req_id": "LDAP-d53a0f7a", "keyword": "SHOULD", "axis": "referral_uris", "step": 4, "note": "scope part; comparison only"}
+      - {"req_id": "LDAP-3c33d568", "keyword": "MUST", "axis": "referral_uris", "step": 4, "note": "% escaping; comparison only"}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "add", "args": {"dn": "ou={U} ref,{B}", "attributes": [["objectClass", ["top", "referral", "extensibleObject"]], ["ou", ["{U} ref"]], ["ref", ["ldap://pd-elsewhere.invalid/ou=far%20away,dc=other"]]]}}
+      - {"op": "search", "args": {"base": "{B}", "scope": "sub", "filter": ["eq", "ou", "{U} ref"]}}
+      - {"op": "search", "args": {"base": "ou=below,ou={U} ref,{B}", "scope": "base"}}
+
+  census_referral_alias:
+    kind: probe
+    spec_refs:
+      - {"req_id": "LDAP-a19e95cb", "keyword": "MUST", "axis": "referral_uris", "step": 5, "note": "dn part with the new target name after alias dereferencing; comparison only"}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "add", "args": {"dn": "ou={U}r2,{B}", "attributes": [["objectClass", ["top", "referral", "extensibleObject"]], ["ou", ["{U}r2"]], ["ref", ["ldap://pd-elsewhere.invalid/ou=far%20away,dc=other"]]]}}
+      - {"op": "add", "args": {"dn": "cn={U}ra,{B}", "attributes": [["objectClass", ["top", "alias", "extensibleObject"]], ["cn", ["{U}ra"]], ["aliasedObjectName", ["ou={U}r2,{B}"]]]}}
+      - {"op": "sleep", "window_ms": 200}
+      - {"op": "search", "args": {"base": "cn={U}ra,{B}", "scope": "sub", "deref": "always"}}
+
+  census_unbind_critical_control:
+    kind: probe
+    spec_refs:
+      - {"req_id": "LDAP-539b6ca5", "keyword": "MUST", "axis": "response_ops", "step": 2, "note": "criticality of a control on UnbindRequest is ignored; comparison only"}
+    steps:
+      - {"op": "bind", "args": {"dn": "", "password": ""}}
+      - {"op": "unbind", "window_ms": 800, "controls": [{"oid": "1.3.6.1.4.1.32473.1.1", "critical": true}]}
+
+  census_no_intermediate_response:
+    kind: control
+    spec_refs:
+      - {"req_id": "LDAP-6183df20", "keyword": "MUST", "axis": "response_ops", "step": 1, "allowed": [["BindResponse"]]}
+      - {"req_id": "LDAP-6183df20", "keyword": "MUST", "axis": "response_ops", "step": 2, "allowed": [["SearchResultEntry", "SearchResultDone"]]}
+    steps:
+      - {"op": "bind", "args": {"dn": "", "password": ""}}
+      - {"op": "search", "args": {"base": "", "scope": "base", "filter": ["present", "objectClass"], "attributes": ["supportedLDAPVersion"]}}
+
+  census_bind_name_not_dereferenced:
+    kind: probe
+    spec_refs:
+      - {"req_id": "LDAP-7705e42d", "keyword": "MUST", "axis": "native_codes", "step": 3, "allowed": [[49], [32], [34], [53], [48], [50]]}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "add", "args": {"dn": "cn={U}ba,{B}", "attributes": [["objectClass", ["top", "alias", "extensibleObject"]], ["cn", ["{U}ba"]], ["aliasedObjectName", ["{A}"]]]}}
+      - {"op": "bind", "args": {"dn": "cn={U}ba,{B}", "password": "{P}"}}
+
+  census_bind_password_octets:
+    kind: probe
+    spec_refs:
+      - {"req_id": "LDAP-e0513457", "keyword": "MUST", "axis": "decision_class", "step": 3, "allowed": ["proceed"]}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "add", "args": {"dn": "cn={U}pw,{B}", "attributes": [["objectClass", ["top", "person"]], ["cn", ["{U}pw"]], ["sn", ["pw"]], ["userPassword", ["pdéü-中文-\u0001x"]]]}}
+      - {"op": "bind", "args": {"dn": "cn={U}pw,{B}", "password": "pdéü-中文-\u0001x"}}
+
+  census_bind_with_outstanding_search:
+    kind: probe
+    spec_refs:
+      - {"req_id": "LDAP-a4e126cc", "keyword": "MUST", "axis": "response_ops", "step": 2, "note": "search completed or abandoned before the bind; comparison only"}
+      - {"req_id": "LDAP-27f8d5b6", "keyword": "SHOULD", "axis": "response_ops", "step": 3, "note": "requests during a bind; comparison only"}
+    steps:
+      - {"op": "bind", "args": {"dn": "", "password": ""}}
+      - {"op": "burst", "args": {"requests": [{"op": "search", "args": {"base": "{B}", "scope": "sub"}}, {"op": "bind", "args": {"dn": "", "password": ""}}]}}
+      - {"op": "burst", "args": {"requests": [{"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}, {"op": "search", "args": {"base": "", "scope": "base"}}]}}
+
+  census_bind_simple_no_sasl_creds:
+    kind: control
+    spec_refs:
+      - {"req_id": "LDAP-4009ee5c", "keyword": "MUST", "axis": "sasl_creds_present", "step": 1, "allowed": [[false]]}
+      - {"req_id": "LDAP-4009ee5c", "keyword": "MUST", "axis": "sasl_creds_present", "step": 2, "allowed": [[false]]}
+    steps:
+      - {"op": "bind", "args": {"dn": "", "password": ""}}
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+
+  census_bind_sasl_external_plain:
+    kind: probe
+    spec_refs:
+      - {"req_id": "LDAP-55499182", "keyword": "MUST", "axis": "sasl_creds_present", "step": 1, "allowed": [[false]]}
+      - {"req_id": "LDAP-0f5c5282", "keyword": "MUST", "axis": "native_codes", "step": 2, "note": "same result as step 1: the name field is ignored; comparison only"}
+    steps:
+      - {"op": "bind", "args": {"dn": "", "sasl": {"mechanism": "EXTERNAL"}}}
+      - {"op": "bind", "args": {"dn": "cn=pd-garbage,dc=nowhere", "sasl": {"mechanism": "EXTERNAL"}}}
+
+  census_proxied_authz_anonymous:
+    kind: probe
+    spec_refs:
+      - {"req_id": "LDAP-32c68348", "keyword": "MUST", "axis": "native_codes", "step": 2, "allowed": [[123], [12], [50], [53], [2], [48]]}
+    steps:
+      - {"op": "bind", "args": {"dn": "", "password": ""}}
+      - {"op": "search", "args": {"base": "{B}", "scope": "base"}, "controls": [{"oid": "2.16.840.1.113730.3.4.18", "critical": true, "value": "dn:{A}"}]}
+
+  census_simple_bind_cleartext:
+    kind: probe
+    spec_refs:
+      - {"req_id": "LDAP-0d9fbbd7", "keyword": "SHOULD", "axis": "native_codes", "step": 1, "allowed": [[13], [53], [48], [8]]}
+      - {"req_id": "LDAP-1af34e1c", "keyword": "SHOULD", "axis": "native_codes", "step": 1, "allowed": [[13], [53], [48], [8]]}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+
+  census_sasl_mechanisms:
+    kind: control
+    value_attrs: ["supportedsaslmechanisms"]
+    spec_refs:
+      - {"req_id": "LDAP-529fedb1", "keyword": "MAY", "axis": "entry_attrs", "step": 1, "note": "supported SASL mechanisms; comparison only"}
+    steps:
+      - {"op": "search", "args": {"base": "", "scope": "base", "filter": ["present", "objectClass"], "attributes": ["supportedSASLMechanisms"]}}
+
+  census_alias_modify:
+    kind: probe
+    spec_refs:
+      - {"req_id": "LDAP-6cb0620e", "keyword": "MUST", "axis": "entry_attrs", "step": 5, "allowed": [[]], "note": "the target keeps no description: the alias entry, not its target, was modified or the request failed"}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "add", "args": {"dn": "ou={U}t,{B}", "attributes": [["objectClass", ["top", "organizationalUnit"]], ["ou", ["{U}t"]]]}}
+      - {"op": "add", "args": {"dn": "cn={U}al,{B}", "attributes": [["objectClass", ["top", "alias", "extensibleObject"]], ["cn", ["{U}al"]], ["aliasedObjectName", ["ou={U}t,{B}"]]]}}
+      - {"op": "modify", "args": {"dn": "cn={U}al,{B}", "changes": [{"op": "replace", "type": "description", "values": ["via-alias"]}]}}
+      - {"op": "search", "args": {"base": "ou={U}t,{B}", "scope": "base", "attributes": ["description"]}}
+
+  census_alias_add_under:
+    kind: probe
+    spec_refs:
+      - {"req_id": "LDAP-8c9dcd06", "keyword": "MUST", "axis": "status", "step": 4, "allowed": ["fix-request", "stop", "authenticate", "redirect", "closed"]}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "add", "args": {"dn": "ou={U}t,{B}", "attributes": [["objectClass", ["top", "organizationalUnit"]], ["ou", ["{U}t"]]]}}
+      - {"op": "add", "args": {"dn": "cn={U}al,{B}", "attributes": [["objectClass", ["top", "alias", "extensibleObject"]], ["cn", ["{U}al"]], ["aliasedObjectName", ["ou={U}t,{B}"]]]}}
+      - {"op": "add", "args": {"dn": "ou={U}c,cn={U}al,{B}", "attributes": [["objectClass", ["top", "organizationalUnit"]], ["ou", ["{U}c"]]]}}
+
+  census_alias_delete:
+    kind: probe
+    spec_refs:
+      - {"req_id": "LDAP-aba94a91", "keyword": "MUST", "axis": "entries", "step": 5, "allowed": [["ou={U}t"]]}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "add", "args": {"dn": "ou={U}t,{B}", "attributes": [["objectClass", ["top", "organizationalUnit"]], ["ou", ["{U}t"]]]}}
+      - {"op": "add", "args": {"dn": "cn={U}al,{B}", "attributes": [["objectClass", ["top", "alias", "extensibleObject"]], ["cn", ["{U}al"]], ["aliasedObjectName", ["ou={U}t,{B}"]]]}}
+      - {"op": "delete", "args": {"dn": "cn={U}al,{B}"}}
+      - {"op": "search", "args": {"base": "ou={U}t,{B}", "scope": "base"}}
+
+  census_alias_moddn_superior:
+    kind: probe
+    spec_refs:
+      - {"req_id": "LDAP-dc4dbc8e", "keyword": "MUST", "axis": "status", "step": 5, "allowed": ["fix-request", "stop", "authenticate", "redirect", "closed"]}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "add", "args": {"dn": "ou={U}t,{B}", "attributes": [["objectClass", ["top", "organizationalUnit"]], ["ou", ["{U}t"]]]}}
+      - {"op": "add", "args": {"dn": "cn={U}al,{B}", "attributes": [["objectClass", ["top", "alias", "extensibleObject"]], ["cn", ["{U}al"]], ["aliasedObjectName", ["ou={U}t,{B}"]]]}}
+      - {"op": "add", "args": {"dn": "ou={U}m,{B}", "attributes": [["objectClass", ["top", "organizationalUnit"]], ["ou", ["{U}m"]]]}}
+      - {"op": "moddn", "args": {"dn": "ou={U}m,{B}", "newrdn": "ou={U}m", "newsuperior": "cn={U}al,{B}"}}
+
+  census_alias_compare:
+    kind: probe
+    spec_refs:
+      - {"req_id": "LDAP-7f9cfa31", "keyword": "MUST", "axis": "native_codes", "step": 4, "allowed": [[5], [16], [32], [33], [34], [36], [50], [53], [18], [64]]}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "add", "args": {"dn": "ou={U}t,{B}", "attributes": [["objectClass", ["top", "organizationalUnit"]], ["ou", ["{U}t"]]]}}
+      - {"op": "add", "args": {"dn": "cn={U}al,{B}", "attributes": [["objectClass", ["top", "alias", "extensibleObject"]], ["cn", ["{U}al"]], ["aliasedObjectName", ["ou={U}t,{B}"]]]}}
+      - {"op": "compare", "args": {"dn": "cn={U}al,{B}", "attr": "ou", "value": "{U}t"}}
+
+  census_alias_loop:
+    kind: probe
+    spec_refs:
+      - {"req_id": "LDAP-d80386cd", "keyword": "MUST", "axis": "status", "step": 4, "allowed": ["proceed", "fix-request", "stop", "redirect"]}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "add", "args": {"dn": "cn={U}l1,{B}", "attributes": [["objectClass", ["top", "alias", "extensibleObject"]], ["cn", ["{U}l1"]], ["aliasedObjectName", ["cn={U}l2,{B}"]]]}}
+      - {"op": "add", "args": {"dn": "cn={U}l2,{B}", "attributes": [["objectClass", ["top", "alias", "extensibleObject"]], ["cn", ["{U}l2"]], ["aliasedObjectName", ["cn={U}l1,{B}"]]]}}
+      - {"op": "search", "args": {"base": "cn={U}l1,{B}", "scope": "sub", "deref": "always"}}
+
+  census_alias_duplicates:
+    kind: probe
+    spec_refs:
+      - {"req_id": "LDAP-93e51c3d", "keyword": "SHOULD", "axis": "entries", "step": 5, "allowed": [["ou={U}x,ou={U}d"]], "note": "the target reached directly and through the alias is returned once"}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "add", "args": {"dn": "ou={U}d,{B}", "attributes": [["objectClass", ["top", "organizationalUnit"]], ["ou", ["{U}d"]]]}}
+      - {"op": "add", "args": {"dn": "ou={U}x,ou={U}d,{B}", "attributes": [["objectClass", ["top", "organizationalUnit"]], ["ou", ["{U}x"]]]}}
+      - {"op": "add", "args": {"dn": "cn={U}dx,ou={U}d,{B}", "attributes": [["objectClass", ["top", "alias", "extensibleObject"]], ["cn", ["{U}dx"]], ["aliasedObjectName", ["ou={U}x,ou={U}d,{B}"]]]}}
+      - {"op": "search", "args": {"base": "ou={U}d,{B}", "scope": "sub", "filter": ["eq", "ou", "{U}x"], "deref": "searching"}}
+
+  census_attribute_short_name:
+    kind: control
+    spec_refs:
+      - {"req_id": "LDAP-203baef0", "keyword": "SHOULD", "axis": "attr_names", "step": 2, "allowed": [["objectclass"]]}
+      - {"req_id": "LDAP-a804eec3", "keyword": "SHOULD", "axis": "attr_names", "step": 2, "note": "ambiguous short names avoided; comparison only"}
+    steps:
+      - {"op": "bind", "args": {"dn": "", "password": ""}}
+      - {"op": "search", "args": {"base": "{B}", "scope": "base", "attributes": ["2.5.4.0"]}}
+
+  census_modify_in_order:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "LDAP-159f5622", "keyword": "MUST", "axis": "decision_class", "step": 3, "allowed": ["proceed"]}
+      - {"req_id": "LDAP-159f5622", "keyword": "MUST", "axis": "entry_attrs", "step": 4, "allowed": [[]]}
+      - {"req_id": "LDAP-efba4055", "keyword": "MUST", "axis": "entry_attrs", "step": 4, "allowed": [[]]}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "add", "args": {"dn": "ou={U}o,{B}", "attributes": [["objectClass", ["top", "organizationalUnit"]], ["ou", ["{U}o"]]]}}
+      - {"op": "modify", "args": {"dn": "ou={U}o,{B}", "changes": [{"op": "add", "type": "description", "values": ["d1"]}, {"op": "delete", "type": "description", "values": ["d1"]}]}}
+      - {"op": "search", "args": {"base": "ou={U}o,{B}", "scope": "base", "attributes": ["description"]}}
+
+  census_modify_atomic:
+    kind: stateful
+    value_attrs: ["description"]
+    spec_refs:
+      - {"req_id": "LDAP-159f5622", "keyword": "MUST", "axis": "status", "step": 3, "allowed": ["fix-request", "stop", "authenticate", "redirect", "closed"]}
+      - {"req_id": "LDAP-159f5622", "keyword": "MUST", "axis": "entry_attrs", "step": 4, "allowed": [[]], "note": "the first change of the failed request is not applied"}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "add", "args": {"dn": "ou={U}a,{B}", "attributes": [["objectClass", ["top", "organizationalUnit"]], ["ou", ["{U}a"]]]}}
+      - {"op": "modify", "args": {"dn": "ou={U}a,{B}", "changes": [{"op": "replace", "type": "description", "values": ["keep"]}, {"op": "delete", "type": "description", "values": ["pd-not-there"]}]}}
+      - {"op": "search", "args": {"base": "ou={U}a,{B}", "scope": "base", "attributes": ["description"]}}
+
+  census_modify_schema:
+    kind: probe
+    spec_refs:
+      - {"req_id": "LDAP-6cd61f92", "keyword": "MUST", "axis": "status", "step": 3, "allowed": ["fix-request", "stop", "authenticate", "redirect", "closed"]}
+      - {"req_id": "LDAP-85684b84", "keyword": "MUST", "axis": "status", "step": 3, "allowed": ["fix-request", "stop", "authenticate", "redirect", "closed"]}
+      - {"req_id": "LDAP-85684b84", "keyword": "MUST", "axis": "status", "step": 4, "allowed": ["fix-request", "stop", "authenticate", "redirect", "closed"]}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "add", "args": {"dn": "ou={U}s,{B}", "attributes": [["objectClass", ["top", "organizationalUnit"]], ["ou", ["{U}s"]]]}}
+      - {"op": "modify", "args": {"dn": "ou={U}s,{B}", "changes": [{"op": "delete", "type": "ou"}]}}
+      - {"op": "modify", "args": {"dn": "ou={U}s,{B}", "changes": [{"op": "add", "type": "uid", "values": ["x"]}]}}
+
+  census_add_exists:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "LDAP-34bdc42a", "keyword": "MUST", "axis": "native_codes", "step": 3, "allowed": [[68]]}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "add", "args": {"dn": "ou={U}e,{B}", "attributes": [["objectClass", ["top", "organizationalUnit"]], ["ou", ["{U}e"]]]}}
+      - {"op": "add", "args": {"dn": "ou={U}e,{B}", "attributes": [["objectClass", ["top", "organizationalUnit"]], ["ou", ["{U}e"]]]}}
+
+  census_add_parent_missing:
+    kind: probe
+    spec_refs:
+      - {"req_id": "LDAP-49e7dd1d", "keyword": "MUST", "axis": "native_codes", "step": 2, "allowed": [[32], [53], [50], [80]]}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "add", "args": {"dn": "ou={U}c,ou={U}absent,{B}", "attributes": [["objectClass", ["top", "organizationalUnit"]], ["ou", ["{U}c"]]]}}
+
+  census_add_schema_violation:
+    kind: probe
+    spec_refs:
+      - {"req_id": "LDAP-dac0b5c3", "keyword": "MUST", "axis": "status", "step": 2, "allowed": ["fix-request", "stop", "authenticate", "redirect", "closed"]}
+      - {"req_id": "LDAP-a33b8b74", "keyword": "MUST", "axis": "status", "step": 2, "allowed": ["fix-request", "stop", "authenticate", "redirect", "closed"]}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "add", "args": {"dn": "cn={U}ns,{B}", "attributes": [["objectClass", ["top", "person"]], ["cn", ["{U}ns"]]]}}
+
+  census_add_rdn_not_listed:
+    kind: probe
+    spec_refs:
+      - {"req_id": "LDAP-5364e082", "keyword": "MAY", "axis": "decision_class", "step": 2, "note": "RDN attribute absent from the list; comparison only"}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "add", "args": {"dn": "ou={U}rn,{B}", "attributes": [["objectClass", ["top", "organizationalUnit"]]]}}
+
+  census_moddn_superior_missing:
+    kind: probe
+    spec_refs:
+      - {"req_id": "LDAP-b4cafca8", "keyword": "MUST", "axis": "native_codes", "step": 3, "allowed": [[32], [53], [50], [80], [64]]}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "add", "args": {"dn": "ou={U}n,{B}", "attributes": [["objectClass", ["top", "organizationalUnit"]], ["ou", ["{U}n"]]]}}
+      - {"op": "moddn", "args": {"dn": "ou={U}n,{B}", "newrdn": "ou={U}n", "newsuperior": "ou={U}absent,{B}"}}
+
+  census_moddn_schema:
+    kind: probe
+    spec_refs:
+      - {"req_id": "LDAP-ed600da1", "keyword": "MUST", "axis": "status", "step": 3, "allowed": ["fix-request", "stop", "authenticate", "redirect", "closed"]}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "add", "args": {"dn": "ou={U}q,{B}", "attributes": [["objectClass", ["top", "organizationalUnit"]], ["ou", ["{U}q"]]]}}
+      - {"op": "moddn", "args": {"dn": "ou={U}q,{B}", "newrdn": "uid={U}q", "deleteoldrdn": true}}
+
+  census_abandon_search:
+    kind: probe
+    spec_refs:
+      - {"req_id": "LDAP-57a91fc7", "keyword": "MAY", "axis": "response_ops", "step": 2, "note": "comparison only"}
+      - {"req_id": "LDAP-5465b021", "keyword": "MUST", "axis": "response_ops", "step": 2, "note": "no SearchResultDone after the abandon took effect; comparison only"}
+      - {"req_id": "LDAP-8aa61b85", "keyword": "MUST", "axis": "response_ops", "step": 2, "note": "no UNDECODABLE message"}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "burst", "window_ms": 2000, "args": {"requests": [{"op": "search", "id": 40, "args": {"base": "{B}", "scope": "sub"}}, {"op": "abandon", "id": 41, "args": {"id": 40}}]}}
+
+  census_superclasses_added:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "LDAP-bbeeb4cb", "keyword": "MUST", "axis": "objectclasses", "step": 3, "allowed": [["inetorgperson", "organizationalperson", "person", "top"], ["inetorgperson", "organizationalperson", "person", "top", "user"]]}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "add", "args": {"dn": "cn={U}io,{B}", "attributes": [["objectClass", ["inetOrgPerson"]], ["cn", ["{U}io"]], ["sn", ["io"]]]}}
+      - {"op": "search", "args": {"base": "cn={U}io,{B}", "scope": "base", "attributes": ["objectClass"]}}
+
+  census_objectclass_restrictions:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "LDAP-4f22e3fd", "keyword": "MUST", "axis": "status", "step": 3, "allowed": ["fix-request", "stop", "authenticate", "redirect", "closed"]}
+      - {"req_id": "LDAP-5410c09e", "keyword": "MUST", "axis": "status", "step": 4, "allowed": ["fix-request", "stop", "authenticate", "redirect", "closed"]}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "add", "args": {"dn": "cn={U}oc,{B}", "attributes": [["objectClass", ["top", "person", "organizationalPerson", "inetOrgPerson"]], ["cn", ["{U}oc"]], ["sn", ["oc"]]]}}
+      - {"op": "modify", "args": {"dn": "cn={U}oc,{B}", "changes": [{"op": "replace", "type": "objectClass", "values": ["top", "organizationalUnit"]}]}}
+      - {"op": "modify", "args": {"dn": "cn={U}oc,{B}", "changes": [{"op": "delete", "type": "objectClass", "values": ["person"]}]}}
+
+  census_operational_timestamps:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "LDAP-d489d33d", "keyword": "SHOULD", "axis": "attr_names", "step": 3, "allowed": [["createtimestamp", "creatorsname", "modifiersname", "modifytimestamp"]]}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "add", "args": {"dn": "ou={U}ts,{B}", "attributes": [["objectClass", ["top", "organizationalUnit"]], ["ou", ["{U}ts"]]]}}
+      - {"op": "search", "args": {"base": "ou={U}ts,{B}", "scope": "base", "attributes": ["creatorsName", "createTimestamp", "modifiersName", "modifyTimestamp"]}}
+
+  census_subschema_subentry:
+    kind: control
+    value_attrs: ["subschemasubentry", "ditcontentrules"]
+    spec_refs:
+      - {"req_id": "LDAP-cf55313a", "keyword": "MUST", "axis": "attr_names", "step": 2, "allowed": [["subschemasubentry"]]}
+      - {"req_id": "LDAP-a643990c", "keyword": "SHOULD", "axis": "attr_names", "step": 2, "allowed": [["subschemasubentry"]]}
+      - {"req_id": "LDAP-38ea0989", "keyword": "MUST", "axis": "attr_names", "step": 2, "allowed": [["subschemasubentry"]]}
+      - {"req_id": "LDAP-bb378b98", "keyword": "MUST", "axis": "subschema_rdn_attr", "step": 2, "allowed": [["cn"]]}
+      - {"req_id": "LDAP-3e0d92e2", "keyword": "SHOULD", "axis": "attr_names", "step": 3, "allowed": [["createtimestamp", "modifytimestamp"]]}
+      - {"req_id": "LDAP-31319ba1", "keyword": "SHOULD", "axis": "attr_names", "step": 4, "allowed": [["attributetypes", "objectclasses"], ["attributetypes", "ldapsyntaxes", "matchingrules", "objectclasses"]]}
+      - {"req_id": "LDAP-8d1dbab7", "keyword": "SHOULD", "axis": "objectclasses", "step": 5, "note": "subschema held in a subentry; comparison only"}
+      - {"req_id": "LDAP-0d873343", "keyword": "MAY", "axis": "attr_names", "step": 6, "note": "additional subschema attributes; comparison only"}
+      - {"req_id": "LDAP-27dbe42f", "keyword": "MUST", "axis": "entry_attrs", "step": 7, "note": "DIT content rule MUST/MAY/NOT lists; comparison only"}
+      - {"req_id": "LDAP-878008bf", "keyword": "MUST", "axis": "entry_attrs", "step": 7, "note": "MUST and MAY lists differ; comparison only"}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "search", "args": {"base": "{B}", "scope": "base", "attributes": ["subschemaSubentry"]}}
+      - {"op": "search", "args": {"base": "{@subschemaSubentry}", "scope": "base", "filter": ["present", "objectClass"], "attributes": ["createTimestamp", "modifyTimestamp"]}}
+      - {"op": "search", "args": {"base": "{@subschemaSubentry}", "scope": "base", "filter": ["present", "objectClass"], "attributes": ["objectClasses", "attributeTypes"]}}
+      - {"op": "search", "args": {"base": "{@subschemaSubentry}", "scope": "base", "filter": ["present", "objectClass"], "attributes": ["objectClass"]}}
+      - {"op": "search", "args": {"base": "{@subschemaSubentry}", "scope": "base", "filter": ["present", "objectClass"], "attributes": ["+"]}}
+      - {"op": "search", "args": {"base": "{@subschemaSubentry}", "scope": "base", "filter": ["present", "objectClass"], "attributes": ["dITContentRules"]}}
+
+  census_subschema_modify:
+    kind: probe
+    spec_refs:
+      - {"req_id": "LDAP-2bbd5536", "keyword": "MAY", "axis": "decision_class", "step": 3, "note": "subschema modification; comparison only"}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "search", "args": {"base": "{B}", "scope": "base", "attributes": ["subschemaSubentry"]}}
+      - {"op": "modify", "args": {"dn": "{@subschemaSubentry}", "changes": [{"op": "add", "type": "attributeTypes", "values": ["( 1.3.6.1.4.1.32473.9.1 NAME 'pdCensusAttr' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )"]}]}}
+
+  census_value_preserved:
+    kind: stateful
+    value_attrs: ["description"]
+    spec_refs:
+      - {"req_id": "LDAP-4545ef8e", "keyword": "SHOULD", "axis": "entry_attrs", "step": 3, "allowed": [[["ou={U}v|description", ["Mixed Case  Value"]]]]}
+      - {"req_id": "LDAP-c4182cb8", "keyword": "MUST", "axis": "entry_attrs", "step": 3, "note": "an equivalent value under caseIgnoreMatch; comparison only"}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "add", "args": {"dn": "ou={U}v,{B}", "attributes": [["objectClass", ["top", "organizationalUnit"]], ["ou", ["{U}v"]], ["description", ["Mixed Case  Value"]]]}}
+      - {"op": "search", "args": {"base": "ou={U}v,{B}", "scope": "base", "attributes": ["description"]}}
+
+  census_recognise_rfc4519_names:
+    kind: control
+    spec_refs:
+      - {"req_id": "LDAP-1645c41b", "keyword": "SHOULD", "axis": "entries", "step": 2, "allowed": [["{B}"]]}
+    steps:
+      - {"op": "bind", "args": {"dn": "", "password": ""}}
+      - {"op": "search", "args": {"base": "{B}", "scope": "base", "filter": ["present", "objectClass"], "attributes": ["dc", "o", "ou", "description", "seeAlso"]}}
+
+  census_short_name_ambiguity:
+    kind: probe
+    spec_refs:
+      - {"req_id": "LDAP-c1333674", "keyword": "SHOULD", "axis": "entries", "step": 2, "note": "'name' as filter type; comparison only"}
+      - {"req_id": "LDAP-8f622a4a", "keyword": "MUST", "axis": "entries", "step": 2, "note": "comparison only"}
+      - {"req_id": "LDAP-ee51305d", "keyword": "MUST", "axis": "entries", "step": 2, "note": "comparison only"}
+    steps:
+      - {"op": "bind", "args": {"dn": "", "password": ""}}
+      - {"op": "search", "args": {"base": "{B}", "scope": "base", "filter": ["present", "name"]}}
+
+  census_name_subtype_rules:
+    kind: probe
+    spec_refs:
+      - {"req_id": "LDAP-6d0be2b3", "keyword": "MUST", "axis": "status", "step": 2, "note": "MUST satisfied only by the named type, not a subtype; comparison only"}
+      - {"req_id": "LDAP-5094c8be", "keyword": "MUST", "axis": "status", "step": 2, "note": "MAY allows the named type and its tagged options only; comparison only"}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "add", "args": {"dn": "ou={U}nm,{B}", "attributes": [["objectClass", ["top", "organizationalUnit"]], ["ou", ["{U}nm"]], ["name", ["pd"]]]}}
+
+  census_optional_features:
+    kind: probe
+    value_attrs: ["subschemasubentry"]
+    spec_refs:
+      - {"req_id": "LDAP-8b251f9d", "keyword": "MAY", "axis": "entry_attrs", "step": 2, "note": "DIT content rules; comparison only"}
+      - {"req_id": "LDAP-a5395377", "keyword": "MAY", "axis": "entry_attrs", "step": 2, "note": "DIT structure rules and name forms; comparison only"}
+      - {"req_id": "LDAP-aa18eb66", "keyword": "MAY", "axis": "status", "step": 4, "note": "alias entries; comparison only"}
+      - {"req_id": "LDAP-48275a82", "keyword": "MAY", "axis": "status", "step": 3, "note": "extensibleObject; comparison only"}
+      - {"req_id": "LDAP-dc682647", "keyword": "MAY", "axis": "entries", "step": 5, "note": "subentries; comparison only"}
+      - {"req_id": "LDAP-9b3dc652", "keyword": "MUST", "axis": "entries", "step": 5, "note": "subentries per RFC 3672; comparison only"}
+      - {"req_id": "LDAP-cd53f899", "keyword": "SHOULD", "axis": "entries", "step": 5, "note": "object entries mimicking subentries; comparison only"}
+      - {"req_id": "LDAP-514ac827", "keyword": "MAY", "axis": "entry_attrs", "step": 2, "note": "additional schema elements; comparison only"}
+    steps:
+      - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
+      - {"op": "search", "args": {"base": "", "scope": "base", "filter": ["present", "objectClass"], "attributes": ["subschemaSubentry"]}}
+      - {"op": "add", "args": {"dn": "ou={U}xo,{B}", "attributes": [["objectClass", ["top", "organizationalUnit", "extensibleObject"]], ["ou", ["{U}xo"]], ["businessCategory", ["x"]]]}}
+      - {"op": "add", "args": {"dn": "cn={U}fa,{B}", "attributes": [["objectClass", ["top", "alias", "extensibleObject"]], ["cn", ["{U}fa"]], ["aliasedObjectName", ["{B}"]]]}}
+      - {"op": "search", "args": {"base": "{B}", "scope": "sub", "filter": ["eq", "objectClass", "subentry"]}, "controls": [{"oid": "1.3.6.1.4.1.4203.1.10.1", "critical": false, "value": "0101ff", "hex": true}]}
+

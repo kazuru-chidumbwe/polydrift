@@ -24,6 +24,30 @@ axes:
     tier: 2
     kappa: identity
     clause: "T2: an unsolicited Notice of Disconnection ends the session (RFC 4511 4.4.1)"
+  attr_names:
+    tier: 3
+    kappa: dn_set
+    clause: "T3: attribute descriptions the server used for returned attributes (short name vs OID, RFC 4511 4.5.2)"
+  objectclasses:
+    tier: 2
+    kappa: dn_set
+    clause: "T2: objectClass values of the returned entries; an application decides an entry's kind from them (RFC 4512 3.3)"
+  subschema_rdn_attr:
+    tier: 2
+    kappa: dn_set
+    clause: "T2: naming attribute of the subschema subentry a client must locate to read the schema (RFC 4512 3.2, 4.2)"
+  referral_shape:
+    tier: 2
+    kappa: identity
+    clause: "T2: a referral without a URI leaves the client nowhere to go (RFC 4511 4.1.10)"
+  referral_uris:
+    tier: 2
+    kappa: dn_set
+    clause: "T2: the URIs a client follows (RFC 4511 4.1.10, 4.5.3)"
+  sasl_creds_present:
+    tier: 3
+    kappa: identity
+    clause: "T3: serverSaslCreds present in BindResponse (RFC 4511 4.2.2)"
   native_codes:
     tier: 3
     kappa: identity

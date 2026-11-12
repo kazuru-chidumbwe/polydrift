@@ -13,6 +13,7 @@ Writes DIR/records.jsonl, DIR/raw.jsonl (driver observations), DIR/progress, DIR
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import socket
@@ -121,20 +122,23 @@ def main() -> int:
                 batch = []
                 for fid, fx in fixtures.items():
                     tp = t.get("base", "")
-                    env = {"B": tp, "A": t.get("admin", ""), "P": t.get("password", ""), "U": f"pd{fid[:24]}r{r}"}
+                    # {U}: unique per fixture (each repeat starts a fresh container), the same in every repeat and target, so
+                    # records stay comparable; the adapter maps it back to the literal "{U}"
+                    env = {"B": tp, "A": t.get("admin", ""), "P": t.get("password", ""),
+                           "U": "pd" + hashlib.sha1(fid.encode()).hexdigest()[:10]}
                     try:
                         obs = driver.run_script("127.0.0.1", port, fx["steps"], env)
                     except Exception as e:  # noqa: BLE001
                         obs = [{"step": 1, "actor": "a", "op": "?", "end": False, "error": f"driver: {e!r}", "clients": {}}]
-                    batch.append((fid, tp, obs, set(fx.get("value_attrs", [])), None))
+                    batch.append((fid, tp, obs, set(fx.get("value_attrs", [])), env["U"]))
                 ok_end = ok_start and canary("127.0.0.1", port, f"{t['key']}-r{r}-end")
                 final = (ok_start and ok_end) or attempt == 2
                 with (out / ("raw.jsonl" if final else "raw-failed.jsonl")).open("a") as rawf,                         (out / ("records.jsonl" if final else "records-failed.jsonl")).open("a") as recf:
-                    for fid, tp, obs, ver, agg in batch:
+                    for fid, tp, obs, ver, uniq in batch:
                         rawf.write(json.dumps({"impl": t["key"], "repeat": r, "fixture": fid, "image_id": image_id,
                                                "canary": [ok_start, ok_end], "obs": obs}) + "\n")
                         if ok_start and ok_end:
-                            rec = adapter.to_record(obs, t["key"], fid, spec=spec, base=tp, value_attrs=ver, repeat=r,
+                            rec = adapter.to_record(obs, t["key"], fid, spec=spec, base=tp, value_attrs=ver, unique=uniq, repeat=r,
                                                     impl_version=t.get("version", ""), harness_commit=commit)
                         else:
                             rec = ObservationRecord(cell="ldap", impl=t["key"], impl_version=t.get("version", ""),

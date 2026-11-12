@@ -288,18 +288,19 @@ class Lab:
         action, uri = st.get("action", "call"), self.fill(st.get("uri", ""), "alice")
         if kind == "pjsua":
             line = {"call": f"call new {uri}", "hangup": "call hangup", "hangup_all": "call hangup_all",
-                    "message": f"im send {uri} pdcensus"}.get(
+                    "message": f"im send {uri} pdcensus", "register": "acc reg"}.get(
                 action, st.get("raw", ""))
             data = (line + "\r\n").encode()
         elif kind == "baresip":
             cmd, params = {"call": ("dial", uri), "hangup": ("hangup", ""), "hangup_all": ("hangupall", ""),
-                           "message": ("message", f"{uri} pdcensus")}.get(
+                           "message": ("message", f"{uri} pdcensus"),
+                           "register": ("uareg", "3600")}.get(
                 action, (st.get("raw", ""), ""))
             body = json.dumps({"command": cmd, "params": params, "token": "pd"}).encode()
             data = str(len(body)).encode() + b":" + body + b","
         elif kind == "linphone":
             line = {"call": f"call {uri}", "hangup": "terminate", "hangup_all": "terminate all",
-                    "message": f"chat {uri} pdcensus"}.get(
+                    "message": f"chat {uri} pdcensus", "register": "register sip:uas@lab.test sip:172.31.60.99:5073"}.get(
                 action, st.get("raw", ""))
             data = (line + "\n").encode()
         else:

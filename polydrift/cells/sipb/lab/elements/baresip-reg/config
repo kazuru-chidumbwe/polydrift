@@ -1,0 +1,15 @@
+# polydrift sipb: baresip as a plain user agent on 172.31.60.10:5060 (UDP and TCP), no registration, generated
+# audio and a file sink instead of sound devices, ctrl_tcp on 4444 for UAC-role commands.
+sip_listen		0.0.0.0:5060
+module_path		/usr/lib/baresip/modules
+module			g711.so
+module			ausine.so
+module			aufile.so
+module_app		account.so
+module_app		contact.so
+module_app		menu.so
+module			ctrl_tcp.so
+ctrl_tcp_listen		0.0.0.0:4444
+audio_player		aufile,/tmp/pd-out.wav
+audio_source		ausine,440
+audio_alert		aufile,/tmp/pd-alert.wav

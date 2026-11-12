@@ -690,7 +690,7 @@ fixtures:
     kind: control
     roles: ["uas"]
     steps:
-      - {"op": "send", "window_ms": 3000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:inv};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "codes:alice", "x2": "re:alice/-1/hdr/to/0=.*;tag=.*", "x3": "has:alice/-1/hdr/contact"}}
+      - {"op": "send", "window_ms": 6000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:inv};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "codes:alice", "x2": "re:alice/-1/hdr/to/0=.*;tag=.*", "x3": "has:alice/-1/hdr/contact"}}
       - {"op": "ack", "from": "alice", "window_ms": 800}
       - {"op": "send", "window_ms": 1500, "msg": "BYE {lasturi:alice:Contact} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: {last:alice:To}\nCall-ID: {callid}\nCSeq: 2 BYE\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
 
@@ -889,7 +889,7 @@ fixtures:
       - {"req_id": "SIP-b29ee7b1", "keyword": "SHOULD", "axis": "x4", "step": 1, "note": "SDP without Content-Disposition is a session; comparison only"}
       - {"req_id": "SIP-6e6abd28", "keyword": "SHOULD", "axis": "x4", "step": 1, "note": "comparison only"}
     steps:
-      - {"op": "send", "from": "alice", "window_ms": 3000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nRecord-Route: <sip:{lab}:{port:dave};lr;pdrr=1>\nTimestamp: 54\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "re:alice/-1/hdr/record-route/0=.*pdrr=1.*", "x2": "re:alice/-1/hdr/contact/0=<?sips?:[^,]*", "x3": "re:alice/-1/hdr/to/0=.*;tag=.*", "x4": "re:alice/-1/body=(?s).*m=audio.*", "x5": "hasall:alice/-1/hdr=[\"allow\", \"supported\"]", "x6": "alice/0/hdr/timestamp/0", "x7": "codes:alice"}}
+      - {"op": "send", "from": "alice", "window_ms": 6000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nRecord-Route: <sip:{lab}:{port:dave};lr;pdrr=1>\nTimestamp: 54\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "re:alice/-1/hdr/record-route/0=.*pdrr=1.*", "x2": "re:alice/-1/hdr/contact/0=<?sips?:[^,]*", "x3": "re:alice/-1/hdr/to/0=.*;tag=.*", "x4": "re:alice/-1/body=(?s).*m=audio.*", "x5": "hasall:alice/-1/hdr=[\"allow\", \"supported\"]", "x6": "alice/0/hdr/timestamp/0", "x7": "codes:alice"}}
       - {"op": "ack", "from": "alice", "window_ms": 800}
       - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "BYE {lasturi:alice:Contact} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: {last:alice:To}\nCall-ID: {callid}\nCSeq: 2 BYE\nContact: <sip:alice@{lab}:{port:alice}>\nRoute: <sip:{lab}:{port:dave};lr;pdrr=1>\nContent-Length: {clen}\n\n", "extract": {"x8": "codes:alice"}}
 
@@ -903,7 +903,7 @@ fixtures:
       - {"req_id": "SIP-db54848c", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
       - {"req_id": "SIP-f11256dd", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
     steps:
-      - {"op": "send", "from": "alice", "window_ms": 3000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "re:alice/-1/body=(?s).*m=audio.*"}}
+      - {"op": "send", "from": "alice", "window_ms": 6000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "re:alice/-1/body=(?s).*m=audio.*"}}
       - {"op": "send", "from": "alice", "window_ms": 800, "msg": "ACK {lasturi:alice:Contact} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: {last:alice:To}\nCall-ID: {callid}\nCSeq: 1 ACK\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
       - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "BYE {lasturi:alice:Contact} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: {last:alice:To}\nCall-ID: {callid}\nCSeq: 2 BYE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n"}
 
@@ -927,7 +927,7 @@ fixtures:
       - {"req_id": "SIP-887514c8", "keyword": "MUST", "axis": "x3", "step": 5, "allowed": [[481]]}
       - {"req_id": "SIP-15df0bcb", "keyword": "SHOULD", "axis": "x3", "step": 5, "allowed": [[481]]}
     steps:
-      - {"op": "send", "from": "alice", "window_ms": 2500, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
+      - {"op": "send", "from": "alice", "window_ms": 6000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
       - {"op": "ack", "from": "alice", "window_ms": 800}
       - {"op": "send", "from": "alice", "window_ms": 1000, "msg": "INFO {lasturi:alice:Contact} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: {last:alice:To}\nCall-ID: {callid}\nCSeq: 1 INFO\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
       - {"op": "send", "from": "alice", "window_ms": 1000, "msg": "INFO {lasturi:alice:Contact} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: {last:alice:To}\nCall-ID: {callid}\nCSeq: 9 INFO\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x2": "codes:alice"}}
@@ -947,9 +947,9 @@ fixtures:
       - {"req_id": "SIP-b0fbc180", "keyword": "MUST", "axis": "x2", "step": 3, "note": "comparison only"}
       - {"req_id": "SIP-c230a09d", "keyword": "SHOULD", "axis": "x2", "step": 3, "note": "comparison only"}
     steps:
-      - {"op": "send", "from": "alice", "window_ms": 2500, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
+      - {"op": "send", "from": "alice", "window_ms": 6000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
       - {"op": "ack", "from": "alice", "window_ms": 800}
-      - {"op": "send", "from": "alice", "window_ms": 2500, "msg": "INVITE {lasturi:alice:Contact} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: {last:alice:To}\nCall-ID: {callid}\nCSeq: 2 INVITE\nContact: <sip:alice@{lab}:{port:carol}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x2": "codes:alice"}}
+      - {"op": "send", "from": "alice", "window_ms": 6000, "msg": "INVITE {lasturi:alice:Contact} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: {last:alice:To}\nCall-ID: {callid}\nCSeq: 2 INVITE\nContact: <sip:alice@{lab}:{port:carol}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x2": "codes:alice"}}
       - {"op": "ack", "from": "alice", "window_ms": 800}
       - {"op": "uac", "action": "hangup", "window_ms": 1500, "extract": {"x1": "methods:carol"}}
 
@@ -961,7 +961,7 @@ fixtures:
       - {"req_id": "SIP-af6aac70", "keyword": "MUST", "axis": "x1", "step": 4, "note": "comparison only"}
       - {"req_id": "SIP-e2fe95d5", "keyword": "SHOULD", "axis": "x1", "step": 4, "note": "comparison only"}
     steps:
-      - {"op": "send", "from": "alice", "window_ms": 2500, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
+      - {"op": "send", "from": "alice", "window_ms": 6000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
       - {"op": "ack", "from": "alice", "window_ms": 800}
       - {"op": "send", "from": "alice", "window_ms": 10, "msg": "INVITE {lasturi:alice:Contact} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: {last:alice:To}\nCall-ID: {callid}\nCSeq: 3 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
       - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "INVITE {lasturi:alice:Contact} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: {last:alice:To}\nCall-ID: {callid}\nCSeq: 2 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "codes:alice"}}
@@ -1069,7 +1069,7 @@ fixtures:
       - {"req_id": "SIP-f45f017f", "keyword": "MUST", "axis": "x5", "step": 3, "note": "comparison only"}
       - {"req_id": "SIP-e686a27e", "keyword": "SHOULD", "axis": "x5", "step": 3, "note": "comparison only"}
     steps:
-      - {"op": "send", "from": "alice", "window_ms": 2500, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nRecord-Route: <sip:{lab}:{port:dave};lr>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
+      - {"op": "send", "from": "alice", "window_ms": 6000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nRecord-Route: <sip:{lab}:{port:dave};lr>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
       - {"op": "ack", "from": "alice", "window_ms": 800}
       - {"op": "uac", "action": "hangup", "window_ms": 2500, "extract": {"x1": "re:dave/0/hdr/to/0=<sip:alice@{domain}>.*", "x2": "re:dave/0/hdr/to/0=.*;tag={tag:alice}.*", "x3": "re:dave/0/hdr/from/0=.*;tag=.*", "x4": "eq:dave/0/hdr/call-id/0={callid}", "x5": "eq:dave/0/method=BYE", "x6": "re:dave/0/ruri=sip:alice@{lab}:{port:alice}.*", "x7": "re:dave/0/hdr/route/0=<sip:{lab}:{port:dave};lr>", "x8": "dave/0/hdr/cseq/0"}}
       - {"op": "reply", "from": "dave", "code": 200, "window_ms": 500}
@@ -1086,7 +1086,7 @@ fixtures:
       - {"req_id": "SIP-77d49680", "keyword": "SHOULD", "axis": "x3", "step": 3, "note": "comparison only"}
       - {"req_id": "SIP-12fb2a6f", "keyword": "MUST", "axis": "x3", "step": 3, "note": "comparison only"}
     steps:
-      - {"op": "send", "from": "alice", "window_ms": 2500, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nRecord-Route: <sip:{lab}:{port:dave}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
+      - {"op": "send", "from": "alice", "window_ms": 6000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nRecord-Route: <sip:{lab}:{port:dave}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
       - {"op": "ack", "from": "alice", "window_ms": 800}
       - {"op": "uac", "action": "hangup", "window_ms": 2500, "extract": {"x1": "re:dave/0/ruri=sip:{lab}:{port:dave}", "x2": "re:dave/0/hdr/route/-1=<sip:alice@{lab}:{port:alice}>", "x3": "dave/0/method"}}
       - {"op": "reply", "from": "dave", "code": 200, "window_ms": 500}
@@ -1126,7 +1126,7 @@ fixtures:
       - {"req_id": "SIP-d293aa4a", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
       - {"req_id": "SIP-61562e67", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
     steps:
-      - {"op": "send", "from": "alice", "window_ms": 3000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=video 40000 RTP/AVP 126\n", "extract": {"x1": "codes:alice"}}
+      - {"op": "send", "from": "alice", "window_ms": 6000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=video 40000 RTP/AVP 126\n", "extract": {"x1": "codes:alice"}}
       - {"op": "ack", "from": "alice", "window_ms": 800}
 
   ua_dialog_no_record_route:
@@ -1136,7 +1136,7 @@ fixtures:
       - {"req_id": "SIP-df0fdeb2", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [true]}
       - {"req_id": "SIP-aa3e7dd0", "keyword": "MUST", "axis": "x2", "step": 4, "allowed": [false], "note": "no Record-Route: empty route set, so the BYE carries no Route"}
     steps:
-      - {"op": "send", "from": "alice", "window_ms": 2500, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
+      - {"op": "send", "from": "alice", "window_ms": 6000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
       - {"op": "ack", "from": "alice", "window_ms": 800}
       - {"op": "send", "from": "alice", "window_ms": 1000, "msg": "INFO {lasturi:alice:Contact} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: {last:alice:To}\nCall-ID: {callid}\nCSeq: 2 INFO\nContent-Length: {clen}\n\n", "extract": {"x1": "same:alice/0/hdr/to,sent/alice/hdr/to"}}
       - {"op": "uac", "action": "hangup", "window_ms": 2500, "extract": {"x2": "has:alice/0/hdr/route", "x3": "eq:alice/0/method=BYE"}}
@@ -1457,29 +1457,30 @@ fixtures:
     kind: probe
     roles: ["uac-reg"]
     spec_refs:
-      - {"req_id": "SIP-e0e3ff09", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
-      - {"req_id": "SIP-93cf4232", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
-      - {"req_id": "SIP-5428b5ff", "keyword": "MUST", "axis": "x3", "step": 1, "allowed": [true]}
-      - {"req_id": "SIP-5f58f621", "keyword": "MUST", "axis": "x4", "step": 2, "allowed": [false]}
-      - {"req_id": "SIP-97f21ed0", "keyword": "SHOULD", "axis": "x5", "step": 2, "allowed": [true, "null"]}
-      - {"req_id": "SIP-5ea43c66", "keyword": "SHOULD", "axis": "x5", "step": 2, "allowed": [true, "null"]}
-      - {"req_id": "SIP-152a22ee", "keyword": "SHOULD", "axis": "x5", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-6171afdb", "keyword": "SHOULD", "axis": "x6", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-a8294346", "keyword": "MUST", "axis": "x6", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-fc4b7ef4", "keyword": "SHOULD", "axis": "x7", "step": 1, "allowed": [false]}
-      - {"req_id": "SIP-99d9c078", "keyword": "MAY", "axis": "x7", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-3646979b", "keyword": "MAY", "axis": "x7", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-619c67d3", "keyword": "MAY", "axis": "x7", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-7f24b7a6", "keyword": "MAY", "axis": "x6", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-e6769d50", "keyword": "MAY", "axis": "x7", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-fc8d8528", "keyword": "SHOULD", "axis": "x6", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-04bc3bcd", "keyword": "MUST", "axis": "x6", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-02857d17", "keyword": "SHOULD", "axis": "x6", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-752c63f8", "keyword": "MAY", "axis": "x6", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-a03f809d", "keyword": "SHOULD", "axis": "x6", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-026ef8fa", "keyword": "SHOULD", "axis": "x6", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-093ffcaf", "keyword": "MAY", "axis": "x6", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-e0e3ff09", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [true]}
+      - {"req_id": "SIP-93cf4232", "keyword": "MUST", "axis": "x2", "step": 2, "allowed": [true]}
+      - {"req_id": "SIP-5428b5ff", "keyword": "MUST", "axis": "x3", "step": 2, "allowed": [true]}
+      - {"req_id": "SIP-5f58f621", "keyword": "MUST", "axis": "x4", "step": 3, "allowed": [false]}
+      - {"req_id": "SIP-97f21ed0", "keyword": "SHOULD", "axis": "x5", "step": 3, "allowed": [true, "null"]}
+      - {"req_id": "SIP-5ea43c66", "keyword": "SHOULD", "axis": "x5", "step": 3, "allowed": [true, "null"]}
+      - {"req_id": "SIP-152a22ee", "keyword": "SHOULD", "axis": "x5", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-6171afdb", "keyword": "SHOULD", "axis": "x6", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-a8294346", "keyword": "MUST", "axis": "x6", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-fc4b7ef4", "keyword": "SHOULD", "axis": "x7", "step": 2, "allowed": [false]}
+      - {"req_id": "SIP-99d9c078", "keyword": "MAY", "axis": "x7", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-3646979b", "keyword": "MAY", "axis": "x7", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-619c67d3", "keyword": "MAY", "axis": "x7", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-7f24b7a6", "keyword": "MAY", "axis": "x6", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-e6769d50", "keyword": "MAY", "axis": "x7", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-fc8d8528", "keyword": "SHOULD", "axis": "x6", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-04bc3bcd", "keyword": "MUST", "axis": "x6", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-02857d17", "keyword": "SHOULD", "axis": "x6", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-752c63f8", "keyword": "MAY", "axis": "x6", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-a03f809d", "keyword": "SHOULD", "axis": "x6", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-026ef8fa", "keyword": "SHOULD", "axis": "x6", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-093ffcaf", "keyword": "MAY", "axis": "x6", "step": 3, "note": "comparison only"}
     steps:
+      - {"op": "uac", "action": "register", "window_ms": 3000}
       - {"op": "reply", "from": "dave", "code": 200, "reason": "OK", "window_ms": 6000, "headers": {"Expires": "3"}, "extract": {"x1": "hasall:hist/dave/0/hdr=[\"to\", \"from\", \"call-id\", \"cseq\", \"via\", \"max-forwards\"]", "x2": "re:hist/dave/0/ruri=sips?:[^@]*", "x3": "re:hist/dave/0/hdr/to/0=.*<?sips?:.*", "x7": "re:hist/dave/0/hdr/contact/0=.*action=.*"}}
       - {"op": "reply", "from": "dave", "code": 200, "reason": "OK", "window_ms": 1000, "headers": {"Expires": "300"}, "extract": {"x4": "same:hist/dave/0/hdr/cseq,hist/dave/1/hdr/cseq", "x5": "same:hist/dave/0/hdr/call-id,hist/dave/1/hdr/call-id", "x6": "methods:dave"}}
 

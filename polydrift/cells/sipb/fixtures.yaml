@@ -1142,3 +1142,344 @@ fixtures:
       - {"op": "uac", "action": "hangup", "window_ms": 2500, "extract": {"x2": "has:alice/0/hdr/route", "x3": "eq:alice/0/method=BYE"}}
       - {"op": "reply", "from": "alice", "code": 200, "window_ms": 500}
 
+
+  # ---------------- census: user-agent client side (12 Nov 2026) ----------------
+  # Generated with the census authoring aid; roles uac (driven UA) and uac-reg (UA registering at dave).
+  uac_invite_construction:
+    kind: control
+    roles: ["uac"]
+    spec_refs:
+      - {"req_id": "SIP-49efe20f", "keyword": "SHOULD", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-40675006", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [false]}
+      - {"req_id": "SIP-5631cbda", "keyword": "MUST", "axis": "x3", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-635450d5", "keyword": "MUST", "axis": "x4", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-460f0e5d", "keyword": "SHOULD", "axis": "x4", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-4df136dc", "keyword": "MAY", "axis": "x4", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-51492add", "keyword": "MUST", "axis": "x5", "step": 1, "allowed": ["70"]}
+      - {"req_id": "SIP-a883a6c0", "keyword": "MUST", "axis": "x6", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-334d38bf", "keyword": "MUST", "axis": "x6", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-2e9935a6", "keyword": "MUST", "axis": "x7", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-e78e2fd1", "keyword": "SHOULD", "axis": "x8", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-a1c18e5e", "keyword": "SHOULD", "axis": "x8", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-f7241491", "keyword": "SHOULD", "axis": "x8", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-08b625e2", "keyword": "MAY", "axis": "x8", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-db24656a", "keyword": "MAY", "axis": "x8", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-3e2961a8", "keyword": "MAY", "axis": "x8", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-b58dd5c8", "keyword": "MAY", "axis": "x8", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-21f2f0cb", "keyword": "SHOULD", "axis": "x8", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-95b08b8e", "keyword": "MUST", "axis": "x8", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-0dc39f3c", "keyword": "MUST", "axis": "x8", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-28fc54cc", "keyword": "MUST", "axis": "x8", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-cee1392d", "keyword": "MUST", "axis": "x8", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-14a28a45", "keyword": "MAY", "axis": "x8", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-7b1f4388", "keyword": "MUST", "axis": "x8", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-0199396b", "keyword": "SHOULD", "axis": "x8", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-df2991bf", "keyword": "MUST", "axis": "x8", "step": 1, "note": "request size under 1300 bytes; comparison only"}
+      - {"req_id": "SIP-bc14f8b4", "keyword": "MUST", "axis": "x8", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-1428db2e", "keyword": "SHOULD", "axis": "x8", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-b18f0342", "keyword": "SHOULD", "axis": "x8", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-430e9692", "keyword": "SHOULD", "axis": "x8", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-9172209d", "keyword": "SHOULD", "axis": "x8", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-23e226ce", "keyword": "MUST", "axis": "x8", "step": 1, "note": "comparison only"}
+    steps:
+      - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 800, "extract": {"x1": "re:bob/0/ruri=sip:bob@{lab}:{port:bob}.*", "x2": "re:bob/0/hdr/to/0=.*;tag=.*", "x3": "re:bob/0/hdr/from/0=.*;tag=.+", "x4": "re:bob/0/hdr/call-id/0=.+", "x5": "bob/0/hdr/max-forwards/0", "x6": "re:bob/0/hdr/via/0=SIP/2.0/(UDP|TCP) [^;]+;.*branch=z9hG4bK.*", "x7": "re:bob/0/hdr/contact/0=.*<?sips?:.*", "x8": "has:bob/0/hdr/allow"}}
+      - {"op": "reply", "from": "bob", "code": 486, "reason": "Busy Here", "window_ms": 1200}
+
+  uac_dialog_route_set:
+    kind: probe
+    roles: ["uac"]
+    spec_refs:
+      - {"req_id": "SIP-a5b1fd03", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [["ACK"]]}
+      - {"req_id": "SIP-ce3aa7aa", "keyword": "MUST", "axis": "x2", "step": 2, "allowed": [true]}
+      - {"req_id": "SIP-af2f6c58", "keyword": "MUST", "axis": "x3", "step": 2, "allowed": [true]}
+      - {"req_id": "SIP-26439eed", "keyword": "MUST", "axis": "x4", "step": 2, "allowed": [true]}
+      - {"req_id": "SIP-dfb20523", "keyword": "MUST", "axis": "x5", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-a936611b", "keyword": "MUST", "axis": "x6", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-39a23923", "keyword": "MUST", "axis": "x7", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-1563c13a", "keyword": "MUST", "axis": "x8", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-f3f8905e", "keyword": "MUST", "axis": "x5", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-1b80911a", "keyword": "MUST", "axis": "x6", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-9f40d274", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-384874f1", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-664c47dc", "keyword": "MUST", "axis": "x3", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-879263af", "keyword": "MUST", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-6acbc2ef", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-48de97dc", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-2dc25a84", "keyword": "MUST", "axis": "x5", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-9e1634f5", "keyword": "MAY", "axis": "x5", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-e4a63cf5", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-231af36d", "keyword": "MUST", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-c3d1bc7f", "keyword": "MUST", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-09b18229", "keyword": "SHOULD", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-3890468d", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-a12d8a5e", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+    steps:
+      - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 600}
+      - {"op": "reply", "from": "bob", "code": 200, "reason": "OK", "window_ms": 1500, "headers": {"Content-Type": "application/sdp", "Record-Route": ["<sip:{lab}:{port:carol};lr>", "<sip:{lab}:{port:dave};lr>"]}, "body": "v=0\no=bob 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40002 RTP/AVP 0\n", "extract": {"x1": "methods:dave", "x2": "re:dave/0/hdr/cseq/0=1 ACK", "x3": "re:dave/0/hdr/route/1=<sip:{lab}:{port:carol};lr>", "x4": "re:dave/0/ruri=sip:bob@{lab}:{port:bob}.*"}}
+      - {"op": "uac", "action": "hangup", "window_ms": 2000, "extract": {"x5": "re:dave/0/hdr/to/0=.*bob@.*;tag={tag:bob}.*", "x6": "re:dave/0/hdr/cseq/0=2 BYE", "x7": "same:dave/0/hdr/call-id,hist/bob/0/hdr/call-id", "x8": "same:dave/0/hdr/from,hist/bob/0/hdr/from"}}
+      - {"op": "reply", "from": "dave", "code": 200, "reason": "OK", "window_ms": 1200}
+
+  uac_2xx_retransmitted:
+    kind: probe
+    roles: ["uac"]
+    spec_refs:
+      - {"req_id": "SIP-c79c4206", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [["ACK"]]}
+    steps:
+      - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 600}
+      - {"op": "reply", "from": "bob", "code": 200, "reason": "OK", "window_ms": 1200, "headers": {"Content-Type": "application/sdp"}, "body": "v=0\no=bob 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40002 RTP/AVP 0\n"}
+      - {"op": "reply", "from": "bob", "code": 200, "reason": "OK", "window_ms": 1200, "headers": {"Content-Type": "application/sdp"}, "body": "v=0\no=bob 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40002 RTP/AVP 0\n", "extract": {"x1": "methods:bob"}}
+      - {"op": "uac", "action": "hangup", "window_ms": 2000}
+      - {"op": "reply", "from": "bob", "code": 200, "reason": "OK", "window_ms": 1200}
+
+  uac_response_without_to_tag:
+    kind: probe
+    roles: ["uac"]
+    spec_refs:
+      - {"req_id": "SIP-754db6b0", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [["ACK"]]}
+    steps:
+      - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 600}
+      - {"op": "reply", "from": "bob", "code": 200, "reason": "OK", "window_ms": 1500, "headers": {"Content-Type": "application/sdp"}, "body": "v=0\no=bob 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40002 RTP/AVP 0\n", "no_to_tag": true, "extract": {"x1": "methods:bob"}}
+      - {"op": "uac", "action": "hangup", "window_ms": 2000}
+      - {"op": "reply", "from": "bob", "code": 200, "reason": "OK", "window_ms": 1200}
+
+  uac_invite_retransmission_and_ack:
+    kind: probe
+    roles: ["uac"]
+    spec_refs:
+      - {"req_id": "SIP-37dc4d45", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [3, 4]}
+      - {"req_id": "SIP-146cf421", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [3, 4]}
+      - {"req_id": "SIP-b43143f4", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [3, 4]}
+      - {"req_id": "SIP-f692bec7", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [3, 4]}
+      - {"req_id": "SIP-8576917e", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [3, 4]}
+      - {"req_id": "SIP-44eab6ac", "keyword": "MUST", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-69e583be", "keyword": "SHOULD", "axis": "x2", "step": 2, "allowed": [0]}
+      - {"req_id": "SIP-91c71044", "keyword": "SHOULD", "axis": "x2", "step": 2, "allowed": [0]}
+      - {"req_id": "SIP-f552f9e0", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [["ACK"]]}
+      - {"req_id": "SIP-a791d82a", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [["ACK"]]}
+      - {"req_id": "SIP-d1029c9f", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [["ACK"]]}
+      - {"req_id": "SIP-62c0e0de", "keyword": "MUST", "axis": "x4", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-3ca225cd", "keyword": "MUST", "axis": "x5", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-18726c0d", "keyword": "MUST", "axis": "x6", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-d7ef8563", "keyword": "MUST", "axis": "x7", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-ddf9746a", "keyword": "MUST", "axis": "x3", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-ed8fc6c8", "keyword": "MUST", "axis": "x8", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-6eca6de4", "keyword": "SHOULD", "axis": "x8", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-88c9dc89", "keyword": "MAY", "axis": "x8", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-788a04af", "keyword": "MUST", "axis": "x3", "step": 4, "allowed": [["ACK"]]}
+      - {"req_id": "SIP-4445115a", "keyword": "SHOULD", "axis": "x3", "step": 4, "note": "comparison only"}
+      - {"req_id": "SIP-a70bf7d0", "keyword": "MUST", "axis": "x3", "step": 4, "note": "comparison only"}
+      - {"req_id": "SIP-a4f12b01", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-f48f9ece", "keyword": "MUST", "axis": "x8", "step": 3, "note": "comparison only"}
+    steps:
+      - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 3700, "extract": {"x1": "len:bob"}}
+      - {"op": "reply", "from": "bob", "code": 180, "reason": "Ringing", "window_ms": 3000, "extract": {"x2": "len:bob"}}
+      - {"op": "reply", "from": "bob", "code": 486, "reason": "Busy Here", "window_ms": 1000, "extract": {"x3": "methods:bob", "x4": "same:bob/0/hdr/call-id,hist/bob/0/hdr/call-id", "x5": "re:bob/0/hdr/to/0=.*;tag={tag:bob}.*", "x6": "same:bob/0/hdr/via,hist/bob/0/hdr/via", "x7": "re:bob/0/hdr/cseq/0=\\d+ ACK", "x8": "len:bob/0/body"}}
+      - {"op": "reply", "from": "bob", "code": 486, "reason": "Busy Here", "window_ms": 1000, "extract": {"x3": "methods:bob"}}
+
+  uac_cancel:
+    kind: probe
+    roles: ["uac"]
+    spec_refs:
+      - {"req_id": "SIP-dceb7d73", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [[]]}
+      - {"req_id": "SIP-47f3ec71", "keyword": "MUST", "axis": "x2", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-bb75e50b", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-33c83428", "keyword": "MUST", "axis": "x4", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-2fa43c15", "keyword": "MUST", "axis": "x5", "step": 3, "allowed": [false]}
+      - {"req_id": "SIP-eb122562", "keyword": "MUST", "axis": "x6", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-5a40b50f", "keyword": "MUST", "axis": "x6", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-b8957039", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-cca027f3", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-5badd1ff", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-a9089877", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-d10188d7", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
+    steps:
+      - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 600}
+      - {"op": "uac", "action": "hangup", "window_ms": 1200, "extract": {"x1": "methods:bob"}}
+      - {"op": "reply", "from": "bob", "code": 180, "reason": "Ringing", "window_ms": 1500, "extract": {"x2": "same:bob/0/hdr/call-id,hist/bob/0/hdr/call-id", "x3": "same:bob/0/hdr/via,hist/bob/0/hdr/via", "x4": "re:bob/0/hdr/cseq/0=\\d+ CANCEL", "x5": "has:bob/0/hdr/require", "x6": "eq:bob/0/method=CANCEL"}}
+      - {"op": "reply", "from": "bob", "code": 200, "reason": "OK", "window_ms": 300}
+      - {"op": "reply", "from": "bob", "code": 487, "reason": "Request Terminated", "window_ms": 1000}
+
+  uac_redirect_302:
+    kind: probe
+    roles: ["uac"]
+    spec_refs:
+      - {"req_id": "SIP-a00dfdf8", "keyword": "SHOULD", "axis": "x1", "step": 2, "allowed": [["INVITE"]]}
+      - {"req_id": "SIP-f474d78d", "keyword": "MUST", "axis": "x2", "step": 2, "allowed": [true, "null"]}
+      - {"req_id": "SIP-ec9a94a6", "keyword": "MUST", "axis": "x3", "step": 2, "allowed": [false, "null"]}
+      - {"req_id": "SIP-fe18d4e4", "keyword": "SHOULD", "axis": "x4", "step": 2, "allowed": [true, "null"]}
+      - {"req_id": "SIP-b31d2b66", "keyword": "SHOULD", "axis": "x4", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-267e9f2d", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-2e206e9c", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-ee2052a0", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-27f014ad", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-3e2d4702", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-88821387", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-f709b8e3", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-a3893424", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-de5ff7f3", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-0e6bf01f", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-89835d82", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-1e8266ec", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-73316c25", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-54078cee", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-f8fced28", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only"}
+    steps:
+      - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 600}
+      - {"op": "reply", "from": "bob", "code": 302, "reason": "Moved Temporarily", "window_ms": 2000, "headers": {"Contact": "<sip:carol@{lab}:{port:carol};pdkeep=1>"}, "extract": {"x1": "methods:carol", "x2": "re:carol/0/ruri=sip:carol@{lab}:{port:carol};pdkeep=1", "x3": "same:carol/0/hdr/via/0,hist/bob/0/hdr/via/0", "x4": "same:carol/0/hdr/call-id,hist/bob/0/hdr/call-id"}}
+      - {"op": "reply", "from": "carol", "code": 486, "reason": "Busy Here", "window_ms": 1200}
+
+  uac_use_proxy_305:
+    kind: probe
+    roles: ["uac"]
+    spec_refs:
+      - {"req_id": "SIP-807632db", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+    steps:
+      - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 600}
+      - {"op": "reply", "from": "bob", "code": 305, "reason": "Use Proxy", "window_ms": 2000, "headers": {"Contact": "<sip:{lab}:{port:dave}>"}, "extract": {"x1": "methods:dave"}}
+
+  uac_unknown_response_codes:
+    kind: probe
+    roles: ["uac"]
+    spec_refs:
+      - {"req_id": "SIP-bcdd6700", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [["ACK"]]}
+      - {"req_id": "SIP-64e2b17d", "keyword": "MUST", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-809f0664", "keyword": "MUST", "axis": "x1", "step": 3, "note": "comparison only"}
+    steps:
+      - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 600}
+      - {"op": "reply", "from": "bob", "code": 189, "reason": "Pd Progress", "window_ms": 600, "extract": {"x2": "methods:bob"}}
+      - {"op": "reply", "from": "bob", "code": 499, "reason": "Pd Unknown Failure", "window_ms": 1500, "extract": {"x1": "methods:bob"}}
+
+  uac_retry_after_errors:
+    kind: probe
+    roles: ["uac"]
+    spec_refs:
+      - {"req_id": "SIP-a38d992a", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "413: retry smaller; comparison only"}
+      - {"req_id": "SIP-b1f9272f", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "415: retry with Accept types; comparison only"}
+      - {"req_id": "SIP-7aa12096", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "420: retry without the extension; comparison only"}
+      - {"req_id": "SIP-ba54a25b", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "same Call-ID on retry; comparison only"}
+      - {"req_id": "SIP-b049a89c", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "4xx not retried unmodified; comparison only"}
+      - {"req_id": "SIP-64aed3e7", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "403 not repeated; comparison only"}
+      - {"req_id": "SIP-18e3d999", "keyword": "MAY", "axis": "x1", "step": 2, "note": "408: may repeat; comparison only"}
+      - {"req_id": "SIP-ab025d67", "keyword": "MUST", "axis": "x1", "step": 2, "note": "503 without Retry-After acts as 500; comparison only"}
+      - {"req_id": "SIP-87752e3a", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "503: alternate server; comparison only"}
+      - {"req_id": "SIP-39630b41", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "503 Retry-After honoured; comparison only"}
+    steps:
+      - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 600}
+      - {"op": "reply", "from": "bob", "code": 415, "reason": "Unsupported Media Type", "window_ms": 2500, "headers": {"Accept": "application/sdp"}, "extract": {"x1": "methods:bob"}}
+      - {"op": "uac", "action": "hangup", "window_ms": 2000}
+
+  uac_invite_timeout:
+    kind: probe
+    roles: ["uac"]
+    spec_refs:
+      - {"req_id": "SIP-db7b84ce", "keyword": "MUST", "axis": "x1", "step": 1, "note": "timer B (32 s) to 408; comparison only"}
+      - {"req_id": "SIP-7986a878", "keyword": "MUST", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-3a05d515", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
+    steps:
+      - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 34000, "extract": {"x1": "len:bob"}}
+
+  uac_message_transaction:
+    kind: probe
+    roles: ["uac"]
+    spec_refs:
+      - {"req_id": "SIP-bbb8229a", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [2, 3]}
+      - {"req_id": "SIP-2283739a", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [2, 3]}
+      - {"req_id": "SIP-9b909912", "keyword": "MUST", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-cd68663b", "keyword": "MUST", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-80f4fc88", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-9002bfd5", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [[]]}
+      - {"req_id": "SIP-d97fe81a", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [[]]}
+      - {"req_id": "SIP-c9cc9fe3", "keyword": "MUST", "axis": "x3", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-7c2109ae", "keyword": "MUST", "axis": "x3", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-c0790545", "keyword": "MUST", "axis": "x3", "step": 3, "note": "comparison only"}
+    steps:
+      - {"op": "uac", "action": "message", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 1200, "extract": {"x1": "len:bob"}}
+      - {"op": "reply", "from": "bob", "code": 100, "reason": "Trying", "window_ms": 1200, "extract": {"x2": "len:bob"}}
+      - {"op": "reply", "from": "bob", "code": 200, "reason": "OK", "window_ms": 2500, "extract": {"x3": "methods:bob"}}
+
+  uac_response_transport:
+    kind: probe
+    roles: ["uac"]
+    spec_refs:
+      - {"req_id": "SIP-5338e92a", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [["ACK"]]}
+      - {"req_id": "SIP-524d7ee6", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-69f902f1", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-b5274fc3", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-d0ceb974", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-ab6abbf2", "keyword": "MUST", "axis": "x2", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-9aa3bbff", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-7133d596", "keyword": "MUST", "axis": "x2", "step": 3, "note": "comparison only"}
+    steps:
+      - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 600}
+      - {"op": "reply", "from": "bob", "code": 486, "reason": "Busy Here", "window_ms": 1000, "extract": {"x1": "methods:bob"}}
+      - {"op": "send", "from": "dave", "window_ms": 800, "msg": "SIP/2.0 200 OK\nVia: SIP/2.0/UDP 192.0.2.77:5060;branch=z9hG4bKpdstray\nFrom: <sip:x@{domain}>;tag=1\nTo: <sip:y@{domain}>;tag=2\nCall-ID: stray-{U}\nCSeq: 1 OPTIONS\nContent-Length: 0\n\n", "extract": {"x2": "codes:dave"}}
+
+  uac_uri_parameters:
+    kind: probe
+    roles: ["uac"]
+    spec_refs:
+      - {"req_id": "SIP-17c61a69", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-3dc3cf6f", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-7559bf7a", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-4b1e97fd", "keyword": "MUST", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-03aa35ad", "keyword": "SHOULD", "axis": "x3", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-dabf27c0", "keyword": "SHOULD", "axis": "x4", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-107e7a40", "keyword": "SHOULD", "axis": "x5", "step": 1, "allowed": [false]}
+      - {"req_id": "SIP-5b2ab3b1", "keyword": "SHOULD", "axis": "x3", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-b5142274", "keyword": "SHOULD", "axis": "x3", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-e616582b", "keyword": "MUST", "axis": "x3", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-6a4b16ed", "keyword": "SHOULD", "axis": "x3", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-4bfcb6b0", "keyword": "MUST", "axis": "x3", "step": 1, "note": "comparison only"}
+    steps:
+      - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob};user=ip;pdparam=7;method=INVITE?Subject=pd&Call-ID=pd-evil&Route=%3Csip:192.0.2.9%3E", "window_ms": 800, "extract": {"x1": "re:bob/0/ruri=.*pdparam=7.*", "x2": "nre:bob/0/ruri=.*method=.*", "x3": "bob/0/hdr/subject", "x4": "ne:bob/0/hdr/call-id/0=pd-evil", "x5": "in:bob/0/hdr/route=<sip:192.0.2.9>"}}
+      - {"op": "reply", "from": "bob", "code": 486, "reason": "Busy Here", "window_ms": 1200}
+
+  uac_dialog_misc:
+    kind: probe
+    roles: ["uac"]
+    spec_refs:
+      - {"req_id": "SIP-3b6034e6", "keyword": "MAY", "axis": "x1", "step": 2, "note": "OPTIONS in a dialog; comparison only"}
+      - {"req_id": "SIP-73c3bca6", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-288ed374", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-e6ee895b", "keyword": "MAY", "axis": "x1", "step": 2, "note": "re-INVITE without offer; comparison only"}
+      - {"req_id": "SIP-0ff5da14", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-fb1c9cc7", "keyword": "MUST", "axis": "x1", "step": 2, "note": "no overlapping INVITE transactions; comparison only"}
+      - {"req_id": "SIP-80a591b7", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-4874c3f5", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "491 back-off; comparison only"}
+      - {"req_id": "SIP-fcc9972a", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
+    steps:
+      - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 600}
+      - {"op": "reply", "from": "bob", "code": 200, "reason": "OK", "window_ms": 1500, "headers": {"Content-Type": "application/sdp"}, "body": "v=0\no=bob 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40002 RTP/AVP 0\n", "extract": {"x1": "methods:bob"}}
+      - {"op": "uac", "action": "hangup", "window_ms": 2000}
+      - {"op": "reply", "from": "bob", "code": 200, "reason": "OK", "window_ms": 1200}
+
+  uac_register:
+    kind: probe
+    roles: ["uac-reg"]
+    spec_refs:
+      - {"req_id": "SIP-e0e3ff09", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-93cf4232", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-5428b5ff", "keyword": "MUST", "axis": "x3", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-5f58f621", "keyword": "MUST", "axis": "x4", "step": 2, "allowed": [false]}
+      - {"req_id": "SIP-97f21ed0", "keyword": "SHOULD", "axis": "x5", "step": 2, "allowed": [true, "null"]}
+      - {"req_id": "SIP-5ea43c66", "keyword": "SHOULD", "axis": "x5", "step": 2, "allowed": [true, "null"]}
+      - {"req_id": "SIP-152a22ee", "keyword": "SHOULD", "axis": "x5", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-6171afdb", "keyword": "SHOULD", "axis": "x6", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-a8294346", "keyword": "MUST", "axis": "x6", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-fc4b7ef4", "keyword": "SHOULD", "axis": "x7", "step": 1, "allowed": [false]}
+      - {"req_id": "SIP-99d9c078", "keyword": "MAY", "axis": "x7", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-3646979b", "keyword": "MAY", "axis": "x7", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-619c67d3", "keyword": "MAY", "axis": "x7", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-7f24b7a6", "keyword": "MAY", "axis": "x6", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-e6769d50", "keyword": "MAY", "axis": "x7", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-fc8d8528", "keyword": "SHOULD", "axis": "x6", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-04bc3bcd", "keyword": "MUST", "axis": "x6", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-02857d17", "keyword": "SHOULD", "axis": "x6", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-752c63f8", "keyword": "MAY", "axis": "x6", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-a03f809d", "keyword": "SHOULD", "axis": "x6", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-026ef8fa", "keyword": "SHOULD", "axis": "x6", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-093ffcaf", "keyword": "MAY", "axis": "x6", "step": 2, "note": "comparison only"}
+    steps:
+      - {"op": "reply", "from": "dave", "code": 200, "reason": "OK", "window_ms": 6000, "headers": {"Expires": "3"}, "extract": {"x1": "hasall:hist/dave/0/hdr=[\"to\", \"from\", \"call-id\", \"cseq\", \"via\", \"max-forwards\"]", "x2": "re:hist/dave/0/ruri=sips?:[^@]*", "x3": "re:hist/dave/0/hdr/to/0=.*<?sips?:.*", "x7": "re:hist/dave/0/hdr/contact/0=.*action=.*"}}
+      - {"op": "reply", "from": "dave", "code": 200, "reason": "OK", "window_ms": 1000, "headers": {"Expires": "300"}, "extract": {"x4": "same:hist/dave/0/hdr/cseq,hist/dave/1/hdr/cseq", "x5": "same:hist/dave/0/hdr/call-id,hist/dave/1/hdr/call-id", "x6": "methods:dave"}}
+

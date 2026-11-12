@@ -1,10 +1,12 @@
 # BIND 9 built from the ISC release tarball, for versions with no usable upstream image (recall versions, RQ5).
 # The tarball's SHA-256 is printed in the build log and recorded by the image job; ISC signs releases with PGP
 # (bind-${VER}.tar.xz.asc), which the build also fetches and keeps in the image for later checking.
-# Single stage (12 Nov): the bullseye runtime stage failed on a stale security mirror; the build stage is the image.
+# Single stage on Ubuntu 20.04 (12 Nov): the bullseye security mirror served 404s; 20.04 still has OpenSSL 1.1,
+# which BIND 9.16.13/15 build against.
 # Build: docker build -f bind.Dockerfile --build-arg VER=9.16.15 -t pd-bind:9.16.15 .
-FROM debian:bullseye-slim
+FROM ubuntu:20.04
 ARG VER
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl xz-utils build-essential \
       pkg-config libssl-dev libuv1-dev libcap-dev python3 \
  && curl -fsSLO https://downloads.isc.org/isc/bind9/${VER}/bind-${VER}.tar.xz \

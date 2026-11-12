@@ -31,17 +31,27 @@ def load_ledger(ledgers: pathlib.Path, cell: str) -> list[dict]:
     return rows
 
 
+# cells whose ledger rows are also exercised by another cell's fixtures (the SIP behaviour cell sipb shares the
+# SIP ledger with the parser cell)
+EXTRA_FIXTURE_CELLS = {"sip": ["sipb"]}
+
+
 def fixture_refs(cell: str) -> dict[str, set[str]]:
     """Map of ledger key (req_id or native id) to the fixtures that name it."""
-    path = ROOT / "polydrift" / "cells" / cell / "fixtures.yaml"
-    data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     out: dict[str, set[str]] = collections.defaultdict(set)
+    for c in [cell, *EXTRA_FIXTURE_CELLS.get(cell, [])]:
+        path = ROOT / "polydrift" / "cells" / c / "fixtures.yaml"
+        if path.exists():
+            _collect(yaml.safe_load(path.read_text(encoding="utf-8")) or {}, out, c)
+    return out
+
+
+def _collect(data: dict, out: dict[str, set[str]], cell: str) -> None:
     for fid, fx in (data.get("fixtures") or {}).items():
         for ref in (fx or {}).get("spec_refs") or []:
             for key in ("req_id", "native"):
                 if ref.get(key):
-                    out[ref[key]].add(fid)
-    return out
+                    out[ref[key]].add(f"{cell}:{fid}")
 
 
 def census(ledgers: pathlib.Path, cell: str) -> dict:

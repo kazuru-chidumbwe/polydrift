@@ -1,0 +1,102 @@
+# SIP behaviour fixtures (sipb; manuscript 3.1, 4.4). The SIP ledger (ledger/sip.ledger.csv, sipx.ledger.csv) is
+# shared with the parser cell (cells/sip); this file holds the rows a running element must show by behaviour.
+# Each fixture lists the roles it applies to (proxy, registrar, uas, uac); the runner runs it only on targets of
+# those roles. Steps are driver steps (lab/driver.py); observations named by `extract` sit on the axes x1..x8.
+# Status: first batch (12 Nov 2026).
+cell: sipb
+
+fixtures:
+
+  sipb_register_route_invite:
+    kind: control
+    roles: [proxy]
+    steps:
+      - op: send
+        from: bob
+        msg: |
+          REGISTER sip:{domain} SIP/2.0
+          Via: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport
+          Max-Forwards: 70
+          From: <sip:bob@{domain}>;tag={tag:rb}
+          To: <sip:bob@{domain}>
+          Call-ID: reg-bob-{U}@{lab}
+          CSeq: 1 REGISTER
+          Contact: <sip:bob@{lab}:{port:bob}>
+          Expires: 300
+          Content-Length: {clen}
+
+        extract: {x1: "codes:bob", x2: "has:bob/0/hdr/contact"}
+      - op: send
+        from: alice
+        msg: |
+          INVITE sip:bob@{domain} SIP/2.0
+          Via: SIP/2.0/UDP {lab}:{port:alice};branch={branch:inv};rport
+          Max-Forwards: 70
+          From: <sip:alice@{domain}>;tag={tag:a}
+          To: <sip:bob@{domain}>
+          Call-ID: {callid}
+          CSeq: 1 INVITE
+          Contact: <sip:alice@{lab}:{port:alice}>
+          Content-Type: application/sdp
+          Content-Length: {clen}
+
+          v=0
+          o=alice 1 1 IN IP4 {lab}
+          s=-
+          c=IN IP4 {lab}
+          t=0 0
+          m=audio 40000 RTP/AVP 0
+        extract: {x1: "methods:bob", x2: "bob/0/hdr/max-forwards/0", x3: "len:bob/0/hdr/via",
+                  x4: "has:bob/0/hdr/record-route", x5: "codes:alice"}
+      - op: reply
+        from: bob
+        code: 180
+        reason: Ringing
+        extract: {x1: "codes:alice"}
+      - op: reply
+        from: bob
+        code: 200
+        headers: {Content-Type: application/sdp}
+        body: "v=0\no=bob 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40002 RTP/AVP 0\n"
+        extract: {x1: "codes:alice", x2: "has:alice/0/hdr/record-route"}
+      - op: ack
+        from: alice
+        extract: {x1: "methods:bob"}
+
+  sipb_max_forwards_zero:
+    kind: probe
+    roles: [proxy]
+    steps:
+      - op: send
+        msg: |
+          OPTIONS sip:bob@{domain} SIP/2.0
+          Via: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport
+          Max-Forwards: 0
+          From: <sip:alice@{domain}>;tag={tag:a}
+          To: <sip:bob@{domain}>
+          Call-ID: {callid}
+          CSeq: 1 OPTIONS
+          Content-Length: {clen}
+
+        extract: {x1: "codes:alice", x2: "methods:bob"}
+
+  sipb_unknown_user:
+    kind: probe
+    roles: [proxy]
+    steps:
+      - op: send
+        msg: |
+          INVITE sip:nobody-{U}@{domain} SIP/2.0
+          Via: SIP/2.0/UDP {lab}:{port:alice};branch={branch:i};rport
+          Max-Forwards: 70
+          From: <sip:alice@{domain}>;tag={tag:a}
+          To: <sip:nobody-{U}@{domain}>
+          Call-ID: {callid}
+          CSeq: 1 INVITE
+          Contact: <sip:alice@{lab}:{port:alice}>
+          Content-Length: {clen}
+
+        extract: {x1: "codes:alice"}
+      - op: ack
+        from: alice
+        window_ms: 500

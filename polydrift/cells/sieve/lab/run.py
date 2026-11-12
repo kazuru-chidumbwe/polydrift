@@ -50,6 +50,45 @@ def compile_class(text: str) -> str:
     return "other"
 
 
+ORIG: dict = {}   # facts of the message being filtered, set by main() before an engine runs
+
+
+def _part_field(m, ctype: str, name: str) -> str | None:
+    """Value of field ``name`` in the first MIME part of type ``ctype`` (MDN disposition, DSN action)."""
+    for part in m.walk() if m.is_multipart() else []:
+        if part.get_content_type() == ctype:
+            payload = part.get_payload()
+            text = payload if isinstance(payload, str) else "".join(
+                str(x) for x in (payload if isinstance(payload, list) else [payload]))
+            mm = re.search(rf"^{name}:\s*(.+)$", text, re.I | re.M)
+            if mm:
+                return " ".join(mm.group(1).split()).lower()
+    return None
+
+
+def facts(m, args: list[str]) -> dict:
+    """Header facts of a sent message that the Sieve RFCs fix (RFC 5228 4.2, RFC 5230 5, RFC 5429 2.1 and 2.2)."""
+    env_from = None
+    if "-f" in args and args.index("-f") + 1 < len(args):
+        env_from = args[args.index("-f") + 1].strip("<>")
+    orig_mid = ORIG.get("message_id")
+    refs = (m.get("References") or "")
+    return {
+        "received_delta": len(m.get_all("Received") or []) - ORIG.get("received", 0),
+        "in_reply_to_orig": bool(orig_mid) and orig_mid in (m.get("In-Reply-To") or ""),
+        "references_orig": bool(orig_mid) and orig_mid in refs,
+        "subject": " ".join((m.get("Subject") or "").split()) or None,
+        "from": " ".join((m.get("From") or "").split()) or None,
+        "to": " ".join((m.get("To") or "").split()) or None,
+        "date_present": m.get("Date") is not None,
+        "env_from": env_from,
+        "mdn_disposition": _part_field(m, "message/disposition-notification", "Disposition"),
+        "dsn_action": _part_field(m, "message/delivery-status", "Action"),
+        # fixtures put PD-MARKER into a reject/ereject reason: is it in the human-readable text that went out
+        "marker": "PD-MARKER" in m.as_string(),
+    }
+
+
 def emitted() -> list[dict]:
     out = []
     for f in sorted(OUT.glob("*.eml"), key=lambda p: int(p.stem)):
@@ -70,7 +109,7 @@ def emitted() -> list[dict]:
         rcpt = sorted(a for a in args if "@" in a and not a.startswith("-"))
         if not rcpt:
             rcpt = sorted(x.strip().strip("<>") for x in (m.get("To") or "").split(",") if "@" in x)
-        out.append({"kind": kind, "to": rcpt, "auto_submitted": auto or None})
+        out.append({"kind": kind, "to": rcpt, "auto_submitted": auto or None, "facts": facts(m, args)})
     return out
 
 
@@ -99,7 +138,8 @@ def emitted_from_text(txt: str) -> list[dict]:
         end = next((j for j in range(i, len(lines)) if lines[j] == ""), len(lines))
         m = email.message_from_string("\n".join(lines[i:end]) + "\n\n", policy=policy.compat32)
         to = [rcpts[k]] if k < len(rcpts) else sorted(x.strip().strip("<>") for x in (m.get("To") or "").split(",") if "@" in x)
-        out.append({"kind": classify(m), "to": sorted(to), "auto_submitted": (m.get("Auto-Submitted") or "").lower() or None})
+        out.append({"kind": classify(m), "to": sorted(to), "auto_submitted": (m.get("Auto-Submitted") or "").lower() or None,
+                    "facts": facts(m, [])})
     return out
 
 
@@ -111,6 +151,33 @@ def maildir_counts(root: Path) -> dict[str, int]:
         name = "INBOX" if d == root else "INBOX" + d.name
         counts[name] = sum(1 for sub in ("cur", "new") for x in (d / sub).glob("*") if x.is_file())
     return counts
+
+
+def maildir_flags(root: Path) -> dict[str, list[str]]:
+    """Per folder, the IMAP flags of each stored message (maildir info letters and Dovecot keyword letters mapped
+    through dovecot-keywords), each message's flags as one sorted space-separated string (RFC 5232 effect)."""
+    letters = {"F": "\\Flagged", "S": "\\Seen", "R": "\\Answered", "D": "\\Draft", "T": "\\Deleted"}
+    out = {}
+    for d in [root, *sorted(p for p in root.glob(".*") if p.is_dir() and p.name not in (".", ".."))]:
+        if not (d / "cur").exists() and not (d / "new").exists():
+            continue
+        kw = {}
+        kf = d / "dovecot-keywords"
+        if kf.exists():
+            for ln in kf.read_text(errors="replace").splitlines():
+                n, _, word = ln.partition(" ")
+                if n.isdigit():
+                    kw[chr(ord("a") + int(n))] = word
+        name = "INBOX" if d == root else "INBOX" + d.name
+        msgs = []
+        for sub in ("cur", "new"):
+            for x in sorted((d / sub).glob("*")):
+                info = x.name.split(":2,", 1)[1] if ":2," in x.name else ""
+                fl = sorted({letters.get(c) or kw.get(c, "?" + c) for c in info})
+                msgs.append(" ".join(fl))
+        if msgs:
+            out[name] = sorted(msgs)
+    return out
 
 
 def make_maildir(root: Path, folders: list[str]) -> None:
@@ -209,7 +276,8 @@ def pigeonhole(fx: Path, meta: dict) -> dict:
     if rc != 0:
         res["runtime_error"] = " | ".join(ln.strip() for ln in txt.splitlines() if "error" in ln.lower())[-300:] or f"rc {rc}"
     rc, txt = sh(["sieve-test", "-c", str(conf), "-e", *env_args, str(s), str(m)])
-    res["effect"] = {"stored": maildir_counts(maildir), "emitted": emitted() + emitted_from_text(txt), "rc": rc,
+    res["effect"] = {"stored": maildir_counts(maildir), "flags": maildir_flags(maildir),
+                     "emitted": emitted() + emitted_from_text(txt), "rc": rc,
                      "result": (re.findall(r"final result:\s*(.+)", txt) or [""])[-1].strip()}
     return res
 
@@ -335,6 +403,9 @@ def main() -> int:
     a = ap.parse_args()
     fx = Path(a.fx)
     meta = json.loads((fx / "meta.json").read_text())
+    orig = email.message_from_bytes((fx / "msg.eml").read_bytes(), policy=policy.compat32)
+    ORIG.update(message_id=(orig.get("Message-ID") or "").strip() or None,
+                received=len(orig.get_all("Received") or []))
     try:
         res = ENGINES[a.engine](fx, meta)
     except Exception as e:  # noqa: BLE001

@@ -1,0 +1,9 @@
+From: alice@example.invalid
+To: user@lab.test
+Subject: broken mime
+Date: Thu, 12 Nov 2026 10:00:00 +0000
+MIME-Version: 1.0
+Message-ID: <broken@example.invalid>
+Content-Type: multipart/mixed; boundary="never-used"
+
+There is no boundary line in this body, and the closing one is missing too.

@@ -1,8 +1,9 @@
 # BIND 9 built from the ISC release tarball, for versions with no usable upstream image (recall versions, RQ5).
 # The tarball's SHA-256 is printed in the build log and recorded by the image job; ISC signs releases with PGP
 # (bind-${VER}.tar.xz.asc), which the build also fetches and keeps in the image for later checking.
+# Single stage (12 Nov): the bullseye runtime stage failed on a stale security mirror; the build stage is the image.
 # Build: docker build -f bind.Dockerfile --build-arg VER=9.16.15 -t pd-bind:9.16.15 .
-FROM debian:bullseye-slim AS build
+FROM debian:bullseye-slim
 ARG VER
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl xz-utils build-essential \
       pkg-config libssl-dev libuv1-dev libcap-dev python3 \
@@ -14,10 +15,5 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
       --disable-linux-caps --with-openssl \
  && make -j4 && make install \
  && mkdir -p /usr/local/share/bind-src && cp ../bind-${VER}.tar.xz.asc /usr/local/share/bind-src/
-FROM debian:bullseye-slim
-RUN apt-get update && apt-get install -y --no-install-recommends libssl1.1 libuv1 libcap2 \
- && rm -rf /var/lib/apt/lists/* && useradd -r -s /usr/sbin/nologin bind && mkdir -p /etc/bind /var/cache/bind \
- && chown bind /var/cache/bind
-COPY --from=build /usr/local /usr/local
-RUN ldconfig
+RUN useradd -r -s /usr/sbin/nologin bind && mkdir -p /etc/bind /var/cache/bind && chown bind /var/cache/bind && ldconfig
 ENTRYPOINT ["/usr/local/sbin/named", "-g", "-c", "/etc/bind/named.conf"]

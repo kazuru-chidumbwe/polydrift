@@ -96,7 +96,10 @@ def classify(obs: dict[str, Any]) -> Status:
     """A step whose protocol needs no answer (QoS 0 PUBLISH, DISCONNECT, an acknowledgement) is responded when the
     connection stays up: the broker's silence is then the observation (packet_types empty), not a liveness failure.
     silent is kept for a step that required an answer and got none, so the core's liveness gate stops there."""
-    if obs.get("error"):
+    err = obs.get("error") or ""
+    if err.startswith("closed-by-peer") or err.startswith("send-failed"):
+        return Status.CLOSED
+    if err:
         return Status.HARNESS_FAULT
     me = obs["clients"].get(obs["actor"], {})
     if me.get("packets"):

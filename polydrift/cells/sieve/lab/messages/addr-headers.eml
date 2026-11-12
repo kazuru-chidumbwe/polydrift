@@ -1,0 +1,14 @@
+From: f@example.invalid
+To: t@example.invalid
+Cc: c@example.invalid
+Bcc: b@example.invalid
+Sender: s@example.invalid
+Resent-From: rf@example.invalid
+Resent-To: rt@example.invalid
+Subject: address headers
+Date: Thu, 12 Nov 2026 10:00:00 +0000
+MIME-Version: 1.0
+Message-ID: <addr@example.invalid>
+Content-Type: text/plain; charset=utf-8
+
+All seven address headers.

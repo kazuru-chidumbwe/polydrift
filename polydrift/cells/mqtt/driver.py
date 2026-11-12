@@ -74,8 +74,11 @@ class Client:
     reuse: int = 0
 
     def send(self, data: bytes) -> str | None:
-        if self.sock is None or self.closed:
+        if self.sock is None:
             return "not-open"
+        if self.closed:
+            # the broker closed this connection in an earlier step: the send is the broker's outcome, not a fault
+            return "closed-by-peer"
         try:
             self.sock.sendall(data)
             return None

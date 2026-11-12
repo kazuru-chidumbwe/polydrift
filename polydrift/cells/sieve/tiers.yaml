@@ -27,4 +27,43 @@ axes:
     tier: 2
     kappa: identity
     clause: "T2: messages sent on the user's behalf (redirect, reject, vacation, DSN), by kind and recipients (effect layer)"
+  stored_flags:
+    tier: 2
+    clause: "T2: IMAP flags on the stored message per folder; the user's client shows and filters by them (RFC 5232, effect layer)"
+  emitted_headers:
+    tier: 2
+    clause: "T2: header facts of each sent message (Received count, In-Reply-To, Subject, From, To, Date, envelope sender, MDN disposition, DSN action): the recipient's software acts on them (effect layer)"
+  lmtp_reply:
+    tier: 2
+    clause: "T2: the LMTP/SMTP reply to the delivery (code class, enhanced code, line count and length): the sending MTA bounces or delivers on it (phase 2 engines, effect layer)"
+  redirect_received_more:
+    tier: 2
+    clause: "T2: each redirected message has more Received fields than the message as received (RFC 5228 4.2; loop detection downstream)"
+  vacation_in_reply_to:
+    tier: 2
+    clause: "T2: each vacation reply's In-Reply-To names the original Message-ID (RFC 5230 5.8); threading clients rely on it"
+  vacation_subject:
+    tier: 3
+    clause: "T3: Subject of each vacation reply (RFC 5230 4.3, 5.3)"
+  vacation_subject_encoded:
+    tier: 2
+    clause: "T2: Subject of each vacation reply uses RFC 2047 encoded words (iff non-ASCII, RFC 5230 4.3)"
+  vacation_date:
+    tier: 3
+    clause: "T3: Date field present in each vacation reply (RFC 5230 5.2)"
+  vacation_from:
+    tier: 2
+    clause: "T2: From of each vacation reply (RFC 5230 5.4): the recipient replies to it"
+  vacation_to:
+    tier: 2
+    clause: "T2: To of each vacation reply (RFC 5230 5.5)"
+  mdn_disposition:
+    tier: 2
+    clause: "T2: Disposition field of each reject MDN (RFC 5429 2.2.1)"
+  dsn_action:
+    tier: 2
+    clause: "T2: Action field of each ereject DSN (RFC 5429 2.1.2)"
+  reason_in_text:
+    tier: 2
+    clause: "T2: the reject/ereject reason reaches the human-readable text of the notification (RFC 5429 2.1.2)"
 volatile: []

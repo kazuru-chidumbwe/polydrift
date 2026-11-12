@@ -443,6 +443,7 @@ fixtures:
       - {client: a, op: connect, args: {client_id: "{C}a", will: {topic: "{T}w", payload: gone}}}
       - {client: a, op: disconnect, window_ms: 1500}
 
+
   # ---------------- census (12 Nov 2026): every testable ledger row not named above ----------------
   # Generated with the census authoring aid; axes added the same day: actor_closed, limit_violations,
   # publish_meta, connack_presence, problem_info, auth_packets, pid_reuse, connack_reserved,
@@ -861,13 +862,14 @@ fixtures:
   census_max_size_pubrel:
     kind: probe
     spec_refs:
-      - {"native": "MQTT-3.6.2-2", "keyword": "MUST", "axis": "limit_violations", "step": 5, "allowed": [null, []]}
-      - {"native": "MQTT-3.6.2-3", "keyword": "MUST", "axis": "limit_violations", "step": 5, "allowed": [null, []]}
+      - {"native": "MQTT-3.6.2-2", "keyword": "MUST", "axis": "limit_violations", "step": 6, "allowed": [null, []]}
+      - {"native": "MQTT-3.6.2-3", "keyword": "MUST", "axis": "limit_violations", "step": 6, "allowed": [null, []]}
     steps:
       - {"client": "b", "op": "connect", "args": {"client_id": "{C}b", "properties": {"maximum_packet_size": 16}}, "auto_ack": false}
       - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x", "qos": 2}]}}
       - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
       - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "p", "qos": 2, "packet_id": 3}}
+      - {"client": "a", "op": "pubrel", "args": {"packet_id": 3}}
       - {"client": "b", "op": "pubrec", "args": {"packet_id": "last"}}
 
   census_topic_alias_maximum:
@@ -930,7 +932,8 @@ fixtures:
       - {"native": "MQTT-3.3.1-2", "keyword": "MUST", "axis": "publish_meta", "step": 5, "allowed": [[["b", [["x", 0, [], null, false]]]]]}
       - {"native": "MQTT-4.3.1-1", "keyword": "MUST", "axis": "publish_meta", "step": 5, "allowed": [[["b", [["x", 0, [], null, false]]]]]}
       - {"native": "MQTT-3.3.1-3", "keyword": "MUST", "axis": "publish_meta", "step": 6, "allowed": [[["b", [["x", 0, [], null, false]]]]]}
-      - {"native": "MQTT-4.3.3-2", "keyword": "MUST", "axis": "publish_meta", "step": 7, "allowed": [[["b", [["y", 0, [], null, false]]]]]}
+      - {"native": "MQTT-4.3.3-2", "keyword": "MUST", "axis": "publish_meta", "step": 7, "allowed": [[], [["b", [["y", 0, [], null, false]]]]], "note": "QoS 2 forwarded on PUBLISH (step 7) or on PUBREL (step 8), 4.3.3"}
+      - {"native": "MQTT-4.3.3-2", "keyword": "MUST", "axis": "publish_meta", "step": 8, "allowed": [[], [["b", [["y", 0, [], null, false]]]]]}
     steps:
       - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
       - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x", "qos": 1}, {"topic": "{T}y", "qos": 2}]}}
@@ -939,6 +942,7 @@ fixtures:
       - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "d0", "qos": 0}}
       - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "d2", "qos": 1, "packet_id": 12, "dup": true}}
       - {"client": "a", "op": "publish", "args": {"topic": "{T}y", "payload": "d3", "qos": 2, "packet_id": 13}}
+      - {"client": "a", "op": "pubrel", "args": {"packet_id": 13}}
 
   census_qos0_delivery_no_packet_id:
     kind: control
@@ -1022,14 +1026,15 @@ fixtures:
   census_server_pubrel:
     kind: control
     spec_refs:
-      - {"native": "MQTT-3.6.2-1", "keyword": "MUST", "axis": "native_codes", "step": 5, "allowed": [[0], [146]]}
-      - {"native": "MQTT-4.3.3-4", "keyword": "MUST", "axis": "pubrel_matches", "step": 5, "allowed": [[true]]}
-      - {"native": "MQTT-4.3.3-6", "keyword": "MUST", "axis": "packet_types", "step": 6, "allowed": [["PINGRESP"]]}
+      - {"native": "MQTT-3.6.2-1", "keyword": "MUST", "axis": "native_codes", "step": 6, "allowed": [[0], [146]]}
+      - {"native": "MQTT-4.3.3-4", "keyword": "MUST", "axis": "pubrel_matches", "step": 6, "allowed": [[true]]}
+      - {"native": "MQTT-4.3.3-6", "keyword": "MUST", "axis": "packet_types", "step": 7, "allowed": [["PINGRESP"]]}
     steps:
       - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}, "auto_ack": false}
       - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x", "qos": 2}]}}
       - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
       - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "q", "qos": 2, "packet_id": 3}}
+      - {"client": "a", "op": "pubrel", "args": {"packet_id": 3}}
       - {"client": "b", "op": "pubrec", "args": {"packet_id": "last"}}
       - {"client": "b", "op": "pingreq"}
 
@@ -1052,6 +1057,8 @@ fixtures:
       - {"native": "MQTT-4.3.2-1", "keyword": "MUST", "axis": "pid_reuse", "step": 6, "allowed": [[]]}
       - {"native": "MQTT-4.3.3-1", "keyword": "MUST", "axis": "pid_reuse", "step": 7, "allowed": [[]]}
       - {"native": "MQTT-4.3.3-1", "keyword": "MUST", "axis": "pid_reuse", "step": 8, "allowed": [[]]}
+      - {"native": "MQTT-4.3.3-1", "keyword": "MUST", "axis": "pid_reuse", "step": 9, "allowed": [[]]}
+      - {"native": "MQTT-4.3.3-1", "keyword": "MUST", "axis": "pid_reuse", "step": 10, "allowed": [[]]}
     steps:
       - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}, "auto_ack": false}
       - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x", "qos": 1}, {"topic": "{T}y", "qos": 2}]}}
@@ -1060,17 +1067,20 @@ fixtures:
       - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "u2", "qos": 1, "packet_id": 2}}
       - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "u3", "qos": 1, "packet_id": 3}}
       - {"client": "a", "op": "publish", "args": {"topic": "{T}y", "payload": "u4", "qos": 2, "packet_id": 4}}
+      - {"client": "a", "op": "pubrel", "args": {"packet_id": 4}}
       - {"client": "a", "op": "publish", "args": {"topic": "{T}y", "payload": "u5", "qos": 2, "packet_id": 5}}
+      - {"client": "a", "op": "pubrel", "args": {"packet_id": 5}}
 
   census_expiry_after_send_qos2:
     kind: stateful
     spec_refs:
-      - {"native": "MQTT-4.3.3-7", "keyword": "MUST", "axis": "packet_types", "step": 6, "allowed": [["PUBREL"]]}
+      - {"native": "MQTT-4.3.3-7", "keyword": "MUST", "axis": "packet_types", "step": 7, "allowed": [["PUBREL"]]}
     steps:
       - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}, "auto_ack": false}
       - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x", "qos": 2}]}}
       - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
       - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "ex", "qos": 2, "packet_id": 3, "properties": {"message_expiry_interval": 1}}}
+      - {"client": "a", "op": "pubrel", "args": {"packet_id": 3}}
       - {"client": "b", "op": "sleep", "window_ms": 2000}
       - {"client": "b", "op": "pubrec", "args": {"packet_id": "last"}}
 

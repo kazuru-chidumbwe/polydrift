@@ -1,0 +1,11 @@
+Received: from relay2.example.invalid by mx.lab.test; Thu, 12 Nov 2026 09:59:59 +0000
+Received: from relay1.example.invalid by relay2.example.invalid; Thu, 12 Nov 2026 09:59:58 +0000
+From: alice@example.invalid
+To: user@lab.test
+Subject: forwarded
+Date: Thu, 12 Nov 2026 10:00:00 +0000
+MIME-Version: 1.0
+Message-ID: <received@example.invalid>
+Content-Type: text/plain; charset=utf-8
+
+Please forward.

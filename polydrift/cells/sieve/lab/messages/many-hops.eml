@@ -1,0 +1,49 @@
+Received: from hop0.example.invalid by hop1.example.invalid; Thu, 12 Nov 2026 09:00:00 +0000
+Received: from hop1.example.invalid by hop2.example.invalid; Thu, 12 Nov 2026 09:01:00 +0000
+Received: from hop2.example.invalid by hop3.example.invalid; Thu, 12 Nov 2026 09:02:00 +0000
+Received: from hop3.example.invalid by hop4.example.invalid; Thu, 12 Nov 2026 09:03:00 +0000
+Received: from hop4.example.invalid by hop5.example.invalid; Thu, 12 Nov 2026 09:04:00 +0000
+Received: from hop5.example.invalid by hop6.example.invalid; Thu, 12 Nov 2026 09:05:00 +0000
+Received: from hop6.example.invalid by hop7.example.invalid; Thu, 12 Nov 2026 09:06:00 +0000
+Received: from hop7.example.invalid by hop8.example.invalid; Thu, 12 Nov 2026 09:07:00 +0000
+Received: from hop8.example.invalid by hop9.example.invalid; Thu, 12 Nov 2026 09:08:00 +0000
+Received: from hop9.example.invalid by hop10.example.invalid; Thu, 12 Nov 2026 09:09:00 +0000
+Received: from hop10.example.invalid by hop11.example.invalid; Thu, 12 Nov 2026 09:10:00 +0000
+Received: from hop11.example.invalid by hop12.example.invalid; Thu, 12 Nov 2026 09:11:00 +0000
+Received: from hop12.example.invalid by hop13.example.invalid; Thu, 12 Nov 2026 09:12:00 +0000
+Received: from hop13.example.invalid by hop14.example.invalid; Thu, 12 Nov 2026 09:13:00 +0000
+Received: from hop14.example.invalid by hop15.example.invalid; Thu, 12 Nov 2026 09:14:00 +0000
+Received: from hop15.example.invalid by hop16.example.invalid; Thu, 12 Nov 2026 09:15:00 +0000
+Received: from hop16.example.invalid by hop17.example.invalid; Thu, 12 Nov 2026 09:16:00 +0000
+Received: from hop17.example.invalid by hop18.example.invalid; Thu, 12 Nov 2026 09:17:00 +0000
+Received: from hop18.example.invalid by hop19.example.invalid; Thu, 12 Nov 2026 09:18:00 +0000
+Received: from hop19.example.invalid by hop20.example.invalid; Thu, 12 Nov 2026 09:19:00 +0000
+Received: from hop20.example.invalid by hop21.example.invalid; Thu, 12 Nov 2026 09:20:00 +0000
+Received: from hop21.example.invalid by hop22.example.invalid; Thu, 12 Nov 2026 09:21:00 +0000
+Received: from hop22.example.invalid by hop23.example.invalid; Thu, 12 Nov 2026 09:22:00 +0000
+Received: from hop23.example.invalid by hop24.example.invalid; Thu, 12 Nov 2026 09:23:00 +0000
+Received: from hop24.example.invalid by hop25.example.invalid; Thu, 12 Nov 2026 09:24:00 +0000
+Received: from hop25.example.invalid by hop26.example.invalid; Thu, 12 Nov 2026 09:25:00 +0000
+Received: from hop26.example.invalid by hop27.example.invalid; Thu, 12 Nov 2026 09:26:00 +0000
+Received: from hop27.example.invalid by hop28.example.invalid; Thu, 12 Nov 2026 09:27:00 +0000
+Received: from hop28.example.invalid by hop29.example.invalid; Thu, 12 Nov 2026 09:28:00 +0000
+Received: from hop29.example.invalid by hop30.example.invalid; Thu, 12 Nov 2026 09:29:00 +0000
+Received: from hop30.example.invalid by hop31.example.invalid; Thu, 12 Nov 2026 09:30:00 +0000
+Received: from hop31.example.invalid by hop32.example.invalid; Thu, 12 Nov 2026 09:31:00 +0000
+Received: from hop32.example.invalid by hop33.example.invalid; Thu, 12 Nov 2026 09:32:00 +0000
+Received: from hop33.example.invalid by hop34.example.invalid; Thu, 12 Nov 2026 09:33:00 +0000
+Received: from hop34.example.invalid by hop35.example.invalid; Thu, 12 Nov 2026 09:34:00 +0000
+Received: from hop35.example.invalid by hop36.example.invalid; Thu, 12 Nov 2026 09:35:00 +0000
+Received: from hop36.example.invalid by hop37.example.invalid; Thu, 12 Nov 2026 09:36:00 +0000
+Received: from hop37.example.invalid by hop38.example.invalid; Thu, 12 Nov 2026 09:37:00 +0000
+Received: from hop38.example.invalid by hop39.example.invalid; Thu, 12 Nov 2026 09:38:00 +0000
+Received: from hop39.example.invalid by hop40.example.invalid; Thu, 12 Nov 2026 09:39:00 +0000
+From: alice@example.invalid
+To: user@lab.test
+Subject: looping
+Date: Thu, 12 Nov 2026 10:00:00 +0000
+MIME-Version: 1.0
+Message-ID: <hops@example.invalid>
+Content-Type: text/plain; charset=utf-8
+
+Forty hops.

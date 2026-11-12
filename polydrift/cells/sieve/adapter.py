@@ -46,6 +46,20 @@ def intent_step(res: dict[str, Any], spec: CellSpec) -> StepRecord:
     vals = {"decision_class": "fix-request" if oc == "refused" else "proceed", "outcome": oc,
             "compile_class": res.get("compile_class") if oc == "refused" else None,
             "intent": tuple(sorted(res.get("intent") or [])) if oc == "ok" else None}
+        sent = eff.get("emitted") or []
+        def per(kind: str, key: str, fn=lambda x: x) -> tuple:
+            return tuple(fn((e.get("facts") or {}).get(key)) for e in sent if e.get("kind") == kind)
+        vals["redirect_received_more"] = per("redirect", "received_delta", lambda d: d is not None and d > 0)
+        vals["vacation_in_reply_to"] = per("vacation", "in_reply_to_orig")
+        vals["vacation_subject"] = per("vacation", "subject")
+        vals["vacation_subject_encoded"] = per("vacation", "subject", lambda x: bool(x) and "=?" in x)
+        vals["vacation_date"] = per("vacation", "date_present")
+        vals["vacation_from"] = per("vacation", "from", lambda x: (x or "").strip("<>").lower() or None)
+        vals["vacation_to"] = per("vacation", "to", lambda x: (x or "").strip("<>").lower() or None)
+        vals["mdn_disposition"] = per("reject", "mdn_disposition")
+        vals["dsn_action"] = per("dsn", "dsn_action")
+        vals["reason_in_text"] = tuple((e.get("facts") or {}).get("marker") for e in sent
+                                       if e.get("kind") in ("reject", "dsn"))
     return StepRecord(status=Status.RESPONDED, fields=_f(spec, vals))
 
 
@@ -55,7 +69,29 @@ def effect_step(res: dict[str, Any], spec: CellSpec) -> StepRecord | None:
         return None
     stored = tuple(sorted((k, int(v)) for k, v in (eff.get("stored") or {}).items() if int(v) > 0))
     emitted = tuple(sorted((e.get("kind"), tuple(sorted(e.get("to") or []))) for e in (eff.get("emitted") or [])))
-    return StepRecord(status=Status.RESPONDED, fields=_f(spec, {"stored": stored, "emitted": emitted}))
+    vals = {"stored": stored, "emitted": emitted}
+    if "flags" in eff:
+        # IMAP flags of the stored messages per folder (RFC 5232)
+        vals["stored_flags"] = tuple(sorted((k, tuple(v)) for k, v in (eff.get("flags") or {}).items()))
+    if any("facts" in e for e in eff.get("emitted") or []):
+        # header facts of each sent message, by kind (RFC 5228 4.2, RFC 5230 5, RFC 5429 2.1 and 2.2)
+        vals["emitted_headers"] = tuple(sorted((e.get("kind"), tuple(sorted((e.get("facts") or {}).items())))
+                                               for e in eff.get("emitted") or []))
+        sent = eff.get("emitted") or []
+        def per(kind: str, key: str, fn=lambda x: x) -> tuple:
+            return tuple(fn((e.get("facts") or {}).get(key)) for e in sent if e.get("kind") == kind)
+        vals["redirect_received_more"] = per("redirect", "received_delta", lambda d: d is not None and d > 0)
+        vals["vacation_in_reply_to"] = per("vacation", "in_reply_to_orig")
+        vals["vacation_subject"] = per("vacation", "subject")
+        vals["vacation_subject_encoded"] = per("vacation", "subject", lambda x: bool(x) and "=?" in x)
+        vals["vacation_date"] = per("vacation", "date_present")
+        vals["vacation_from"] = per("vacation", "from", lambda x: (x or "").strip("<>").lower() or None)
+        vals["vacation_to"] = per("vacation", "to", lambda x: (x or "").strip("<>").lower() or None)
+        vals["mdn_disposition"] = per("reject", "mdn_disposition")
+        vals["dsn_action"] = per("dsn", "dsn_action")
+        vals["reason_in_text"] = tuple((e.get("facts") or {}).get("marker") for e in sent
+                                       if e.get("kind") in ("reject", "dsn"))
+    return StepRecord(status=Status.RESPONDED, fields=_f(spec, vals))
 
 
 def to_records(res: dict[str, Any], impl: str, fixture: str, *, spec: CellSpec, repeat: int = 1,

@@ -332,3 +332,618 @@ fixtures:
       require "imap4flags";
       setflag ["", "\\Seen"];
       keep;
+
+  # ---------------- census (12 Nov 2026): every testable ledger row not named above ----------------
+  # Generated with the census authoring aid. New messages: mime-parts, broken-mime, enc-nul, received,
+  # many-hops, no-subject, addr-headers. Effect axes added the same day (tiers.yaml).
+  census_integer_max:
+    kind: control
+    message: clean.eml
+    folders: ["INBOX", "INBOX.Int"]
+    spec_refs:
+      - {"req_id": "SIEVE-16b39b02", "keyword": "MUST", "axis": "intent", "step": 1, "allowed": [["fileinto:INBOX.Int"]]}
+    script: |
+      require "fileinto";
+      if size :under 2147483647 { fileinto "INBOX.Int"; }
+
+  census_quoted_multiline:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {"req_id": "SIEVE-d87354a8", "keyword": "MAY", "axis": "decision_class", "step": 1, "note": "quoted string across lines; comparison only"}
+    script: |
+      require "fileinto";
+      if header :contains "Subject" "Lunch
+      tomorrow" { fileinto "INBOX.Multi"; }
+
+  census_grammar_strings:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {"req_id": "SIEVE-506446c9", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
+    script: |
+      require "fileinto";
+      if header :contains "Subject" ["Lunch", "q\"uote", "back\\slash"] {
+        fileinto text:
+      ..dot-stuffed
+      INBOX.Text
+      .
+      ;
+      }
+
+  census_encoded_character:
+    kind: probe
+    message: clean.eml
+    folders: ["INBOX", "INBOX.Hex"]
+    spec_refs:
+      - {"req_id": "SIEVE-4aaf733a", "keyword": "SHOULD", "axis": "intent", "step": 1, "allowed": [["fileinto:INBOX.Hex"]]}
+    script: |
+      require ["fileinto", "encoded-character"];
+      if header :contains "Subject" "${hex:4C 75 6E 63 68}" { fileinto "INBOX.Hex"; }
+
+  census_encoded_character_malformed:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {"req_id": "SIEVE-8c8fc986", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
+    script: |
+      require ["fileinto", "encoded-character"];
+      if header :contains "Subject" "${unicode:zz}" { fileinto "INBOX.Bad"; }
+
+  census_encoded_nul_header:
+    kind: probe
+    message: enc-nul.eml
+    folders: ["INBOX", "INBOX.Nul"]
+    spec_refs:
+      - {"req_id": "SIEVE-e025a69c", "keyword": "SHOULD", "axis": "intent", "step": 1, "allowed": [["fileinto:INBOX.Nul"]]}
+      - {"req_id": "SIEVE-3c33e280", "keyword": "SHOULD", "axis": "intent", "step": 1, "note": "decoded comparison; comparison only"}
+      - {"req_id": "SIEVE-60f38245", "keyword": "MAY", "axis": "intent", "step": 1, "note": "undecodable text; comparison only"}
+      - {"req_id": "SIEVE-d2c8c805", "keyword": "MUST", "axis": "intent", "step": 1, "note": "fallback rules when not decoding; comparison only"}
+    script: |
+      require "fileinto";
+      if header :contains "Subject" "needleafter" { fileinto "INBOX.Nul"; }
+
+  census_one_keep_allowed:
+    kind: control
+    message: clean.eml
+    spec_refs:
+      - {"req_id": "SIEVE-a5ccc606", "keyword": "MUST", "axis": "intent", "step": 1, "allowed": [["keep"]]}
+      - {"req_id": "SIEVE-ad0000ee", "keyword": "MUST", "axis": "intent", "step": 1, "allowed": [["keep"]]}
+    script: |
+      keep;
+
+  census_parse_then_run:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {"req_id": "SIEVE-b09fe242", "keyword": "MAY", "axis": "outcome", "step": 1, "note": "whole-script parse before running; comparison only"}
+    script: |
+      keep;
+      if true { stop; }
+      bogus_command;
+
+  census_runtime_checks_executed:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {"req_id": "SIEVE-7c82eade", "keyword": "MUST", "axis": "outcome", "step": 1, "allowed": ["refused", "runtime-error"]}
+    script: |
+      redirect "not an address";
+
+  census_checks_unreached:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {"req_id": "SIEVE-35c65e99", "keyword": "MAY", "axis": "outcome", "step": 1, "note": "checks on code not reached; comparison only"}
+    script: |
+      if false { redirect "not an address"; }
+      keep;
+
+  census_nested_tests_15:
+    kind: control
+    message: clean.eml
+    folders: ["INBOX", "INBOX.Deep"]
+    spec_refs:
+      - {"req_id": "SIEVE-3d63b91b", "keyword": "MUST", "axis": "intent", "step": 1, "allowed": [["fileinto:INBOX.Deep"]]}
+    script: |
+      require "fileinto";
+      if allof(allof(allof(allof(allof(allof(allof(allof(allof(allof(allof(allof(allof(allof(allof(true))))))))))))))) { fileinto "INBOX.Deep"; }
+
+  census_fileinto_supported:
+    kind: control
+    message: phishing.eml
+    folders: ["INBOX", "INBOX.Quarantine"]
+    spec_refs:
+      - {"req_id": "SIEVE-082bdc44", "keyword": "SHOULD", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
+      - {"req_id": "SIEVE-6513f1f4", "keyword": "SHOULD", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
+    script: |
+      require "fileinto";
+      fileinto "INBOX.Quarantine";
+
+  census_fileinto_invalid_name:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {"req_id": "SIEVE-44b989d1", "keyword": "MAY", "axis": "outcome", "step": 1, "note": "invalid mailbox name; comparison only"}
+    script: |
+      require "fileinto";
+      fileinto "INBOX..bad";
+
+  census_fileinto_non_ascii_name:
+    kind: probe
+    message: clean.eml
+    folders: ["INBOX", "INBOX.Bücher"]
+    spec_refs:
+      - {"req_id": "SIEVE-4c63c070", "keyword": "SHOULD", "axis": "stored", "step": 1, "layer": "effect", "note": "mailbox name re-encoded (modified UTF-7); comparison only"}
+    script: |
+      require "fileinto";
+      fileinto "INBOX.Bücher";
+
+  census_redirect_received:
+    kind: control
+    message: received.eml
+    spec_refs:
+      - {"req_id": "SIEVE-4c32897c", "keyword": "MUST", "axis": "redirect_received_more", "step": 1, "layer": "effect", "allowed": [[true]]}
+    script: |
+      redirect "review@example.invalid";
+
+  census_redirect_twice_same_message:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {"req_id": "SIEVE-1a34030c", "keyword": "MAY", "axis": "emitted", "step": 1, "layer": "effect", "note": "one submission with two recipients or two; comparison only"}
+      - {"req_id": "SIEVE-c26ca950", "keyword": "MAY", "axis": "emitted_headers", "step": 1, "layer": "effect", "note": "comparison only"}
+    script: |
+      redirect "a@example.invalid";
+      redirect "b@example.invalid";
+
+  census_redirect_null_sender:
+    kind: probe
+    message: clean.eml
+    from: ""
+    spec_refs:
+      - {"req_id": "SIEVE-8bda45c2", "keyword": "MUST", "axis": "emitted_headers", "step": 1, "layer": "effect", "note": "envelope sender stays empty; comparison only (sieve-test does not report it)"}
+    script: |
+      redirect "review@example.invalid";
+
+  census_redirect_loop_control:
+    kind: probe
+    message: many-hops.eml
+    spec_refs:
+      - {"req_id": "SIEVE-63ceb935", "keyword": "MUST", "axis": "emitted", "step": 1, "layer": "effect", "note": "loop control on a 40-hop message; comparison only"}
+      - {"req_id": "SIEVE-6bb244cc", "keyword": "MUST", "axis": "intent", "step": 1, "allowed": [["redirect:review@example.invalid"], ["keep"], ["keep", "redirect:review@example.invalid"]]}
+    script: |
+      redirect "review@example.invalid";
+
+  census_address_headers:
+    kind: control
+    message: addr-headers.eml
+    folders: ["INBOX", "INBOX.Addr"]
+    spec_refs:
+      - {"req_id": "SIEVE-858c6e9d", "keyword": "MUST", "axis": "intent", "step": 1, "allowed": [["fileinto:INBOX.Addr"]]}
+    script: |
+      require "fileinto";
+      if allof(address :domain :is "From" "example.invalid", address :domain :is "To" "example.invalid", address :domain :is "Cc" "example.invalid", address :domain :is "Bcc" "example.invalid", address :domain :is "Sender" "example.invalid", address :domain :is "Resent-From" "example.invalid", address :domain :is "Resent-To" "example.invalid") { fileinto "INBOX.Addr"; }
+
+  census_envelope_unknown_part:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {"req_id": "SIEVE-6a0c73ea", "keyword": "SHOULD", "axis": "outcome", "step": 1, "allowed": ["refused", "runtime-error"]}
+    script: |
+      require "envelope";
+      if envelope :is "x-pd-part" "x" { discard; }
+
+  census_envelope_source_route:
+    kind: probe
+    message: clean.eml
+    from: "@relay.example.invalid:attacker@example.invalid"
+    folders: ["INBOX", "INBOX.Route"]
+    spec_refs:
+      - {"req_id": "SIEVE-24964b67", "keyword": "MUST", "axis": "intent", "step": 1, "allowed": [["fileinto:INBOX.Route"]]}
+    script: |
+      require ["envelope", "fileinto"];
+      if envelope :is "from" "attacker@example.invalid" { fileinto "INBOX.Route"; }
+
+  census_envelope_supported:
+    kind: control
+    message: clean.eml
+    spec_refs:
+      - {"req_id": "SIEVE-cb926c76", "keyword": "SHOULD", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
+    script: |
+      require "envelope";
+      if envelope :is "to" "user@lab.test" { keep; }
+
+  census_body_qp:
+    kind: probe
+    message: mime-parts.eml
+    folders: ["INBOX", "INBOX.QP", "INBOX.B64", "INBOX.Latin", "INBOX.Seven", "INBOX.Bin", "INBOX.Split", "INBOX.Hdr", "INBOX.Whole", "INBOX.Html", "INBOX.Strip", "INBOX.Empty", "INBOX.Set"]
+    spec_refs:
+      - {"req_id": "SIEVE-674f7e23", "keyword": "MUST", "axis": "intent", "step": 1, "allowed": [["fileinto:INBOX.QP"]]}
+    script: |
+      require ["body", "fileinto"];
+      if body :content "text" :contains "needleqp" { fileinto "INBOX.QP"; }
+
+  census_body_base64:
+    kind: probe
+    message: mime-parts.eml
+    folders: ["INBOX", "INBOX.QP", "INBOX.B64", "INBOX.Latin", "INBOX.Seven", "INBOX.Bin", "INBOX.Split", "INBOX.Hdr", "INBOX.Whole", "INBOX.Html", "INBOX.Strip", "INBOX.Empty", "INBOX.Set"]
+    spec_refs:
+      - {"req_id": "SIEVE-674f7e23", "keyword": "MUST", "axis": "intent", "step": 1, "allowed": [["fileinto:INBOX.B64"]]}
+    script: |
+      require ["body", "fileinto"];
+      if body :content "text" :contains "needleb64" { fileinto "INBOX.B64"; }
+
+  census_body_8bit_latin1:
+    kind: probe
+    message: mime-parts.eml
+    folders: ["INBOX", "INBOX.QP", "INBOX.B64", "INBOX.Latin", "INBOX.Seven", "INBOX.Bin", "INBOX.Split", "INBOX.Hdr", "INBOX.Whole", "INBOX.Html", "INBOX.Strip", "INBOX.Empty", "INBOX.Set"]
+    spec_refs:
+      - {"req_id": "SIEVE-674f7e23", "keyword": "MUST", "axis": "intent", "step": 1, "allowed": [["fileinto:INBOX.Latin"]]}
+      - {"req_id": "SIEVE-080d1fd7", "keyword": "MUST", "axis": "intent", "step": 1, "allowed": [["fileinto:INBOX.Latin"]]}
+    script: |
+      require ["body", "fileinto"];
+      if body :content "text" :contains "naïveneedle" { fileinto "INBOX.Latin"; }
+
+  census_body_7bit:
+    kind: probe
+    message: mime-parts.eml
+    folders: ["INBOX", "INBOX.QP", "INBOX.B64", "INBOX.Latin", "INBOX.Seven", "INBOX.Bin", "INBOX.Split", "INBOX.Hdr", "INBOX.Whole", "INBOX.Html", "INBOX.Strip", "INBOX.Empty", "INBOX.Set"]
+    spec_refs:
+      - {"req_id": "SIEVE-674f7e23", "keyword": "MUST", "axis": "intent", "step": 1, "allowed": [["fileinto:INBOX.Seven"]]}
+    script: |
+      require ["body", "fileinto"];
+      if body :content "text" :contains "split-ac" { fileinto "INBOX.Seven"; }
+
+  census_body_binary_nul:
+    kind: probe
+    message: mime-parts.eml
+    folders: ["INBOX", "INBOX.QP", "INBOX.B64", "INBOX.Latin", "INBOX.Seven", "INBOX.Bin", "INBOX.Split", "INBOX.Hdr", "INBOX.Whole", "INBOX.Html", "INBOX.Strip", "INBOX.Empty", "INBOX.Set"]
+    spec_refs:
+      - {"req_id": "SIEVE-674f7e23", "keyword": "MUST", "axis": "intent", "step": 1, "allowed": [["fileinto:INBOX.Bin"]]}
+      - {"req_id": "SIEVE-084f52d9", "keyword": "SHOULD", "axis": "intent", "step": 1, "allowed": [["fileinto:INBOX.Bin"]]}
+      - {"req_id": "SIEVE-dcaf13ed", "keyword": "MAY", "axis": "intent", "step": 1, "note": "undecodable parts; comparison only"}
+    script: |
+      require ["body", "fileinto"];
+      if body :content "text" :contains "needlenul" { fileinto "INBOX.Bin"; }
+
+  census_body_no_cross_part:
+    kind: probe
+    message: mime-parts.eml
+    folders: ["INBOX", "INBOX.QP", "INBOX.B64", "INBOX.Latin", "INBOX.Seven", "INBOX.Bin", "INBOX.Split", "INBOX.Hdr", "INBOX.Whole", "INBOX.Html", "INBOX.Strip", "INBOX.Empty", "INBOX.Set"]
+    spec_refs:
+      - {"req_id": "SIEVE-06768f16", "keyword": "MUST", "axis": "intent", "step": 1, "allowed": [["keep"]]}
+    script: |
+      require ["body", "fileinto"];
+      if body :content "text" :contains "split-across" { fileinto "INBOX.Split"; }
+
+  census_body_no_part_headers:
+    kind: probe
+    message: mime-parts.eml
+    folders: ["INBOX", "INBOX.QP", "INBOX.B64", "INBOX.Latin", "INBOX.Seven", "INBOX.Bin", "INBOX.Split", "INBOX.Hdr", "INBOX.Whole", "INBOX.Html", "INBOX.Strip", "INBOX.Empty", "INBOX.Set"]
+    spec_refs:
+      - {"req_id": "SIEVE-92281dd8", "keyword": "MUST", "axis": "intent", "step": 1, "allowed": [["keep"]]}
+    script: |
+      require ["body", "fileinto"];
+      if body :content "text" :contains "hdrneedle" { fileinto "INBOX.Hdr"; }
+
+  census_body_part_one_string:
+    kind: probe
+    message: mime-parts.eml
+    folders: ["INBOX", "INBOX.QP", "INBOX.B64", "INBOX.Latin", "INBOX.Seven", "INBOX.Bin", "INBOX.Split", "INBOX.Hdr", "INBOX.Whole", "INBOX.Html", "INBOX.Strip", "INBOX.Empty", "INBOX.Set"]
+    spec_refs:
+      - {"req_id": "SIEVE-14ca018f", "keyword": "MUST", "axis": "intent", "step": 1, "allowed": [["fileinto:INBOX.Whole"]]}
+    script: |
+      require ["body", "fileinto"];
+      if body :content "text" :contains "qp needleqp" { fileinto "INBOX.Whole"; }
+
+  census_body_text_simple:
+    kind: probe
+    message: mime-parts.eml
+    folders: ["INBOX", "INBOX.QP", "INBOX.B64", "INBOX.Latin", "INBOX.Seven", "INBOX.Bin", "INBOX.Split", "INBOX.Hdr", "INBOX.Whole", "INBOX.Html", "INBOX.Strip", "INBOX.Empty", "INBOX.Set"]
+    spec_refs:
+      - {"req_id": "SIEVE-1138b45c", "keyword": "MAY", "axis": "intent", "step": 1, "note": ":text as :content text; comparison only"}
+    script: |
+      require ["body", "fileinto"];
+      if body :text :contains "needlehtml" { fileinto "INBOX.Html"; }
+
+  census_body_text_markup:
+    kind: probe
+    message: mime-parts.eml
+    folders: ["INBOX", "INBOX.QP", "INBOX.B64", "INBOX.Latin", "INBOX.Seven", "INBOX.Bin", "INBOX.Split", "INBOX.Hdr", "INBOX.Whole", "INBOX.Html", "INBOX.Strip", "INBOX.Empty", "INBOX.Set"]
+    spec_refs:
+      - {"req_id": "SIEVE-bc84fa96", "keyword": "MAY", "axis": "intent", "step": 1, "note": "mark-up stripped; comparison only"}
+    script: |
+      require ["body", "fileinto"];
+      if body :text :contains "htmlneedlehtml" { fileinto "INBOX.Strip"; }
+
+  census_body_broken_mime:
+    kind: probe
+    message: broken-mime.eml
+    folders: ["INBOX", "INBOX.QP", "INBOX.B64", "INBOX.Latin", "INBOX.Seven", "INBOX.Bin", "INBOX.Split", "INBOX.Hdr", "INBOX.Whole", "INBOX.Html", "INBOX.Strip", "INBOX.Empty", "INBOX.Set"]
+    spec_refs:
+      - {"req_id": "SIEVE-f4a793c5", "keyword": "MUST", "axis": "outcome", "step": 1, "allowed": ["ok"]}
+      - {"req_id": "SIEVE-f4a793c5", "keyword": "MUST", "axis": "intent", "step": 1, "allowed": [["fileinto:INBOX.Whole"]]}
+    script: |
+      require ["body", "fileinto"];
+      if body :raw :contains "boundary" { fileinto "INBOX.Whole"; }
+
+  census_body_no_match_variables:
+    kind: probe
+    message: mime-parts.eml
+    folders: ["INBOX", "INBOX.QP", "INBOX.B64", "INBOX.Latin", "INBOX.Seven", "INBOX.Bin", "INBOX.Split", "INBOX.Hdr", "INBOX.Whole", "INBOX.Html", "INBOX.Strip", "INBOX.Empty", "INBOX.Set"]
+    spec_refs:
+      - {"req_id": "SIEVE-0dc3b12c", "keyword": "MUST", "axis": "intent", "step": 1, "allowed": [["fileinto:INBOX.Empty"]]}
+    script: |
+      require ["body", "fileinto", "variables"];
+      if body :content "text" :matches "*needleqp*" {
+        if string :is "${1}" "" { fileinto "INBOX.Empty"; } else { fileinto "INBOX.Set"; }
+      }
+
+  census_flags_variable_without_ext:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {"req_id": "SIEVE-7a8ee2ca", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["fix-request"]}
+    script: |
+      require "imap4flags";
+      setflag "myvar" "\\Seen";
+      keep;
+
+  census_flags_invalid_ignored:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {"req_id": "SIEVE-02790ee8", "keyword": "SHOULD", "axis": "stored_flags", "step": 1, "layer": "effect", "allowed": [[["INBOX", ["\\Flagged \\Seen"]]]]}
+      - {"req_id": "SIEVE-84424a74", "keyword": "MUST", "axis": "stored_flags", "step": 1, "layer": "effect", "allowed": [[["INBOX", ["\\Flagged \\Seen"]]]]}
+      - {"req_id": "SIEVE-de144b2a", "keyword": "MUST", "axis": "stored_flags", "step": 1, "layer": "effect", "allowed": [[["INBOX", ["\\Flagged \\Seen"]]]]}
+    script: |
+      require "imap4flags";
+      addflag "\\Seen bad(flag \\Flagged";
+      keep;
+
+  census_flags_spaces:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {"req_id": "SIEVE-4629a37b", "keyword": "MUST", "axis": "stored_flags", "step": 1, "layer": "effect", "allowed": [[["INBOX", ["\\Flagged \\Seen"]]]]}
+      - {"req_id": "SIEVE-c159a1a4", "keyword": "MUST", "axis": "stored_flags", "step": 1, "layer": "effect", "allowed": [[["INBOX", ["\\Flagged \\Seen"]]]]}
+      - {"req_id": "SIEVE-c61e6d4c", "keyword": "MAY", "axis": "stored_flags", "step": 1, "layer": "effect", "note": "any rewrite that keeps the set; comparison only"}
+    script: |
+      require "imap4flags";
+      setflag "  \\Seen    \\Flagged  ";
+      keep;
+
+  census_flags_last_wins:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {"req_id": "SIEVE-9fe28b10", "keyword": "MUST", "axis": "stored_flags", "step": 1, "layer": "effect", "allowed": [[["INBOX", ["\\Flagged"]]]]}
+    script: |
+      require "imap4flags";
+      keep :flags "\\Seen";
+      keep :flags "\\Flagged";
+
+  census_flags_remove_all:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {"req_id": "SIEVE-1973ee5a", "keyword": "MUST", "axis": "stored_flags", "step": 1, "layer": "effect", "allowed": [[["INBOX", ["\\Flagged"]]]]}
+    script: |
+      require "imap4flags";
+      setflag "\\Seen \\Seen \\Flagged";
+      removeflag "\\Seen";
+      keep;
+
+  census_flags_unstorable:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {"req_id": "SIEVE-0952060b", "keyword": "MUST", "axis": "outcome", "step": 1, "allowed": ["ok"]}
+      - {"req_id": "SIEVE-f02c299b", "keyword": "MUST", "axis": "outcome", "step": 1, "allowed": ["ok"]}
+      - {"req_id": "SIEVE-0952060b", "keyword": "MUST", "axis": "stored", "step": 1, "layer": "effect", "allowed": [[["INBOX", 1]]]}
+    script: |
+      require "imap4flags";
+      addflag "pdkw00 pdkw01 pdkw02 pdkw03 pdkw04 pdkw05 pdkw06 pdkw07 pdkw08 pdkw09 pdkw10 pdkw11 pdkw12 pdkw13 pdkw14 pdkw15 pdkw16 pdkw17 pdkw18 pdkw19 pdkw20 pdkw21 pdkw22 pdkw23 pdkw24 pdkw25 pdkw26 pdkw27 pdkw28 pdkw29 pdkw30 pdkw31 pdkw32 pdkw33 pdkw34 pdkw35 pdkw36 pdkw37 pdkw38 pdkw39";
+      keep;
+
+  census_vacation_tracking:
+    kind: probe
+    message: vacation.eml
+    spec_refs:
+      - {"req_id": "SIEVE-f10561e0", "keyword": "MUST", "axis": "emitted", "step": 1, "layer": "effect", "note": "one delivery per run: tracking is compared, not labelled"}
+      - {"req_id": "SIEVE-94ca4bed", "keyword": "MUST", "axis": "emitted", "step": 1, "layer": "effect", "note": "comparison only"}
+      - {"req_id": "SIEVE-f8c203bb", "keyword": "MAY", "axis": "emitted", "step": 1, "layer": "effect", "note": "comparison only"}
+      - {"req_id": "SIEVE-ed6235b5", "keyword": "MUST", "axis": "emitted", "step": 1, "layer": "effect", "note": "limit not observable in one delivery; comparison only"}
+      - {"req_id": "SIEVE-9c9865bc", "keyword": "SHOULD", "axis": "emitted", "step": 1, "layer": "effect", "note": "comparison only"}
+    script: |
+      require "vacation";
+      vacation :days 7 "Away";
+
+  census_vacation_subject_utf8:
+    kind: probe
+    message: vacation.eml
+    spec_refs:
+      - {"req_id": "SIEVE-e71c0e39", "keyword": "MUST", "axis": "vacation_subject_encoded", "step": 1, "layer": "effect", "allowed": [[true]]}
+      - {"req_id": "SIEVE-ae7926ba", "keyword": "MUST", "axis": "outcome", "step": 1, "allowed": ["ok"]}
+    script: |
+      require "vacation";
+      vacation :subject "Résumé absent" "Away";
+
+  census_vacation_subject_ascii:
+    kind: probe
+    message: vacation.eml
+    spec_refs:
+      - {"req_id": "SIEVE-e71c0e39", "keyword": "MUST", "axis": "vacation_subject_encoded", "step": 1, "layer": "effect", "allowed": [[false]]}
+    script: |
+      require "vacation";
+      vacation :subject "Plain away" "Away";
+
+  census_vacation_default_subject:
+    kind: probe
+    message: vacation.eml
+    to: "user@lab.test"
+    spec_refs:
+      - {"req_id": "SIEVE-d5f2d169", "keyword": "MUST", "axis": "vacation_subject", "step": 1, "layer": "effect", "allowed": [["Auto: out of office probe"], ["Re: out of office probe"], ["Automated reply: out of office probe"]]}
+      - {"req_id": "SIEVE-4aca6b1d", "keyword": "SHOULD", "axis": "vacation_date", "step": 1, "layer": "effect", "allowed": [[true]]}
+      - {"req_id": "SIEVE-1c5e2887", "keyword": "SHOULD", "axis": "vacation_from", "step": 1, "layer": "effect", "allowed": [["user@lab.test"]]}
+      - {"req_id": "SIEVE-eb9713e9", "keyword": "SHOULD", "axis": "vacation_to", "step": 1, "layer": "effect", "allowed": [["probe@example.invalid"]]}
+      - {"req_id": "SIEVE-bd230d0c", "keyword": "MUST", "axis": "vacation_in_reply_to", "step": 1, "layer": "effect", "allowed": [[true]]}
+      - {"req_id": "SIEVE-36518d02", "keyword": "SHOULD", "axis": "emitted_headers", "step": 1, "layer": "effect", "note": "envelope sender <>; comparison only"}
+      - {"req_id": "SIEVE-11f22447", "keyword": "SHOULD", "axis": "emitted_headers", "step": 1, "layer": "effect", "note": "NOTIFY=NEVER not observable; comparison only"}
+    script: |
+      require "vacation";
+      vacation "Away";
+
+  census_vacation_no_original_subject:
+    kind: probe
+    message: no-subject.eml
+    spec_refs:
+      - {"req_id": "SIEVE-f7e8bcd0", "keyword": "SHOULD", "axis": "vacation_subject", "step": 1, "layer": "effect", "allowed": [["Automated reply"]]}
+    script: |
+      require "vacation";
+      vacation "Away";
+
+  census_vacation_bad_from:
+    kind: probe
+    message: vacation.eml
+    spec_refs:
+      - {"req_id": "SIEVE-d77a3b2f", "keyword": "SHOULD", "axis": "outcome", "step": 1, "allowed": ["refused", "runtime-error"]}
+    script: |
+      require "vacation";
+      vacation :from "not an address" "Away";
+
+  census_vacation_mime_8bit_header:
+    kind: probe
+    message: vacation.eml
+    spec_refs:
+      - {"req_id": "SIEVE-6fa6f3ce", "keyword": "SHOULD", "axis": "outcome", "step": 1, "allowed": ["refused", "runtime-error"]}
+    script: |
+      require "vacation";
+      vacation :mime text:
+      Subject: Grüße
+      Content-Type: text/plain; charset=utf-8
+
+      Weg.
+      .
+      ;
+
+  census_reject_mdn:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {"req_id": "SIEVE-7f171b25", "keyword": "MUST", "axis": "mdn_disposition", "step": 1, "layer": "effect", "allowed": [[], ["automatic-action/mdn-sent-automatically; deleted"]]}
+      - {"req_id": "SIEVE-7a3135f5", "keyword": "SHOULD", "axis": "emitted_headers", "step": 1, "layer": "effect", "note": "human-readable alert; comparison only"}
+      - {"req_id": "SIEVE-fea6d9e0", "keyword": "MUST", "axis": "stored", "step": 1, "layer": "effect", "allowed": [[]]}
+    script: |
+      require "reject";
+      reject "PD-MARKER refused by policy";
+
+  census_reject_null_sender:
+    kind: probe
+    message: clean.eml
+    from: ""
+    spec_refs:
+      - {"req_id": "SIEVE-cc0d6855", "keyword": "MUST", "axis": "emitted", "step": 1, "layer": "effect", "allowed": [[]]}
+    script: |
+      require "reject";
+      reject "PD-MARKER refused by policy";
+
+  census_ereject_dsn:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {"req_id": "SIEVE-41dc297e", "keyword": "MUST", "axis": "emitted", "step": 1, "layer": "effect", "note": "a DSN for each refusing recipient; comparison only"}
+      - {"req_id": "SIEVE-8e12cf65", "keyword": "MUST", "axis": "emitted_headers", "step": 1, "layer": "effect", "note": "DSN structure; comparison only"}
+      - {"req_id": "SIEVE-f0bad974", "keyword": "MUST", "axis": "dsn_action", "step": 1, "layer": "effect", "allowed": [[], ["failed"]]}
+      - {"req_id": "SIEVE-c7898c9c", "keyword": "MUST", "axis": "reason_in_text", "step": 1, "layer": "effect", "allowed": [[], [true]]}
+      - {"req_id": "SIEVE-bb1f2c30", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "ereject availability depends on the environment; comparison only"}
+    script: |
+      require "ereject";
+      ereject "PD-MARKER refused by policy";
+
+  census_ereject_null_sender:
+    kind: probe
+    message: clean.eml
+    from: ""
+    spec_refs:
+      - {"req_id": "SIEVE-4b73366b", "keyword": "MUST", "axis": "emitted", "step": 1, "layer": "effect", "allowed": [[]]}
+    script: |
+      require "ereject";
+      ereject "PD-MARKER refused by policy";
+
+  census_reject_with_keep:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {"req_id": "SIEVE-34058ae7", "keyword": "SHOULD", "axis": "outcome", "step": 1, "allowed": ["refused", "runtime-error"]}
+    script: |
+      require "reject";
+      reject "PD-MARKER refused by policy";
+      keep;
+
+  census_reject_body_modify:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {"req_id": "SIEVE-f7cad0a0", "keyword": "MUST", "axis": "emitted_headers", "step": 1, "layer": "effect", "note": "the refused message's notification is unmodified; comparison only"}
+    script: |
+      require ["reject", "editheader"];
+      addheader "X-PD" "added";
+      reject "PD-MARKER refused by policy";
+
+  census_ereject_protocol:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {"req_id": "SIEVE-35d36874", "keyword": "MUST", "axis": "lmtp_reply", "step": 1, "layer": "effect", "note": "LMTP/SMTP reply; phase 2 engines; comparison only until then"}
+      - {"req_id": "SIEVE-0ffb8975", "keyword": "MUST", "axis": "lmtp_reply", "step": 1, "layer": "effect", "note": "LMTP/SMTP reply; phase 2 engines; comparison only until then"}
+      - {"req_id": "SIEVE-a0efcd11", "keyword": "MUST", "axis": "lmtp_reply", "step": 1, "layer": "effect", "note": "LMTP/SMTP reply; phase 2 engines; comparison only until then"}
+      - {"req_id": "SIEVE-68b36c0a", "keyword": "SHOULD", "axis": "lmtp_reply", "step": 1, "layer": "effect", "note": "LMTP/SMTP reply; phase 2 engines; comparison only until then"}
+      - {"req_id": "SIEVE-6e37f07b", "keyword": "MAY", "axis": "lmtp_reply", "step": 1, "layer": "effect", "note": "LMTP/SMTP reply; phase 2 engines; comparison only until then"}
+    script: |
+      require "ereject";
+      ereject "PD-MARKER refused by policy";
+
+  census_ereject_multiline_reason:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {"req_id": "SIEVE-ec1d767e", "keyword": "MUST", "axis": "lmtp_reply", "step": 1, "layer": "effect", "note": "LMTP/SMTP reply; phase 2 engines; comparison only until then"}
+    script: |
+      require "ereject";
+      ereject text:
+      PD-MARKER line one
+      line two
+      .
+      ;
+
+  census_ereject_long_reason:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {"req_id": "SIEVE-6d47c0d4", "keyword": "MUST", "axis": "lmtp_reply", "step": 1, "layer": "effect", "note": "LMTP/SMTP reply; phase 2 engines; comparison only until then"}
+      - {"req_id": "SIEVE-b50d82d8", "keyword": "MAY", "axis": "lmtp_reply", "step": 1, "layer": "effect", "note": "LMTP/SMTP reply; phase 2 engines; comparison only until then"}
+    script: |
+      require "ereject";
+      ereject "PD-MARKER xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+
+  census_reject_not_upgraded:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {"req_id": "SIEVE-9e53ff0f", "keyword": "MUST", "axis": "lmtp_reply", "step": 1, "layer": "effect", "note": "LMTP/SMTP reply; phase 2 engines; comparison only until then"}
+    script: |
+      require "reject";
+      reject "PD-MARKER refused by policy";
+
+  census_metadata_private:
+    kind: probe
+    message: clean.eml
+    spec_refs:
+      - {"req_id": "SIEVE-d06635ab", "keyword": "MUST", "axis": "outcome", "step": 1, "note": "user-context annotations; comparison only"}
+      - {"req_id": "SIEVE-61860a20", "keyword": "SHOULD", "axis": "outcome", "step": 1, "note": "temporary failure handling; comparison only"}
+    script: |
+      require ["mboxmetadata", "fileinto"];
+      if metadataexists "INBOX" "/private/pd" { fileinto "INBOX.Meta"; }
+

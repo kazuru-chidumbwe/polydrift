@@ -1,0 +1,29 @@
+# polydrift sipb: ejabberd (Erlang, its own esip stack) as SIP proxy and registrar for lab.test via mod_sip, with
+# the module's defaults. ejabberd's registrar accepts only its own users, so the lab users exist (users.txt, loaded
+# by the runner's cmd) and fixtures authenticate with digest when challenged. Lab-only: no TLS, no XMPP clients.
+hosts:
+  - lab.test
+loglevel: info
+listen:
+  -
+    port: 5060
+    transport: udp
+    module: ejabberd_sip
+  -
+    port: 5060
+    transport: tcp
+    module: ejabberd_sip
+auth_method: [internal]
+auth_password_format: plain
+acl:
+  local:
+    user_regexp: ""
+modules:
+  mod_sip:
+    always_record_route: true
+    record_route: "sip:172.31.60.10;lr"
+    routes:
+      - "sip:172.31.60.10;lr"
+    via:
+      - "udp://172.31.60.10:5060"
+      - "tcp://172.31.60.10:5060"

@@ -75,3 +75,13 @@ def test_jmap_extract():
     assert evaluate(r"re:r0/state=s\d", ctx) is True
     assert evaluate("has:r0/notFound", ctx) is False
     assert evaluate("m0", ctx) == "Mailbox/get"
+
+
+def test_jmap_driver_tolerates_changes_created_list(monkeypatch):
+    """A /changes response lists created ids; the driver must not treat it as a creation map."""
+    from polydrift.cells.jmap import driver
+    body = '{"methodResponses": [["Mailbox/changes", {"created": ["a1"], "updated": [], "destroyed": []}, "c0"]]}'
+    monkeypatch.setattr(driver, "_req", lambda *a, **k: (200, "application/json", body, {}))
+    out = driver.run_script("http://127.0.0.1:1", "u", "p", {"apiUrl": "/jmap/"},
+                            [{"op": "call", "calls": [], "extract": {"x1": "len:r0/created"}}], "pdx")
+    assert out[0]["error"] is None and out[0]["extract"]["x1"] == 1

@@ -12,6 +12,14 @@ A specification reference is a mapping::
 canonical values the clause permits; null in the list permits an undefined
 value. The optional ``security`` key names the property a ``security:<name>``
 fixture tag refers to.
+
+Two conventions used by fixture files:
+
+* axis ``status`` is the step's outcome: the liveness status when the step did not respond (``closed``,
+  ``silent``, ...), otherwise its decision class (``proceed``, ``fix-request``, ...) or ``responded`` when the step
+  carries no decision. A clause that requires "reject or close" lists both, e.g. ``[closed, fix-request]``.
+* a reference without ``allowed`` ties a clause to an axis for comparison only (what the clause fixes cannot be
+  enumerated, for example the order of forwarded user properties); it never labels an implementation.
 """
 
 from __future__ import annotations
@@ -22,7 +30,7 @@ from typing import Any, Iterable, Mapping
 
 from polydrift.core.oracle import END_STATE, STATUS_AXIS, Outcome, PairResult, effective_step
 from polydrift.core.record import ObservationRecord, Status, Tier, freeze_value
-from polydrift.core.spec import FixtureSpec
+from polydrift.core.spec import DECISION_AXIS, FixtureSpec
 
 MUST_WORDS = {"MUST", "MUST NOT", "SHALL", "SHALL NOT", "REQUIRED"}
 SHOULD_WORDS = {"SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED"}
@@ -53,8 +61,23 @@ def _step_of(ref: Mapping[str, Any]) -> int | str:
     return END_STATE if step == END_STATE else int(step)
 
 
+OUTCOME_AXIS = "status"
+
+
 def observed(rec: ObservationRecord, axis: str, step: int | str, refusal_class: str | None = None) -> Any:
     """Canonical value of ``axis`` at ``step`` (None when undefined)."""
+    if axis == OUTCOME_AXIS and step != END_STATE:
+        idx = int(step) - 1
+        if idx < 0 or idx >= len(rec.steps):
+            return None
+        for earlier in rec.steps[:idx]:
+            if effective_step(earlier, refusal_class).status != Status.RESPONDED:
+                return earlier.status.value
+        st = effective_step(rec.steps[idx], refusal_class)
+        if st.status != Status.RESPONDED:
+            return st.status.value
+        f = st.fields.get(DECISION_AXIS)
+        return "responded" if f is None or f.canon is None else f.canon
     if step == END_STATE:
         f = rec.end_state.get(axis)
         return None if f is None else f.canon
@@ -78,7 +101,14 @@ def allowed_set(ref: Mapping[str, Any]) -> set[Any]:
     return {freeze_value(v) for v in ref.get("allowed", [])}
 
 
+def labels(ref: Mapping[str, Any]) -> bool:
+    """Does this reference label implementations (it states the values its clause allows)?"""
+    return "allowed" in ref
+
+
 def inside(rec: ObservationRecord, ref: Mapping[str, Any], refusal_class: str | None = None) -> bool:
+    if not labels(ref):
+        return True
     return observed(rec, ref["axis"], _step_of(ref), refusal_class) in allowed_set(ref)
 
 
@@ -91,7 +121,7 @@ def conflicting_refs(refs: Iterable[Mapping[str, Any]]) -> set[int]:
     for i, a in enumerate(refs):
         for j in range(i + 1, len(refs)):
             b = refs[j]
-            if a["axis"] == b["axis"] and _step_of(a) == _step_of(b):
+            if labels(a) and labels(b) and a["axis"] == b["axis"] and _step_of(a) == _step_of(b):
                 if not (allowed_set(a) & allowed_set(b)):
                     bad.update((i, j))
     return bad
@@ -168,15 +198,24 @@ def fault_class(
     # A breach belongs to this divergence when it separates the two sides (one breaks the clause, the other does
     # not) or when the clause constrains an axis on which they differ. A breach both sides share on an axis where
     # they agree is a unanimous violation (reported on its own), not the cause of this divergence.
-    own = (lb ^ rb) | {i for i in lb & rb if (fixture.spec_refs[i]["axis"], _step_of(fixture.spec_refs[i])) in differing}
+    def on_differing(i: int) -> bool:
+        ref = fixture.spec_refs[i]
+        axes = (STATUS_AXIS, DECISION_AXIS) if ref["axis"] == OUTCOME_AXIS else (ref["axis"],)
+        return any((a, _step_of(ref)) in differing for a in axes)
+    own = (lb ^ rb) | {i for i in lb & rb if on_differing(i)}
     kinds = {strength(fixture.spec_refs[i]["keyword"]) for i in own}
     if "MUST" in kinds:
         return FaultClass.VIOLATION
     if "SHOULD" in kinds:
         return FaultClass.DEVIATION
-    constrained = {
-        (ref["axis"], _step_of(ref)) for i, ref in enumerate(fixture.spec_refs) if i not in bad
-    }
+    constrained: set[tuple[str, int | str]] = set()
+    for i, ref in enumerate(fixture.spec_refs):
+        if i in bad or not labels(ref):
+            continue
+        st = _step_of(ref)
+        # the outcome axis constrains the step's liveness status and its decision class together
+        axes = (STATUS_AXIS, DECISION_AXIS) if ref["axis"] == OUTCOME_AXIS else (ref["axis"],)
+        constrained.update((a, st) for a in axes)
     for d in pair.diffs:
         if (d.axis, d.step) not in constrained:
             return FaultClass.UNSPECIFIED

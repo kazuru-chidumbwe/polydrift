@@ -442,3 +442,865 @@ fixtures:
       - {client: b, op: subscribe, args: {packet_id: 1, filters: ["{T}w"]}}
       - {client: a, op: connect, args: {client_id: "{C}a", will: {topic: "{T}w", payload: gone}}}
       - {client: a, op: disconnect, window_ms: 1500}
+
+  # ---------------- census (12 Nov 2026): every testable ledger row not named above ----------------
+  # Generated with the census authoring aid; axes added the same day: actor_closed, limit_violations,
+  # publish_meta, connack_presence, problem_info, auth_packets, pid_reuse, connack_reserved,
+  # disconnect_props, ack_ids, pubrel_matches, arrival_order, dollar_topics (tiers.yaml).
+  census_utf8_pair_invalid:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-1.5.7-1", "keyword": "MUST", "axis": "status", "step": 2, "allowed": ["closed", "fix-request"]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}u", "payload": "p", "qos": 1, "packet_id": 3, "properties": {"raw": "260003eda080000176"}}}
+
+  census_reserved_bits_pingreq:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-2.1.3-1", "keyword": "MUST", "axis": "status", "step": 2, "allowed": ["closed", "fix-request"]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "hex", "hex": "c100"}
+
+  census_reserved_bits_disconnect:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-3.14.1-1", "keyword": "MUST", "axis": "status", "step": 2, "allowed": ["closed", "fix-request", "responded"]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "hex", "hex": "e100", "expect_reply": false, "window_ms": 1500}
+
+  census_reserved_bits_auth:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-3.15.1-1", "keyword": "MUST", "axis": "status", "step": 2, "allowed": ["closed", "fix-request"]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "hex", "hex": "f100"}
+
+  census_connect_fixed_header_reserved:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-3.1.4-1", "keyword": "MUST", "axis": "status", "step": 1, "allowed": ["closed", "fix-request"]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "fixed_flags": 1}}
+
+  census_will_flag_without_fields:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-3.1.2-9", "keyword": "MUST", "axis": "status", "step": 1, "allowed": ["closed", "fix-request"]}
+    steps:
+      - {"client": "a", "op": "hex", "hex": "100e00044d5154540506003c00000161"}
+
+  census_will_retain_without_will:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-3.1.2-15", "keyword": "MUST", "axis": "status", "step": 1, "allowed": ["closed", "fix-request"]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "will_retain_bit": true}}
+
+  census_topic_invalid_utf8:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-3.3.2-1", "keyword": "MUST", "axis": "status", "step": 2, "allowed": ["closed", "fix-request"]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "hex", "hex": "3007000361ff620070", "expect_reply": true}
+
+  census_content_type_invalid_utf8:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-3.3.2-19", "keyword": "MUST", "axis": "status", "step": 2, "allowed": ["closed", "fix-request"]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}ct", "payload": "p", "qos": 1, "packet_id": 5, "properties": {"raw": "030002ffff"}}}
+
+  census_topic_name_wildcard:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-4.7.0-1", "keyword": "MUST", "axis": "status", "step": 2, "allowed": ["closed", "fix-request"]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}w/+", "payload": "p", "qos": 1, "packet_id": 6}}
+
+  census_filter_plus_partial_level:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-4.7.1-2", "keyword": "MUST", "axis": "status", "step": 2, "allowed": ["closed", "fix-request"]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x+/y"}]}}
+
+  census_topic_empty:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-4.7.3-1", "keyword": "MUST", "axis": "status", "step": 2, "allowed": ["closed", "fix-request"]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "", "payload": "p", "qos": 1, "packet_id": 7}}
+
+  census_filter_empty:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-4.7.3-1", "keyword": "MUST", "axis": "status", "step": 2, "allowed": ["closed", "fix-request"]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "subscribe", "args": {"packet_id": 2, "filters": [{"topic": ""}]}}
+
+  census_topic_null_char:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-4.7.3-2", "keyword": "MUST", "axis": "status", "step": 2, "allowed": ["closed", "fix-request"]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}n\u0000l", "payload": "p", "qos": 1, "packet_id": 8}}
+
+  census_topic_long_legal:
+    kind: control
+    spec_refs:
+      - {"native": "MQTT-4.7.3-3", "keyword": "MUST", "axis": "status", "step": 2, "note": "a 4,096-byte topic name is within the limit; comparison only"}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL", "payload": "p", "qos": 1, "packet_id": 9}}
+
+  census_subscribe_options_reserved:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-4.13.1-1", "keyword": "MUST", "axis": "status", "step": 2, "allowed": ["closed", "fix-request"]}
+      - {"native": "MQTT-4.13.1-1", "keyword": "MUST", "axis": "actor_closed", "step": 2, "allowed": [true, null]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}o", "options": 192}]}}
+
+  census_reauth_without_method:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-4.12.1-2", "keyword": "MUST", "axis": "status", "step": 2, "allowed": ["closed", "fix-request"]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "hex", "hex": "f0021900"}
+
+  census_session_resume:
+    kind: stateful
+    spec_refs:
+      - {"native": "MQTT-3.1.2-6", "keyword": "MUST", "axis": "session_present", "step": 6, "allowed": [1]}
+      - {"native": "MQTT-3.1.4-4", "keyword": "MUST", "axis": "session_present", "step": 6, "allowed": [1]}
+      - {"native": "MQTT-3.1.2-6", "keyword": "MUST", "axis": "own_publishes", "step": 6, "allowed": [[["b", [["x", "r1", 1, 0]]]]]}
+      - {"native": "MQTT-4.5.0-1", "keyword": "MUST", "axis": "own_publishes", "step": 6, "allowed": [[["b", [["x", "r1", 1, 0]]]]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b", "clean_start": true, "properties": {"session_expiry_interval": 300}}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 3, "filters": [{"topic": "{T}x", "qos": 1}]}}
+      - {"client": "b", "op": "disconnect"}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "r1", "qos": 1, "packet_id": 9}}
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b", "clean_start": false, "properties": {"session_expiry_interval": 300}}, "window_ms": 1500}
+
+  census_session_expired:
+    kind: stateful
+    spec_refs:
+      - {"native": "MQTT-4.1.0-2", "keyword": "MUST", "axis": "session_present", "step": 7, "allowed": [0]}
+      - {"native": "MQTT-4.1.0-1", "keyword": "MUST", "axis": "own_publishes", "step": 7, "allowed": [[["b", []]]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b", "clean_start": true, "properties": {"session_expiry_interval": 2}}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 3, "filters": [{"topic": "{T}x", "qos": 1}]}}
+      - {"client": "b", "op": "close"}
+      - {"client": "b", "op": "sleep", "window_ms": 3500}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "late", "qos": 1, "packet_id": 10}}
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b", "clean_start": false, "properties": {"session_expiry_interval": 2}}, "window_ms": 1500}
+
+  census_will_on_close:
+    kind: stateful
+    spec_refs:
+      - {"native": "MQTT-3.1.2-7", "keyword": "MUST", "axis": "deliveries", "step": 4, "allowed": [[["b", [["w", "gone", 0, 0]]]]]}
+      - {"native": "MQTT-3.1.2-15", "keyword": "MUST", "axis": "deliveries", "step": 4, "allowed": [[["b", [["w", "gone", 0, 0]]]]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}w"}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "will": {"topic": "{T}w", "payload": "gone", "qos": 0}}}
+      - {"client": "a", "op": "close", "window_ms": 1500}
+
+  census_will_delay_reconnect:
+    kind: stateful
+    spec_refs:
+      - {"native": "MQTT-3.1.3-9", "keyword": "MUST", "axis": "deliveries", "step": 4, "allowed": [[]]}
+      - {"native": "MQTT-3.1.3-9", "keyword": "MUST", "axis": "deliveries", "step": 5, "allowed": [[]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}w"}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "clean_start": true, "properties": {"session_expiry_interval": 60}, "will": {"topic": "{T}w", "payload": "late", "qos": 0, "properties": {"will_delay_interval": 3}}}}
+      - {"client": "a", "op": "close", "window_ms": 500}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "clean_start": false, "properties": {"session_expiry_interval": 60}}, "window_ms": 4000}
+
+  census_will_user_property_order:
+    kind: stateful
+    spec_refs:
+      - {"native": "MQTT-3.1.3-10", "keyword": "MUST", "axis": "forwarded_props", "step": 4, "allowed": [[["b", [[["user_property", "[['k1', 'v1'], ['k2', 'v2'], ['k1', 'v3']]"]]]]]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}w"}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "will": {"topic": "{T}w", "payload": "u", "qos": 0, "properties": {"user_property": [["k1", "v1"], ["k2", "v2"], ["k1", "v3"]]}}}}
+      - {"client": "a", "op": "close", "window_ms": 1500}
+
+  census_keep_alive_timeout:
+    kind: stateful
+    spec_refs:
+      - {"native": "MQTT-3.1.2-22", "keyword": "MUST", "axis": "status", "step": 2, "allowed": ["closed", "stop"]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "keep_alive": 1}}
+      - {"client": "a", "op": "sleep", "window_ms": 3500}
+
+  census_client_id_charset:
+    kind: control
+    spec_refs:
+      - {"native": "MQTT-3.1.3-5", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "pd0123456789abcdefABCDE"}}
+
+  census_client_id_empty:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-3.1.3-7", "keyword": "MUST", "axis": "connack_presence", "step": 1, "allowed": [["assigned_client_identifier"], ["refused"]]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "", "clean_start": true}}
+
+  census_connect_auth_ignored:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-3.1.4-2", "keyword": "SHOULD", "axis": "decision_class", "step": 1, "note": "authentication policy of the default configuration; comparison only"}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "username": "pd-nouser", "password": "pd-wrong"}}
+
+  census_rejected_connect_no_processing:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-3.1.4-6", "keyword": "MUST", "axis": "retained_after", "step": "end", "allowed": [[]]}
+    steps:
+      - {"client": "a", "op": "hex", "hex": "101200044d5154540902003c000005706472656a31150011706463656e7375732f72656a65637465640078"}
+      - {"client": "e", "op": "connect", "args": {"client_id": "{C}e"}, "end": true}
+      - {"client": "e", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "pdcensus/rejected"}]}, "end": true}
+
+  census_second_connect:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-3.2.0-2", "keyword": "MUST", "axis": "packet_types", "step": 2, "allowed": [null, [], ["DISCONNECT"]]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+
+  census_connack_flags:
+    kind: control
+    spec_refs:
+      - {"native": "MQTT-3.2.2-1", "keyword": "MUST", "axis": "connack_reserved", "step": 1, "allowed": [0]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+
+  census_auth_method_unsupported:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-3.2.2-6", "keyword": "MUST", "axis": "session_present", "step": 1, "allowed": [0, null]}
+      - {"native": "MQTT-3.2.2-7", "keyword": "MUST", "axis": "actor_closed", "step": 1, "allowed": [true, null]}
+      - {"native": "MQTT-3.2.2-8", "keyword": "MUST", "axis": "native_codes", "step": 1, "allowed": [null, [0], [128], [129], [130], [131], [132], [133], [134], [135], [136], [137], [138], [140], [144], [149], [151], [153], [154], [155], [156], [157], [159]]}
+      - {"native": "MQTT-4.12.0-1", "keyword": "MUST", "axis": "actor_closed", "step": 1, "allowed": [true, null]}
+      - {"native": "MQTT-4.12.0-2", "keyword": "MUST", "axis": "auth_packets", "step": 1, "allowed": [null, [], [24]]}
+      - {"native": "MQTT-4.12.0-4", "keyword": "MUST", "axis": "actor_closed", "step": 1, "allowed": [true, null]}
+      - {"native": "MQTT-4.12.0-5", "keyword": "MUST", "axis": "connack_presence", "step": 1, "allowed": [null, ["refused"], ["authentication_method"], ["assigned_client_identifier", "authentication_method"]]}
+      - {"native": "MQTT-4.13.2-1", "keyword": "MUST", "axis": "actor_closed", "step": 1, "allowed": [true, null]}
+      - {"native": "MQTT-3.15.2-1", "keyword": "MUST", "axis": "auth_packets", "step": 1, "allowed": [null, [], [0], [24], [25]]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "properties": {"authentication_method": "PD-UNSUPPORTED-METHOD"}}}
+
+  census_no_auth_method:
+    kind: control
+    spec_refs:
+      - {"native": "MQTT-4.12.0-6", "keyword": "MUST", "axis": "auth_packets", "step": 1, "allowed": [[]]}
+      - {"native": "MQTT-4.12.0-7", "keyword": "MUST", "axis": "connack_presence", "step": 1, "allowed": [[], ["assigned_client_identifier"]]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+
+  census_response_information_zero:
+    kind: control
+    spec_refs:
+      - {"native": "MQTT-3.1.2-28", "keyword": "MUST", "axis": "connack_presence", "step": 1, "allowed": [[], ["assigned_client_identifier"], ["authentication_method"], ["assigned_client_identifier", "authentication_method"]]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "properties": {"request_response_information": 0}}}
+
+  census_problem_information_zero:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-3.1.2-29", "keyword": "MUST", "axis": "problem_info", "step": 2, "allowed": [null, []]}
+      - {"native": "MQTT-3.1.2-29", "keyword": "MUST", "axis": "problem_info", "step": 4, "allowed": [null, []]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "properties": {"request_problem_information": 0}}}
+      - {"client": "a", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}a/#/b"}]}}
+      - {"client": "c", "op": "connect", "args": {"client_id": "{C}c", "properties": {"request_problem_information": 0}}}
+      - {"client": "c", "op": "publish", "args": {"topic": "{T}pf", "payload": [255, 254], "qos": 1, "packet_id": 4, "properties": {"payload_format_indicator": 1}}}
+
+  census_server_capabilities:
+    kind: control
+    spec_refs:
+      - {"native": "MQTT-3.2.2-9", "keyword": "MUST", "axis": "connack_props", "step": 1, "note": "Maximum QoS present when QoS 2 is not supported; comparison only"}
+      - {"native": "MQTT-3.2.2-10", "keyword": "MUST", "axis": "connack_props", "step": 1, "note": "comparison only"}
+      - {"native": "MQTT-3.2.2-22", "keyword": "MUST", "axis": "connack_props", "step": 1, "note": "Server Keep Alive; comparison only"}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "keep_alive": 2}}
+
+  census_will_qos2:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-3.2.2-12", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "accept, or reject when Will QoS 2 exceeds the server's maximum; comparison only"}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "will": {"topic": "{T}w", "payload": "q2", "qos": 2}}}
+
+  census_will_retain:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-3.2.2-13", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "accept, or reject when retain is unsupported; comparison only"}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "will": {"topic": "{T}w", "payload": "r", "qos": 0, "retain": true}}}
+
+  census_max_packet_size:
+    kind: stateful
+    spec_refs:
+      - {"native": "MQTT-3.1.2-24", "keyword": "MUST", "axis": "limit_violations", "step": 4, "allowed": [[]]}
+      - {"native": "MQTT-3.1.2-24", "keyword": "MUST", "axis": "deliveries", "step": 4, "allowed": [[]]}
+      - {"native": "MQTT-3.1.2-25", "keyword": "MUST", "axis": "deliveries", "step": 5, "allowed": [[["b", [["x", "ok", 0, 0]]]]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b", "properties": {"maximum_packet_size": 64}}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x"}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "qos": 0}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "ok", "qos": 0}}
+
+  census_max_size_connack:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-3.2.2-19", "keyword": "MUST", "axis": "limit_violations", "step": 1, "allowed": [null, []]}
+      - {"native": "MQTT-3.2.2-20", "keyword": "MUST", "axis": "limit_violations", "step": 1, "allowed": [null, []]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "properties": {"maximum_packet_size": 16, "request_problem_information": 1}}}
+
+  census_max_size_puback:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-3.4.2-2", "keyword": "MUST", "axis": "limit_violations", "step": 1, "allowed": [null, []]}
+      - {"native": "MQTT-3.4.2-2", "keyword": "MUST", "axis": "limit_violations", "step": 2, "allowed": [null, []]}
+      - {"native": "MQTT-3.4.2-3", "keyword": "MUST", "axis": "limit_violations", "step": 1, "allowed": [null, []]}
+      - {"native": "MQTT-3.4.2-3", "keyword": "MUST", "axis": "limit_violations", "step": 2, "allowed": [null, []]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "properties": {"maximum_packet_size": 16}}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}pf", "payload": [255, 254], "qos": 1, "packet_id": 4, "properties": {"payload_format_indicator": 1}}}
+
+  census_max_size_pubrec:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-3.5.2-2", "keyword": "MUST", "axis": "limit_violations", "step": 1, "allowed": [null, []]}
+      - {"native": "MQTT-3.5.2-2", "keyword": "MUST", "axis": "limit_violations", "step": 2, "allowed": [null, []]}
+      - {"native": "MQTT-3.5.2-3", "keyword": "MUST", "axis": "limit_violations", "step": 1, "allowed": [null, []]}
+      - {"native": "MQTT-3.5.2-3", "keyword": "MUST", "axis": "limit_violations", "step": 2, "allowed": [null, []]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "properties": {"maximum_packet_size": 16}}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}pf", "payload": [255, 254], "qos": 2, "packet_id": 5, "properties": {"payload_format_indicator": 1}}}
+
+  census_max_size_pubcomp:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-3.7.2-2", "keyword": "MUST", "axis": "limit_violations", "step": 1, "allowed": [null, []]}
+      - {"native": "MQTT-3.7.2-2", "keyword": "MUST", "axis": "limit_violations", "step": 2, "allowed": [null, []]}
+      - {"native": "MQTT-3.7.2-2", "keyword": "MUST", "axis": "limit_violations", "step": 3, "allowed": [null, []]}
+      - {"native": "MQTT-3.7.2-3", "keyword": "MUST", "axis": "limit_violations", "step": 1, "allowed": [null, []]}
+      - {"native": "MQTT-3.7.2-3", "keyword": "MUST", "axis": "limit_violations", "step": 2, "allowed": [null, []]}
+      - {"native": "MQTT-3.7.2-3", "keyword": "MUST", "axis": "limit_violations", "step": 3, "allowed": [null, []]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "properties": {"maximum_packet_size": 16}}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}q2", "payload": "p", "qos": 2, "packet_id": 6}}
+      - {"client": "a", "op": "pubrel", "args": {"packet_id": 9999}}
+
+  census_max_size_suback:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-3.9.2-1", "keyword": "MUST", "axis": "limit_violations", "step": 1, "allowed": [null, []]}
+      - {"native": "MQTT-3.9.2-1", "keyword": "MUST", "axis": "limit_violations", "step": 2, "allowed": [null, []]}
+      - {"native": "MQTT-3.9.2-2", "keyword": "MUST", "axis": "limit_violations", "step": 1, "allowed": [null, []]}
+      - {"native": "MQTT-3.9.2-2", "keyword": "MUST", "axis": "limit_violations", "step": 2, "allowed": [null, []]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "properties": {"maximum_packet_size": 16}}}
+      - {"client": "a", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}a/#/b"}]}}
+
+  census_max_size_unsuback:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-3.11.2-1", "keyword": "MUST", "axis": "limit_violations", "step": 1, "allowed": [null, []]}
+      - {"native": "MQTT-3.11.2-1", "keyword": "MUST", "axis": "limit_violations", "step": 2, "allowed": [null, []]}
+      - {"native": "MQTT-3.11.2-2", "keyword": "MUST", "axis": "limit_violations", "step": 1, "allowed": [null, []]}
+      - {"native": "MQTT-3.11.2-2", "keyword": "MUST", "axis": "limit_violations", "step": 2, "allowed": [null, []]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "properties": {"maximum_packet_size": 16}}}
+      - {"client": "a", "op": "unsubscribe", "args": {"packet_id": 4, "filters": ["{T}none"]}}
+
+  census_max_size_disconnect:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-3.14.2-3", "keyword": "MUST", "axis": "limit_violations", "step": 1, "allowed": [null, []]}
+      - {"native": "MQTT-3.14.2-3", "keyword": "MUST", "axis": "limit_violations", "step": 2, "allowed": [null, []]}
+      - {"native": "MQTT-3.14.2-4", "keyword": "MUST", "axis": "limit_violations", "step": 1, "allowed": [null, []]}
+      - {"native": "MQTT-3.14.2-4", "keyword": "MUST", "axis": "limit_violations", "step": 2, "allowed": [null, []]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "properties": {"maximum_packet_size": 16}}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+
+  census_max_size_auth:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-3.15.2-2", "keyword": "MUST", "axis": "limit_violations", "step": 1, "allowed": [null, []]}
+      - {"native": "MQTT-3.15.2-3", "keyword": "MUST", "axis": "limit_violations", "step": 1, "allowed": [null, []]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "properties": {"maximum_packet_size": 16, "authentication_method": "PD-UNSUPPORTED-METHOD"}}}
+
+  census_max_size_pubrel:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-3.6.2-2", "keyword": "MUST", "axis": "limit_violations", "step": 5, "allowed": [null, []]}
+      - {"native": "MQTT-3.6.2-3", "keyword": "MUST", "axis": "limit_violations", "step": 5, "allowed": [null, []]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b", "properties": {"maximum_packet_size": 16}}, "auto_ack": false}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x", "qos": 2}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "p", "qos": 2, "packet_id": 3}}
+      - {"client": "b", "op": "pubrec", "args": {"packet_id": "last"}}
+
+  census_topic_alias_maximum:
+    kind: control
+    spec_refs:
+      - {"native": "MQTT-3.1.2-26", "keyword": "MUST", "axis": "limit_violations", "step": 4, "allowed": [[]]}
+      - {"native": "MQTT-3.1.2-27", "keyword": "MUST", "axis": "limit_violations", "step": 5, "allowed": [[]]}
+      - {"native": "MQTT-3.3.2-11", "keyword": "MUST", "axis": "limit_violations", "step": 4, "allowed": [[]]}
+      - {"native": "MQTT-3.3.2-12", "keyword": "MUST", "axis": "limit_violations", "step": 5, "allowed": [[]]}
+      - {"native": "MQTT-3.1.2-26", "keyword": "MUST", "axis": "limit_violations", "step": 9, "allowed": [[]]}
+      - {"native": "MQTT-3.3.2-11", "keyword": "MUST", "axis": "limit_violations", "step": 10, "allowed": [[]]}
+      - {"native": "MQTT-3.3.2-11", "keyword": "MUST", "axis": "limit_violations", "step": 11, "allowed": [[]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}t/#"}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}t/x", "payload": "m1", "qos": 0}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}t/x", "payload": "m2", "qos": 0}}
+      - {"client": "b", "op": "disconnect"}
+      - {"client": "c", "op": "connect", "args": {"client_id": "{C}c", "properties": {"topic_alias_maximum": 1}}}
+      - {"client": "c", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}t/#"}]}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}t/x", "payload": "m3", "qos": 0}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}t/y", "payload": "m4", "qos": 0}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}t/x", "payload": "m5", "qos": 0}}
+
+  census_topic_alias_not_carried:
+    kind: stateful
+    spec_refs:
+      - {"native": "MQTT-3.3.2-7", "keyword": "MUST", "axis": "status", "step": 5, "allowed": ["closed", "fix-request"]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}al", "payload": "a1", "qos": 0, "properties": {"topic_alias": 1}}}
+      - {"client": "a", "op": "close"}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "", "payload": "a2", "qos": 1, "packet_id": 2, "properties": {"topic_alias": 1}}}
+
+  census_receive_maximum:
+    kind: stateful
+    spec_refs:
+      - {"native": "MQTT-3.3.4-9", "keyword": "MUST", "axis": "deliveries", "step": 6, "allowed": [[]]}
+      - {"native": "MQTT-3.3.4-9", "keyword": "MUST", "axis": "deliveries", "step": 7, "allowed": [[]]}
+      - {"native": "MQTT-4.9.0-2", "keyword": "MUST", "axis": "deliveries", "step": 6, "allowed": [[]]}
+      - {"native": "MQTT-4.9.0-3", "keyword": "MUST", "axis": "deliveries", "step": 7, "allowed": [[]]}
+      - {"native": "MQTT-3.3.4-10", "keyword": "MUST", "axis": "packet_types", "step": 8, "allowed": [["PINGRESP"]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b", "properties": {"receive_maximum": 2}}, "auto_ack": false}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x", "qos": 1}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "m1", "qos": 1, "packet_id": 1}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "m2", "qos": 1, "packet_id": 2}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "m3", "qos": 1, "packet_id": 3}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "m4", "qos": 1, "packet_id": 4}}
+      - {"client": "b", "op": "pingreq"}
+
+  census_dup_flags:
+    kind: control
+    spec_refs:
+      - {"native": "MQTT-3.3.1-1", "keyword": "MUST", "axis": "publish_meta", "step": 4, "allowed": [[["b", [["x", 0, [], null, false]]]]]}
+      - {"native": "MQTT-4.3.2-2", "keyword": "MUST", "axis": "publish_meta", "step": 4, "allowed": [[["b", [["x", 0, [], null, false]]]]]}
+      - {"native": "MQTT-3.3.1-2", "keyword": "MUST", "axis": "publish_meta", "step": 5, "allowed": [[["b", [["x", 0, [], null, false]]]]]}
+      - {"native": "MQTT-4.3.1-1", "keyword": "MUST", "axis": "publish_meta", "step": 5, "allowed": [[["b", [["x", 0, [], null, false]]]]]}
+      - {"native": "MQTT-3.3.1-3", "keyword": "MUST", "axis": "publish_meta", "step": 6, "allowed": [[["b", [["x", 0, [], null, false]]]]]}
+      - {"native": "MQTT-4.3.3-2", "keyword": "MUST", "axis": "publish_meta", "step": 7, "allowed": [[["b", [["y", 0, [], null, false]]]]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x", "qos": 1}, {"topic": "{T}y", "qos": 2}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "d1", "qos": 1, "packet_id": 11}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "d0", "qos": 0}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "d2", "qos": 1, "packet_id": 12, "dup": true}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}y", "payload": "d3", "qos": 2, "packet_id": 13}}
+
+  census_qos0_delivery_no_packet_id:
+    kind: control
+    spec_refs:
+      - {"native": "MQTT-2.2.1-2", "keyword": "MUST", "axis": "deliveries", "step": 4, "allowed": [[["b", [["x", "p0", 0, 0]]]]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x"}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "p0", "qos": 1, "packet_id": 5}}
+
+  census_message_expiry_deleted:
+    kind: stateful
+    spec_refs:
+      - {"native": "MQTT-3.3.2-5", "keyword": "MUST", "axis": "own_publishes", "step": 7, "allowed": [[["b", []]]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b", "clean_start": true, "properties": {"session_expiry_interval": 300}}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x", "qos": 1}]}}
+      - {"client": "b", "op": "close"}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "exp", "qos": 1, "packet_id": 3, "properties": {"message_expiry_interval": 1}}}
+      - {"client": "a", "op": "sleep", "window_ms": 2500}
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b", "clean_start": false, "properties": {"session_expiry_interval": 300}}, "window_ms": 1500}
+
+  census_message_expiry_decremented:
+    kind: stateful
+    spec_refs:
+      - {"native": "MQTT-3.3.2-6", "keyword": "MUST", "axis": "publish_meta", "step": 7, "allowed": [[["b", [["x", 0, [], 50, false]]]], [["b", [["x", 0, [], 51, false]]]], [["b", [["x", 0, [], 52, false]]]], [["b", [["x", 0, [], 53, false]]]], [["b", [["x", 0, [], 54, false]]]], [["b", [["x", 0, [], 55, false]]]], [["b", [["x", 0, [], 56, false]]]], [["b", [["x", 0, [], 57, false]]]], [["b", [["x", 0, [], 58, false]]]], [["b", [["x", 0, [], 59, false]]]]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b", "clean_start": true, "properties": {"session_expiry_interval": 300}}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x", "qos": 1}]}}
+      - {"client": "b", "op": "close"}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "exp", "qos": 1, "packet_id": 3, "properties": {"message_expiry_interval": 60}}}
+      - {"client": "a", "op": "sleep", "window_ms": 2500}
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b", "clean_start": false, "properties": {"session_expiry_interval": 300}}, "window_ms": 1500}
+
+  census_subscription_identifiers_overlap:
+    kind: control
+    spec_refs:
+      - {"native": "MQTT-3.3.4-3", "keyword": "MUST", "axis": "publish_meta", "step": 5, "allowed": [[["b", [["s/y", 0, [7, 9], null, false]]]], [["b", [["s/y", 0, [7], null, false], ["s/y", 0, [9], null, false]]]]]}
+      - {"native": "MQTT-3.3.4-4", "keyword": "MUST", "axis": "publish_meta", "step": 5, "allowed": [[["b", [["s/y", 0, [7, 9], null, false]]]], [["b", [["s/y", 0, [7], null, false], ["s/y", 0, [9], null, false]]]]]}
+      - {"native": "MQTT-3.3.4-5", "keyword": "MUST", "axis": "publish_meta", "step": 5, "allowed": [[["b", [["s/y", 0, [7, 9], null, false]]]], [["b", [["s/y", 0, [7], null, false], ["s/y", 0, [9], null, false]]]]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}s/#"}], "properties": {"subscription_identifier": 7}}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 2, "filters": [{"topic": "{T}s/+"}], "properties": {"subscription_identifier": 9}}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}s/y", "payload": "sid", "qos": 0}}
+
+  census_puback:
+    kind: control
+    spec_refs:
+      - {"native": "MQTT-3.4.2-1", "keyword": "MUST", "axis": "native_codes", "step": 2, "allowed": [[0], [16], [128], [131], [135], [144], [145], [151], [153]]}
+      - {"native": "MQTT-4.3.2-4", "keyword": "MUST", "axis": "ack_ids", "step": 2, "allowed": [[4243]]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "a1", "qos": 1, "packet_id": 4243}}
+
+  census_qos2_flow:
+    kind: control
+    aggregate_deliveries: true
+    spec_refs:
+      - {"native": "MQTT-3.5.2-1", "keyword": "MUST", "axis": "native_codes", "step": 4, "allowed": [[0], [16], [128], [131], [135], [144], [145], [151], [153]]}
+      - {"native": "MQTT-4.3.3-8", "keyword": "MUST", "axis": "ack_ids", "step": 4, "allowed": [[41]]}
+      - {"native": "MQTT-4.3.3-10", "keyword": "MUST", "axis": "packet_types", "step": 5, "allowed": [["PUBREC"]]}
+      - {"native": "MQTT-3.7.2-1", "keyword": "MUST", "axis": "native_codes", "step": 6, "allowed": [[0], [146]]}
+      - {"native": "MQTT-4.3.3-11", "keyword": "MUST", "axis": "ack_ids", "step": 6, "allowed": [[41]]}
+      - {"native": "MQTT-4.3.3-10", "keyword": "MUST", "axis": "deliveries_total", "step": "end", "allowed": [[["b", [["x", "d", 2, 0], ["x", "e", 2, 0]]]]]}
+      - {"native": "MQTT-4.3.3-12", "keyword": "MUST", "axis": "deliveries_total", "step": "end", "allowed": [[["b", [["x", "d", 2, 0], ["x", "e", 2, 0]]]]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x", "qos": 2}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "d", "qos": 2, "packet_id": 41}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "d", "qos": 2, "packet_id": 41, "dup": true}}
+      - {"client": "a", "op": "pubrel", "args": {"packet_id": 41}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "e", "qos": 2, "packet_id": 41}}
+      - {"client": "a", "op": "pubrel", "args": {"packet_id": 41}}
+
+  census_server_pubrel:
+    kind: control
+    spec_refs:
+      - {"native": "MQTT-3.6.2-1", "keyword": "MUST", "axis": "native_codes", "step": 5, "allowed": [[0], [146]]}
+      - {"native": "MQTT-4.3.3-4", "keyword": "MUST", "axis": "pubrel_matches", "step": 5, "allowed": [[true]]}
+      - {"native": "MQTT-4.3.3-6", "keyword": "MUST", "axis": "packet_types", "step": 6, "allowed": [["PINGRESP"]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}, "auto_ack": false}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x", "qos": 2}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "q", "qos": 2, "packet_id": 3}}
+      - {"client": "b", "op": "pubrec", "args": {"packet_id": "last"}}
+      - {"client": "b", "op": "pingreq"}
+
+  census_qos1_same_id_new_message:
+    kind: control
+    spec_refs:
+      - {"native": "MQTT-4.3.2-5", "keyword": "MUST", "axis": "deliveries", "step": 5, "allowed": [[["b", [["x", "n2", 1, 0]]]]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x", "qos": 1}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "n1", "qos": 1, "packet_id": 7}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "n2", "qos": 1, "packet_id": 7, "dup": true}}
+
+  census_packet_ids_unique:
+    kind: control
+    spec_refs:
+      - {"native": "MQTT-4.3.2-1", "keyword": "MUST", "axis": "pid_reuse", "step": 4, "allowed": [[]]}
+      - {"native": "MQTT-4.3.2-1", "keyword": "MUST", "axis": "pid_reuse", "step": 5, "allowed": [[]]}
+      - {"native": "MQTT-4.3.2-1", "keyword": "MUST", "axis": "pid_reuse", "step": 6, "allowed": [[]]}
+      - {"native": "MQTT-4.3.3-1", "keyword": "MUST", "axis": "pid_reuse", "step": 7, "allowed": [[]]}
+      - {"native": "MQTT-4.3.3-1", "keyword": "MUST", "axis": "pid_reuse", "step": 8, "allowed": [[]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}, "auto_ack": false}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x", "qos": 1}, {"topic": "{T}y", "qos": 2}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "u1", "qos": 1, "packet_id": 1}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "u2", "qos": 1, "packet_id": 2}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "u3", "qos": 1, "packet_id": 3}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}y", "payload": "u4", "qos": 2, "packet_id": 4}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}y", "payload": "u5", "qos": 2, "packet_id": 5}}
+
+  census_expiry_after_send_qos2:
+    kind: stateful
+    spec_refs:
+      - {"native": "MQTT-4.3.3-7", "keyword": "MUST", "axis": "packet_types", "step": 6, "allowed": [["PUBREL"]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}, "auto_ack": false}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x", "qos": 2}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "ex", "qos": 2, "packet_id": 3, "properties": {"message_expiry_interval": 1}}}
+      - {"client": "b", "op": "sleep", "window_ms": 2000}
+      - {"client": "b", "op": "pubrec", "args": {"packet_id": "last"}}
+
+  census_expiry_receiver_qos2:
+    kind: stateful
+    spec_refs:
+      - {"native": "MQTT-4.3.3-13", "keyword": "MUST", "axis": "packet_types", "step": 4, "allowed": [["PUBCOMP"]]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "ex", "qos": 2, "packet_id": 21, "properties": {"message_expiry_interval": 1}}}
+      - {"client": "a", "op": "sleep", "window_ms": 2000}
+      - {"client": "a", "op": "pubrel", "args": {"packet_id": 21}}
+
+  census_pubrec_error_new_message:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-4.3.3-9", "keyword": "MUST", "axis": "packet_types", "step": 3, "note": "needs a PUBREC >= 0x80 from the server; comparison only"}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}pf", "payload": [255, 254], "qos": 2, "packet_id": 5, "properties": {"payload_format_indicator": 1}}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}pf", "payload": "ok", "qos": 2, "packet_id": 5}}
+
+  census_resend_on_reconnect:
+    kind: stateful
+    spec_refs:
+      - {"native": "MQTT-4.4.0-1", "keyword": "MUST", "axis": "publish_meta", "step": 6, "allowed": [[["b", [["x", 1, [], null, false]]]]]}
+      - {"native": "MQTT-4.4.0-1", "keyword": "MUST", "axis": "own_publishes", "step": 6, "allowed": [[["b", [["x", "rs", 1, 0]]]]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b", "clean_start": true, "properties": {"session_expiry_interval": 300}}, "auto_ack": false}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x", "qos": 1}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "rs", "qos": 1, "packet_id": 3}}
+      - {"client": "b", "op": "close"}
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b", "clean_start": false, "properties": {"session_expiry_interval": 300}}, "window_ms": 1500}
+
+  census_puback_error_not_resent:
+    kind: stateful
+    spec_refs:
+      - {"native": "MQTT-4.4.0-2", "keyword": "MUST", "axis": "own_publishes", "step": 7, "allowed": [[["b", []]]]}
+      - {"native": "MQTT-4.8.2-6", "keyword": "MUST", "axis": "own_publishes", "step": 7, "allowed": [[["b", []]]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b", "clean_start": true, "properties": {"session_expiry_interval": 300}}, "auto_ack": false}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x", "qos": 1}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "rj", "qos": 1, "packet_id": 3}}
+      - {"client": "b", "op": "puback", "args": {"packet_id": "last", "reason_code": 128}}
+      - {"client": "b", "op": "close"}
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b", "clean_start": false, "properties": {"session_expiry_interval": 300}}, "window_ms": 1500}
+
+  census_no_local:
+    kind: control
+    spec_refs:
+      - {"native": "MQTT-3.8.3-4", "keyword": "MUST", "axis": "own_publishes", "step": 3, "allowed": [[["a", []]]]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}nl", "no_local": true}]}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}nl", "payload": "self", "qos": 0}}
+
+  census_subscribe_replace:
+    kind: stateful
+    spec_refs:
+      - {"native": "MQTT-3.8.4-3", "keyword": "MUST", "axis": "deliveries", "step": 5, "allowed": [[["b", [["x", "rp", 1, 0]]]]]}
+      - {"native": "MQTT-3.8.4-4", "keyword": "MUST", "axis": "deliveries", "step": 5, "allowed": [[["b", [["x", "rp", 1, 0]]]]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x", "qos": 0}]}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 2, "filters": [{"topic": "{T}x", "qos": 1}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "rp", "qos": 1, "packet_id": 5}}
+
+  census_subscribe_multi:
+    kind: control
+    aggregate_deliveries: true
+    spec_refs:
+      - {"native": "MQTT-3.8.4-5", "keyword": "MUST", "axis": "granted", "step": 2, "allowed": [[2, 1, 0], [1, 1, 0], [0, 0, 0]]}
+      - {"native": "MQTT-3.8.4-6", "keyword": "MUST", "axis": "granted", "step": 2, "allowed": [[2, 1, 0], [1, 1, 0], [0, 0, 0]]}
+      - {"native": "MQTT-3.8.4-7", "keyword": "MUST", "axis": "granted", "step": 2, "allowed": [[2, 1, 0], [1, 1, 0], [0, 0, 0]]}
+      - {"native": "MQTT-3.8.4-8", "keyword": "MUST", "axis": "granted", "step": 2, "allowed": [[2, 1, 0], [1, 1, 0], [0, 0, 0]]}
+      - {"native": "MQTT-3.9.3-1", "keyword": "MUST", "axis": "granted", "step": 2, "allowed": [[2, 1, 0], [1, 1, 0], [0, 0, 0]]}
+      - {"native": "MQTT-3.9.3-2", "keyword": "MUST", "axis": "granted", "step": 2, "allowed": [[2, 1, 0], [1, 1, 0], [0, 0, 0]]}
+      - {"native": "MQTT-3.8.4-5", "keyword": "MUST", "axis": "deliveries_total", "step": "end", "allowed": [[["b", [["m1", "1", 2, 0], ["m2", "2", 1, 0], ["m3", "3", 0, 0]]]], [["b", [["m1", "1", 1, 0], ["m2", "2", 1, 0], ["m3", "3", 0, 0]]]], [["b", [["m1", "1", 0, 0], ["m2", "2", 0, 0], ["m3", "3", 0, 0]]]]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}m1", "qos": 2}, {"topic": "{T}m2", "qos": 1}, {"topic": "{T}m3", "qos": 0}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}m1", "payload": "1", "qos": 2, "packet_id": 1}}
+      - {"client": "a", "op": "pubrel", "args": {"packet_id": 1}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}m2", "payload": "2", "qos": 1, "packet_id": 2}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}m3", "payload": "3", "qos": 0}}
+
+  census_unsubscribe_exact_match:
+    kind: control
+    spec_refs:
+      - {"native": "MQTT-3.10.4-1", "keyword": "MUST", "axis": "deliveries", "step": 5, "allowed": [[["b", [["u/y", "uy", 0, 0]]]]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}u/+"}]}}
+      - {"client": "b", "op": "unsubscribe", "args": {"packet_id": 5, "filters": ["{T}u/y"]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}u/y", "payload": "uy", "qos": 0}}
+
+  census_unsubscribe_stops:
+    kind: control
+    spec_refs:
+      - {"native": "MQTT-3.10.4-2", "keyword": "MUST", "axis": "deliveries", "step": 5, "allowed": [[]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}us"}]}}
+      - {"client": "b", "op": "unsubscribe", "args": {"packet_id": 5, "filters": ["{T}us"]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}us", "payload": "after", "qos": 0}}
+
+  census_unsubscribe_inflight:
+    kind: stateful
+    spec_refs:
+      - {"native": "MQTT-3.10.4-3", "keyword": "MUST", "axis": "own_publishes", "step": 6, "note": "QoS 1 delivery started before UNSUBSCRIBE; comparison only"}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b", "clean_start": true, "properties": {"session_expiry_interval": 300}}, "auto_ack": false}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x", "qos": 1}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "fl", "qos": 1, "packet_id": 3}}
+      - {"client": "b", "op": "unsubscribe", "args": {"packet_id": 6, "filters": ["{T}x"]}}
+      - {"client": "b", "op": "puback", "args": {"packet_id": "last"}}
+
+  census_unsuback_nothing_deleted:
+    kind: control
+    spec_refs:
+      - {"native": "MQTT-3.10.4-5", "keyword": "MUST", "axis": "packet_types", "step": 2, "allowed": [["UNSUBACK"]]}
+      - {"native": "MQTT-3.10.4-5", "keyword": "MUST", "axis": "ack_ids", "step": 2, "allowed": [[77]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "unsubscribe", "args": {"packet_id": 77, "filters": ["{T}never"]}}
+
+  census_unsubscribe_multi:
+    kind: control
+    spec_refs:
+      - {"native": "MQTT-3.10.4-6", "keyword": "MUST", "axis": "packet_types", "step": 3, "allowed": [["UNSUBACK"]]}
+      - {"native": "MQTT-3.11.3-1", "keyword": "MUST", "axis": "native_codes", "step": 3, "allowed": [[0, 17]]}
+      - {"native": "MQTT-3.11.3-2", "keyword": "MUST", "axis": "native_codes", "step": 3, "allowed": [[0, 17], [0, 0]]}
+      - {"native": "MQTT-3.10.4-6", "keyword": "MUST", "axis": "deliveries", "step": 5, "allowed": [[]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}mu"}]}}
+      - {"client": "b", "op": "unsubscribe", "args": {"packet_id": 8, "filters": ["{T}mu", "{T}never"]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}mu", "payload": "gone", "qos": 0}}
+
+  census_server_disconnect:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-3.14.2-1", "keyword": "MUST", "axis": "native_codes", "step": 2, "allowed": [null, [], [0], [4], [128], [129], [130], [131], [135], [137], [139], [141], [142], [143], [144], [147], [148], [149], [150], [151], [152], [153], [154], [155], [156], [157], [158], [159], [160], [161], [162]]}
+      - {"native": "MQTT-3.14.2-2", "keyword": "MUST", "axis": "disconnect_props", "step": 2, "allowed": [null, [], ["reason_string"], ["server_reference"], ["user_property"], ["reason_string", "server_reference"], ["reason_string", "user_property"], ["server_reference", "user_property"], ["reason_string", "server_reference", "user_property"]]}
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "pubrel", "args": {"packet_id": 7, "fixed_flags": 0}}
+
+  census_disconnect_before_connack:
+    kind: probe
+    spec_refs:
+      - {"native": "MQTT-3.14.0-1", "keyword": "MUST", "axis": "packet_types", "step": 1, "allowed": [null, []]}
+    steps:
+      - {"client": "a", "op": "hex", "hex": "c000"}
+
+  census_client_disconnect:
+    kind: stateful
+    spec_refs:
+      - {"native": "MQTT-3.14.4-1", "keyword": "MUST", "axis": "packet_types", "step": 4, "allowed": [[]]}
+      - {"native": "MQTT-3.14.4-2", "keyword": "MUST", "axis": "actor_closed", "step": 4, "allowed": [true]}
+      - {"native": "MQTT-3.14.4-3", "keyword": "MUST", "axis": "deliveries", "step": 4, "allowed": [[]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}w"}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "will": {"topic": "{T}w", "payload": "nw", "qos": 0}}}
+      - {"client": "a", "op": "disconnect", "window_ms": 1500}
+
+  census_ordered_topic:
+    kind: control
+    spec_refs:
+      - {"native": "MQTT-4.6.0-5", "keyword": "MUST", "axis": "arrival_order", "step": 4, "allowed": [[["b", [["o", "m1"], ["o", "m2"], ["o", "m3"], ["o", "m4"], ["o", "m5"]]]]]}
+      - {"native": "MQTT-4.6.0-6", "keyword": "MUST", "axis": "arrival_order", "step": 4, "allowed": [[["b", [["o", "m1"], ["o", "m2"], ["o", "m3"], ["o", "m4"], ["o", "m5"]]]]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}o", "qos": 1}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "burst", "expect_reply": true, "window_ms": 2000, "args": {"packets": [{"op": "publish", "args": {"topic": "{T}o", "payload": "m1", "qos": 1, "packet_id": 1}}, {"op": "publish", "args": {"topic": "{T}o", "payload": "m2", "qos": 1, "packet_id": 2}}, {"op": "publish", "args": {"topic": "{T}o", "payload": "m3", "qos": 1, "packet_id": 3}}, {"op": "publish", "args": {"topic": "{T}o", "payload": "m4", "qos": 1, "packet_id": 4}}, {"op": "publish", "args": {"topic": "{T}o", "payload": "m5", "qos": 1, "packet_id": 5}}]}}
+
+  census_dollar_topics_wildcard:
+    kind: probe
+    tags: ["security:topic-isolation"]
+    spec_refs:
+      - {"native": "MQTT-4.7.2-1", "keyword": "MUST", "axis": "dollar_topics", "step": 1, "allowed": [[]]}
+      - {"native": "MQTT-4.7.2-1", "keyword": "MUST", "axis": "dollar_topics", "step": 2, "allowed": [[]]}
+      - {"native": "MQTT-4.7.2-1", "keyword": "MUST", "axis": "dollar_topics", "step": 3, "allowed": [[]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}, "window_ms": 500}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "#", "retain_handling": 2}]}, "window_ms": 11000}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 2, "filters": [{"topic": "+/#", "retain_handling": 2}]}, "window_ms": 11000}
+
+  census_no_normalisation:
+    kind: control
+    spec_refs:
+      - {"native": "MQTT-4.7.3-4", "keyword": "MUST", "axis": "deliveries", "step": 4, "allowed": [[]]}
+      - {"native": "MQTT-4.7.3-4", "keyword": "MUST", "axis": "deliveries", "step": 5, "allowed": [[["b", [["né", "pre", 0, 0]]]]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}né"}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}né", "payload": "dec", "qos": 0}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}né", "payload": "pre", "qos": 0}}
+
+  census_granted_qos_respected:
+    kind: control
+    spec_refs:
+      - {"native": "MQTT-4.8.2-3", "keyword": "MUST", "axis": "deliveries", "step": 4, "allowed": [[["b", [["g", "g1", 0, 0]]]]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}g", "qos": 0}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}g", "payload": "g1", "qos": 1, "packet_id": 3}}
+
+  census_shared_inflight_reconnect:
+    kind: stateful
+    spec_refs:
+      - {"native": "MQTT-4.8.2-4", "keyword": "MUST", "axis": "own_publishes", "step": 6, "allowed": [[["b", [["sh", "sh1", 1, 0]]]]]}
+      - {"native": "MQTT-4.8.2-5", "keyword": "MUST", "axis": "own_publishes", "step": 6, "allowed": [[["b", [["sh", "sh1", 1, 0]]]]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b", "clean_start": true, "properties": {"session_expiry_interval": 300}}, "auto_ack": false}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "$share/pdg/{T}sh", "qos": 1}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}sh", "payload": "sh1", "qos": 1, "packet_id": 3}}
+      - {"client": "b", "op": "close"}
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b", "clean_start": false, "properties": {"session_expiry_interval": 300}}, "window_ms": 1500}
+

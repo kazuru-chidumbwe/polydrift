@@ -59,7 +59,14 @@ def _sorted_tuple(value: Any) -> Any:
     return None if value is None else tuple(sorted(value))
 
 
+def _publish_meta(value: Any) -> Any:
+    if value is None:
+        return None
+    return tuple(sorted((c, tuple(sorted(tuple(m) for m in v))) for c, v in dict(value).items()))
+
+
 KAPPA: dict[str, Callable[[Any], Any]] = {
+    "publish_meta": _publish_meta,
     "identity": identity, "deliveries": _deliveries, "forwarded_props": _forwarded,
     "connack_props": _connack_props, "sorted_tuple": _sorted_tuple,
 }
@@ -142,6 +149,59 @@ def step_fields(obs: dict[str, Any], spec: CellSpec, prefix: str, version: int) 
                                                    for k in FORWARDED if k in pr))
     values["forwarded_props"] = fwd
     values["peers_closed"] = [n for n, c in obs["clients"].items() if n != actor and c.get("closed_now")]
+    # the acting client's connection is closed at the end of the step window, after any packets it received
+    values["actor_closed"] = obs.get("op") != "close" and not me.get("open", True)
+    # limits the receiving client announced (Maximum Packet Size, Topic Alias Maximum) that a received packet broke
+    values["limit_violations"] = [f"{n}:{kind}" for n, c in obs["clients"].items()
+                                  for kind in ("oversize", "alias_over") if c.get(kind)]
+    # per client, PUBLISH metadata that delivery comparisons leave out: DUP, subscription identifiers, message
+    # expiry interval as received, whether a topic alias was used
+    meta = {}
+    for n, c in obs["clients"].items():
+        for p in c.get("packets") or []:
+            if p.get("type") == "PUBLISH":
+                pr = p.get("properties") or {}
+                sid = pr.get("subscription_identifier")
+                sid = tuple(sorted(sid)) if isinstance(sid, list) else ((sid,) if sid is not None else ())
+                meta.setdefault(n, []).append((_strip(p.get("topic", ""), prefix), p.get("dup", 0), sid,
+                                               pr.get("message_expiry_interval"), "topic_alias" in pr))
+    values["publish_meta"] = meta
+    # CONNACK properties whose presence a clause fixes (3.1.2-28, 3.1.3-7, 4.12.0-5/6); "refused" marks a CONNACK
+    # with a reason code of 0x80 or more, where none of them is expected
+    if ca is not None:
+        pr = ca.get("properties") or {}
+        pres = [k for k in ("assigned_client_identifier", "response_information", "authentication_method") if k in pr]
+        if (ca.get("reason_code") or 0) >= 0x80:
+            pres.append("refused")
+        values["connack_presence"] = pres
+    # packets other than PUBLISH, CONNACK and DISCONNECT that carry a Reason String or User Property (3.1.2-29)
+    values["problem_info"] = [p.get("type") for p in nonpub if p.get("type") not in ("CONNACK", "DISCONNECT")
+                              and {"reason_string", "user_property"} & set(p.get("properties") or {})]
+    # AUTH packets the acting client received, by reason code (4.12)
+    values["auth_packets"] = [p.get("reason_code") for p in pkts if p.get("type") == "AUTH"]
+    if ca is not None:
+        # CONNACK Acknowledge Flags bits 7 to 1 are reserved (3.2.2-1)
+        values["connack_reserved"] = (ca.get("ack_flags") or 0) >> 1
+    # property names in DISCONNECT packets the server sent (3.14.2-2: never Session Expiry Interval)
+    values["disconnect_props"] = sorted({k for p in nonpub if p.get("type") == "DISCONNECT"
+                                         for k in (p.get("properties") or {})})
+    # Packet Identifiers of the acknowledgements the acting client received (4.3.2-4, 4.3.3-8, 4.3.3-11, 3.10.4-5)
+    values["ack_ids"] = [p.get("packet_id") for p in nonpub
+                         if p.get("type") in ("PUBACK", "PUBREC", "PUBCOMP", "SUBACK", "UNSUBACK")]
+    # does each PUBREL the acting client received carry the identifier of the QoS 2 PUBLISH it was delivered (4.3.3-4)
+    last = me.get("last_pid_before")
+    values["pubrel_matches"] = [p.get("packet_id") == last for p in nonpub if p.get("type") == "PUBREL"]
+    # arrival order of application messages per client, not sorted (4.6.0-5)
+    values["arrival_order"] = {n: [(_strip(p.get("topic", ""), prefix), p.get("payload", ""))
+                                   for p in c.get("packets") or [] if p.get("type") == "PUBLISH"]
+                               for n, c in obs["clients"].items()
+                               if any(p.get("type") == "PUBLISH" for p in c.get("packets") or [])}
+    # topics beginning with $ that any client received (4.7.2-1: never through a filter starting with a wildcard)
+    values["dollar_topics"] = sorted({p.get("topic", "") for c in obs["clients"].values()
+                                      for p in c.get("packets") or []
+                                      if p.get("type") == "PUBLISH" and str(p.get("topic", "")).startswith("$")})
+    # a QoS 1 or 2 Packet Identifier reused by the server while the first delivery is unacknowledged (4.3.2-1)
+    values["pid_reuse"] = [n for n, c in obs["clients"].items() if c.get("pid_reuse")]
     return {name: spec.axis(name).field(raw) for name, raw in values.items()}
 
 

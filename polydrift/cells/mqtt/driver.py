@@ -8,10 +8,14 @@ broker's divergence shows in what other clients receive, so every client is obse
 Placeholders in fixture strings: ``{T}`` is a topic prefix and ``{C}`` a client-id prefix unique to the fixture and
 repeat, so fixtures never see each other's retained messages or sessions.
 
-Step keys: ``client``, ``op`` (open, close, sleep, hex, or a builder in codec.BUILDERS), ``args`` (builder
+Step keys: ``client``, ``op`` (open, close, sleep, hex, burst, or a builder in codec.BUILDERS), ``args`` (builder
 arguments), ``hex`` (exact bytes for op ``hex``), ``window_ms`` (listen time, default 1000; a step that requires an answer waits for it, up to 5 s), ``end`` (true: the step
 belongs to the end-state probe, not to the fixture's steps), ``auto_ack`` (client default true: QoS 1 and 2
 deliveries are acknowledged so the broker's flow completes).
+
+``burst`` sends several packets in one write (``args: {packets: [{op, args}, ...]}``), so the broker receives them
+back to back (ordering clauses, 4.6). ``packet_id: last`` in an acknowledgement's args is the Packet Identifier of
+the last QoS 1 or 2 PUBLISH the client received, for clauses on the server's own identifiers (4.3.3).
 """
 
 from __future__ import annotations
@@ -62,6 +66,12 @@ class Client:
     closed: bool = False
     auto_ack: bool = True
     inbox: list[dict[str, Any]] = field(default_factory=list)
+    # limits this client announced in its CONNECT (MQTT 5.0 3.1.2.11): the server must respect them when it sends
+    max_size: int | None = None
+    alias_max: int = 0
+    last_pid: int | None = None
+    unacked: set = field(default_factory=set)
+    reuse: int = 0
 
     def send(self, data: bytes) -> str | None:
         if self.sock is None or self.closed:
@@ -91,6 +101,13 @@ class Client:
         pkts, self.buf = codec.split_stream(self.buf)
         for first, body in pkts:
             p = codec.decode(first, body, self.version)
+            p["size"] = 1 + len(codec.varint(len(body))) + len(body)
+            if p.get("type") == "PUBLISH" and p.get("qos"):
+                self.last_pid = p.get("packet_id")
+                if not self.auto_ack and not p.get("dup"):
+                    if p.get("packet_id") in self.unacked:
+                        self.reuse += 1
+                    self.unacked.add(p.get("packet_id"))
             self.inbox.append(p)
             if self.auto_ack and p.get("type") == "PUBLISH" and p.get("qos") in (1, 2):
                 kind = "puback" if p["qos"] == 1 else "pubrec"
@@ -123,6 +140,9 @@ def run_script(host: str, port: int, steps: list[dict[str, Any]], *, topic_prefi
         if err is None:
             if op == "connect":
                 c.version = int(args.get("version", 5))
+                props = args.get("properties") or {}
+                c.max_size = int(props["maximum_packet_size"]) if "maximum_packet_size" in props else None
+                c.alias_max = int(props.get("topic_alias_maximum", 0))
                 err = c.send(codec.connect(args))
             elif op == "hex":
                 err = c.send(bytes.fromhex(st["hex"].replace(" ", "")))
@@ -135,12 +155,23 @@ def run_script(host: str, port: int, steps: list[dict[str, Any]], *, topic_prefi
                 c.closed = True
             elif op in ("open", "sleep"):
                 pass
+            elif op == "burst":
+                data = b""
+                for sub in args.get("packets") or []:
+                    sa = dict(sub.get("args") or {})
+                    sa.setdefault("version", c.version)
+                    data += codec.BUILDERS[sub["op"]](sa)
+                err = c.send(data)
             elif op in codec.BUILDERS:
                 args.setdefault("version", c.version)
+                if args.get("packet_id") == "last":
+                    args["packet_id"] = c.last_pid if c.last_pid is not None else 0
                 err = c.send(codec.BUILDERS[op](args))
             else:
                 err = f"unknown-op {op}"
         start = {n: len(k.inbox) for n, k in clients.items()}
+        last_before = {n: k.last_pid for n, k in clients.items()}
+        reuse_before = {n: k.reuse for n, k in clients.items()}
         # A step that requires an answer listens until the acting client has one (or is closed), up to REPLY_MAX_MS,
         # then SETTLE_MS more for packets that follow it; other steps listen for their window. Brokers differ in
         # latency (a JVM broker under load answers its first CONNECTs after 600 ms), and a reply that arrives one
@@ -167,8 +198,14 @@ def run_script(host: str, port: int, steps: list[dict[str, Any]], *, topic_prefi
         obs = {"step": i, "actor": name, "op": op, "end": bool(st.get("end")), "error": err,
                "expects_reply": expects_reply(st), "clients": {}}
         for n, k in clients.items():
+            got = k.inbox[start.get(n, 0):]
             obs["clients"][n] = {
-                "packets": k.inbox[start.get(n, 0):],
+                "packets": got,
+                "last_pid_before": last_before.get(n),
+                "oversize": sum(1 for p in got if k.max_size is not None and p.get("size", 0) > k.max_size),
+                "pid_reuse": k.reuse - reuse_before.get(n, 0),
+                "alias_over": sum(1 for p in got if p.get("type") == "PUBLISH"
+                                  and int((p.get("properties") or {}).get("topic_alias", 0)) > k.alias_max),
                 "closed_now": k.closed and not was_closed.get(n, False) and not (n == name and op == "close"),
                 "open": k.sock is not None and not k.closed,
             }

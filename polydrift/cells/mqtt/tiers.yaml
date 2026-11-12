@@ -37,6 +37,58 @@ axes:
     tier: 2
     kappa: sorted_tuple
     clause: "T2: other clients whose connection the step closed (session take-over, will)"
+  actor_closed:
+    tier: 2
+    kappa: identity
+    clause: "T2: the acting client's connection is closed after the step's packets (3.2.2-7, 3.1.4-6): the client must reconnect"
+  limit_violations:
+    tier: 2
+    kappa: sorted_tuple
+    clause: "T2: received packets that break a limit the receiver announced (Maximum Packet Size 3.1.2-24, Topic Alias Maximum 3.1.2-26): a conforming client must treat them as a protocol error"
+  publish_meta:
+    tier: 2
+    kappa: publish_meta
+    clause: "T2: per received PUBLISH, DUP, subscription identifiers, message expiry as received, topic alias used (3.3.1, 3.3.2.3.3, 3.3.4): each drives the receiver's handling"
+  connack_presence:
+    tier: 2
+    kappa: sorted_tuple
+    clause: "T2: CONNACK properties whose presence a clause fixes (assigned client identifier 3.1.3-7, response information 3.1.2-28, authentication method 4.12.0-5/6); 'refused' for reason code >= 0x80"
+  problem_info:
+    tier: 3
+    kappa: sorted_tuple
+    clause: "T3: packet types other than PUBLISH, CONNACK and DISCONNECT that carried a Reason String or User Property (3.1.2-29); diagnostic text only"
+  auth_packets:
+    tier: 2
+    kappa: identity
+    clause: "T2: AUTH packets received, by reason code (4.12): an unexpected AUTH stalls a client without an authentication method"
+  pid_reuse:
+    tier: 2
+    kappa: sorted_tuple
+    clause: "T2: clients that received two unacknowledged QoS > 0 PUBLISH packets with one Packet Identifier (4.3.2-1, 4.3.3-1): the second is lost or mistaken for a duplicate"
+  connack_reserved:
+    tier: 2
+    kappa: identity
+    clause: "T2: CONNACK Acknowledge Flags bits 7-1 (3.2.2-1): a conforming client treats non-zero as malformed"
+  disconnect_props:
+    tier: 3
+    kappa: sorted_tuple
+    clause: "T3: property names in a server DISCONNECT (3.14.2-2)"
+  ack_ids:
+    tier: 2
+    kappa: identity
+    clause: "T2: Packet Identifiers of acknowledgements received (4.3.2-4, 4.3.3-8/11): a wrong identifier leaves the client's flow open"
+  pubrel_matches:
+    tier: 2
+    kappa: identity
+    clause: "T2: each PUBREL received carries the identifier of the delivered QoS 2 PUBLISH (4.3.3-4)"
+  arrival_order:
+    tier: 2
+    kappa: identity
+    clause: "T2: order in which each client receives application messages (4.6 ordered topics)"
+  dollar_topics:
+    tier: 2
+    kappa: sorted_tuple
+    clause: "T2: topics beginning with $ received through wildcard filters (4.7.2-1); security-relevant ($SYS leak)"
   native_codes:
     tier: 3
     kappa: identity

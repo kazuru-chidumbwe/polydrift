@@ -50,11 +50,11 @@ def sh(args: list[str], timeout: int = 300, stdin: str | None = None) -> subproc
     return subprocess.run(args, capture_output=True, text=True, timeout=timeout, input=stdin)
 
 
-def drive(steps: list[dict], unique: str, domain: str) -> list[dict]:
+def drive(steps: list[dict], unique: str, domain: str, creds: dict | None = None) -> list[dict]:
     budget = 30 + sum(st.get("window_ms", 1500) / 1000 + st.get("ms", 0) / 1000 for st in steps)
     r = sh(["docker", "exec", "-i", "psipb-client", "python3", "/lab/driver.py"], timeout=int(budget),
            stdin=json.dumps({"eut": EUT_IP, "eut_port": 5060, "lab": CLIENT_IP, "domain": domain, "unique": unique,
-                             "steps": steps}))
+                             "creds": creds or {}, "steps": steps}))
     if r.returncode != 0:
         raise RuntimeError(f"driver exit {r.returncode}: {r.stderr.strip()[-300:]}")
     return json.loads(r.stdout)
@@ -77,6 +77,8 @@ def lab_up(lab: str, t: dict[str, Any]) -> None:
         args += ["-v", f"{lab}/elements/{t['config']}:{t['config_dst']}:ro"]
     for src, dst in (t.get("mounts") or {}).items():
         args += ["-v", f"{lab}/elements/{src}:{dst}:ro"]
+    for k, v in (t.get("env") or {}).items():
+        args += ["-e", f"{k}={v}"]
     if t.get("entrypoint"):
         args += ["--entrypoint", t["entrypoint"]]
     args += [t["image"], *(t.get("cmd") or [])]
@@ -143,7 +145,7 @@ def main() -> int:
                         continue
                     unique = "pd" + hashlib.sha1(fid.encode()).hexdigest()[:10]
                     try:
-                        obs = drive(fx["steps"], unique, domain) if ok_start else []
+                        obs = drive(fx["steps"], unique, domain, t.get("creds")) if ok_start else []
                     except Exception as e:  # noqa: BLE001
                         obs = [{"step": 1, "op": "?", "error": f"driver: {e!r}"[:300]}]
                     batch.append((fid, obs))

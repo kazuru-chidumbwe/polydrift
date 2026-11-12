@@ -100,3 +100,581 @@ fixtures:
       - op: ack
         from: alice
         window_ms: 500
+
+  # ---------------- census: proxy, registrar, stateless proxy, redirect (12 Nov 2026) ----------------
+  # Generated with the census authoring aid; roles select the targets each fixture runs on.
+  px_forward_invite:
+    kind: control
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-2f6da8c0", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": ["69"]}
+      - {"req_id": "SIP-7f2cd687", "keyword": "MUST", "axis": "x2", "step": 2, "allowed": [2]}
+      - {"req_id": "SIP-424f4832", "keyword": "MUST", "axis": "x3", "step": 2, "allowed": [true]}
+      - {"req_id": "SIP-930631c1", "keyword": "MUST", "axis": "x4", "step": 2, "allowed": [true]}
+      - {"req_id": "SIP-d11032e1", "keyword": "MUST", "axis": "x5", "step": 2, "allowed": [["one", "two"]]}
+      - {"req_id": "SIP-24581a90", "keyword": "MUST", "axis": "x6", "step": 2, "allowed": [true]}
+      - {"req_id": "SIP-c08a29eb", "keyword": "MUST", "axis": "x6", "step": 2, "allowed": [true]}
+      - {"req_id": "SIP-6a127192", "keyword": "MUST", "axis": "x6", "step": 2, "allowed": [true]}
+      - {"req_id": "SIP-1afe2ca9", "keyword": "SHOULD", "axis": "x6", "step": 2, "allowed": [true]}
+      - {"req_id": "SIP-f0b6d412", "keyword": "SHOULD", "axis": "x5", "step": 2, "allowed": [["one", "two"]]}
+      - {"req_id": "SIP-6d1e17af", "keyword": "MUST", "axis": "x7", "step": 2, "allowed": [true]}
+      - {"req_id": "SIP-15fe21df", "keyword": "MUST", "axis": "x7", "step": 2, "allowed": [true]}
+      - {"req_id": "SIP-47597982", "keyword": "MUST", "axis": "x7", "step": 2, "allowed": [true]}
+      - {"req_id": "SIP-f2ce6d6b", "keyword": "MUST", "axis": "x3", "step": 2, "allowed": [true]}
+      - {"req_id": "SIP-b84810b8", "keyword": "MUST", "axis": "x8", "step": 2, "allowed": [[100]]}
+      - {"req_id": "SIP-fbc3f6a5", "keyword": "MUST", "axis": "x8", "step": 2, "allowed": [[100]]}
+      - {"req_id": "SIP-06a434c6", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": ["69"]}
+      - {"req_id": "SIP-e31565d6", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": ["69"]}
+      - {"req_id": "SIP-02316b49", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": ["69"]}
+      - {"req_id": "SIP-f02f30ba", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": ["69"]}
+      - {"req_id": "SIP-c36e6e74", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [1]}
+      - {"req_id": "SIP-f81bbf23", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [1]}
+      - {"req_id": "SIP-15299191", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [1]}
+      - {"req_id": "SIP-6fccd705", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [[180]]}
+      - {"req_id": "SIP-45ede152", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [1]}
+      - {"req_id": "SIP-802c0e07", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [[180]]}
+      - {"req_id": "SIP-ce940006", "keyword": "MUST", "axis": "x2", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-38d38255", "keyword": "MUST", "axis": "x2", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-77dc5178", "keyword": "MUST", "axis": "x1", "step": 4, "allowed": [[200]]}
+      - {"req_id": "SIP-599ffcf5", "keyword": "MUST", "axis": "x2", "step": 4, "allowed": [true]}
+      - {"req_id": "SIP-a29a2aa8", "keyword": "MUST", "axis": "x3", "step": 4, "allowed": [true]}
+      - {"req_id": "SIP-2056d4c7", "keyword": "MUST", "axis": "x4", "step": 4, "allowed": [true]}
+      - {"req_id": "SIP-df8db047", "keyword": "MUST", "axis": "x1", "step": 4, "allowed": [[200]]}
+      - {"req_id": "SIP-4b74d1ec", "keyword": "MUST", "axis": "x1", "step": 4, "allowed": [[200]]}
+      - {"req_id": "SIP-685e55e6", "keyword": "MUST", "axis": "x1", "step": 4, "note": "stateless processing of unmatched responses; comparison only"}
+      - {"req_id": "SIP-215685f3", "keyword": "MAY", "axis": "x4", "step": 4, "note": "comparison only"}
+      - {"req_id": "SIP-6e770ccd", "keyword": "MAY", "axis": "x4", "step": 4, "note": "comparison only"}
+      - {"req_id": "SIP-bdae6657", "keyword": "MAY", "axis": "x6", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-db42badb", "keyword": "MAY", "axis": "x8", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-6404fe03", "keyword": "MAY", "axis": "x8", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-ef39663c", "keyword": "MUST", "axis": "x1", "step": 5, "note": "comparison only"}
+      - {"req_id": "SIP-7cb7a2af", "keyword": "MUST", "axis": "x8", "step": 2, "allowed": [[100]]}
+      - {"req_id": "SIP-d4f59db1", "keyword": "MUST", "axis": "x1", "step": 5, "allowed": [["ACK"]]}
+      - {"req_id": "SIP-1fece042", "keyword": "MUST", "axis": "x8", "step": 2, "note": "timer C (more than 3 minutes) not reached in the lab; comparison only"}
+      - {"req_id": "SIP-e63b8928", "keyword": "MUST", "axis": "x8", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-a716df3f", "keyword": "MUST", "axis": "x3", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-24a10821", "keyword": "MUST", "axis": "x3", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-4e480356", "keyword": "MUST", "axis": "x8", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-8eafe080", "keyword": "MUST", "axis": "x8", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-86bb70e0", "keyword": "MUST", "axis": "x8", "step": 2, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "INVITE sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nX-Pd-Unknown: keep me\nX-Pd-Multi: one\nX-Pd-Multi: two\nSubject: pd census\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "bob/0/hdr/max-forwards/0", "x2": "len:bob/0/hdr/via", "x3": "re:bob/0/hdr/via/0=SIP/2.0/UDP .*;branch=z9hG4bK.*", "x4": "same:bob/0/body,sent/alice/body", "x5": "bob/0/hdr/x-pd-multi", "x6": "has:bob/0/hdr/x-pd-unknown", "x7": "re:bob/0/ruri=sip:bob@{lab}:{port:bob}.*", "x8": "codes:alice"}}
+      - {"op": "reply", "from": "bob", "code": 180, "reason": "Ringing", "window_ms": 600, "extract": {"x1": "len:alice/0/hdr/via", "x2": "re:alice/0/hdr/to/0=.*;tag={tag:bob}.*", "x3": "codes:alice"}}
+      - {"op": "reply", "from": "bob", "code": 200, "reason": "OK", "window_ms": 600, "headers": {"Content-Type": "application/sdp"}, "body": "v=0\no=bob 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "codes:alice", "x2": "re:alice/0/hdr/to/0=.*;tag={tag:bob}.*", "x3": "same:alice/0/body,bob/0/body", "x4": "has:alice/0/hdr/record-route"}}
+      - {"op": "ack", "from": "alice", "window_ms": 600, "extract": {"x1": "methods:bob"}}
+
+  px_record_route:
+    kind: control
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-c3a7deeb", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [true]}
+      - {"req_id": "SIP-37592cbf", "keyword": "MUST", "axis": "x2", "step": 2, "allowed": [true]}
+      - {"req_id": "SIP-158cb01a", "keyword": "MUST", "axis": "x2", "step": 2, "allowed": [true]}
+      - {"req_id": "SIP-d5f7b664", "keyword": "SHOULD", "axis": "x3", "step": 2, "allowed": [true]}
+      - {"req_id": "SIP-76061b24", "keyword": "MAY", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-03a3fa07", "keyword": "MUST", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-f39e124f", "keyword": "MAY", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-3e63b896", "keyword": "MAY", "axis": "x4", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-bd030e81", "keyword": "SHOULD", "axis": "x4", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-165307bb", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-f63b9972", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-6e2c9465", "keyword": "SHOULD", "axis": "x5", "step": 6, "note": "comparison only"}
+      - {"req_id": "SIP-05a41a60", "keyword": "MUST", "axis": "x6", "step": 4, "note": "comparison only"}
+      - {"req_id": "SIP-2ac72546", "keyword": "SHOULD", "axis": "x6", "step": 4, "note": "comparison only"}
+      - {"req_id": "SIP-d4d17b3c", "keyword": "SHOULD", "axis": "x6", "step": 4, "note": "comparison only"}
+      - {"req_id": "SIP-285a933b", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "INVITE sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "has:bob/0/hdr/record-route", "x2": "re:bob/0/hdr/record-route/0=<?sips?:[^>]*;lr[^>]*>?.*", "x3": "nre:bob/0/hdr/record-route/0=.*transport=.*"}}
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "MESSAGE sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 2 MESSAGE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: text/plain\nContent-Length: {clen}\n\n", "extract": {"x4": "has:bob/0/hdr/record-route"}}
+      - {"op": "reply", "from": "bob", "code": 200, "reason": "OK", "window_ms": 600, "extract": {"x6": "alice/0/hdr/record-route"}}
+      - {"op": "reply", "from": "bob", "code": 200, "reason": "OK", "window_ms": 300}
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "INVITE sip:bob@{lab}:{port:bob} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>;tag={tag:bob}\nCall-ID: {callid}\nCSeq: 3 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nRoute: {last:alice:Record-Route}\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x5": "has:bob/0/hdr/record-route"}}
+
+  px_max_forwards_zero:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-ba671dda", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [[]]}
+      - {"req_id": "SIP-9003c7c0", "keyword": "MUST", "axis": "x2", "step": 2, "allowed": [[483]]}
+      - {"req_id": "SIP-ff80bbff", "keyword": "MUST", "axis": "x2", "step": 2, "allowed": [[483]]}
+      - {"req_id": "SIP-66ecf418", "keyword": "MAY", "axis": "x3", "step": 3, "note": "OPTIONS answered by the element; comparison only"}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "INVITE sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 0\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "methods:bob", "x2": "codes:alice"}}
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "OPTIONS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 0\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x3": "codes:alice"}}
+
+  px_proxy_require_unknown:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-4517b915", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [[420]]}
+      - {"req_id": "SIP-43f7679c", "keyword": "MUST", "axis": "x2", "step": 2, "allowed": [true]}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "OPTIONS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nProxy-Require: x-pd-unknown-ext\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice", "x2": "re:alice/0/hdr/unsupported/0=.*x-pd-unknown-ext.*"}}
+
+  px_unknown_scheme:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-0e39454c", "keyword": "SHOULD", "axis": "x1", "step": 1, "allowed": [[416]]}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "OPTIONS xpd:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
+
+  px_unknown_method_forwarded:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-6a127192", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [["PDCENSUS"]]}
+      - {"req_id": "SIP-8ad9a718", "keyword": "MUST", "axis": "x2", "step": 3, "note": "merged request; comparison only"}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "PDCENSUS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 PDCENSUS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "methods:bob"}}
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "PDCENSUS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:other};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 PDCENSUS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x2": "codes:alice"}}
+
+  px_loop_detection:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-dc89587f", "keyword": "MAY", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-6a06fca8", "keyword": "MAY", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-df61eb21", "keyword": "MAY", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-cd3c601c", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-db1a057d", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-36205e5c", "keyword": "MUST", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-b4512dd0", "keyword": "MUST", "axis": "x1", "step": 1, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "OPTIONS sip:loop@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nVia: SIP/2.0/UDP {eut}:5060;branch=z9hG4bKpdloop;rport\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
+
+  px_route_self_removed:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-ec78ab57", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [false]}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "INVITE sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nRoute: <sip:{eut};lr>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "has:bob/0/hdr/route"}}
+
+  px_strict_router_ruri:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-3bb7072b", "keyword": "MUST", "axis": "x1", "step": 4, "allowed": [true]}
+      - {"req_id": "SIP-7b0a6ac9", "keyword": "MUST", "axis": "x1", "step": 4, "allowed": [true]}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "INVITE sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
+      - {"op": "reply", "from": "bob", "code": 200, "reason": "OK", "window_ms": 300}
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "INFO {last:alice:Record-Route} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>;tag={tag:bob}\nCall-ID: {callid}\nCSeq: 2 INFO\nContact: <sip:alice@{lab}:{port:alice}>\nRoute: <sip:bob@{lab}:{port:bob}>\nContent-Length: {clen}\n\n", "extract": {"x1": "methods:bob"}}
+
+  px_maddr:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-3d20b2c2", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-129af27b", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-6e4363ed", "keyword": "MUST", "axis": "x2", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-c618aa50", "keyword": "MUST", "axis": "x3", "step": 3, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "OPTIONS sip:bob@{domain};maddr={eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "methods:bob"}}
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "OPTIONS sip:dave@{domain};maddr={lab} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x2": "codes:alice", "x3": "methods:dave"}}
+
+  px_foreign_domain:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-989d85f7", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [["OPTIONS"]]}
+      - {"req_id": "SIP-0e9f684f", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [["OPTIONS"]]}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "OPTIONS sip:dave@{lab}:{port:dave} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:dave@{lab}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "methods:dave"}}
+
+  px_unknown_user:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-c42e7177", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [[100, 404], [404]]}
+      - {"req_id": "SIP-942301d6", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-fb8ee06e", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-d2ab6a2c", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 1200, "msg": "INVITE sip:nobody-{U}@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "codes:alice"}}
+      - {"op": "ack", "from": "alice", "window_ms": 600}
+
+  px_fork_two_contacts:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-4a67830a", "keyword": "MAY", "axis": "x1", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-421cde13", "keyword": "MUST", "axis": "x2", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-9404bae0", "keyword": "MAY", "axis": "x1", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-d87acbcf", "keyword": "MAY", "axis": "x1", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-d29de2c1", "keyword": "MAY", "axis": "x1", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-6ae773ad", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [false]}
+      - {"req_id": "SIP-0552a135", "keyword": "MUST", "axis": "x1", "step": 3, "note": "each contact once; comparison only"}
+      - {"req_id": "SIP-6ac2f947", "keyword": "MUST", "axis": "x1", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-388554cc", "keyword": "MUST", "axis": "x4", "step": 5, "allowed": [["CANCEL"]]}
+      - {"req_id": "SIP-7e34ef58", "keyword": "MUST", "axis": "x4", "step": 5, "note": "comparison only"}
+      - {"req_id": "SIP-62218bc2", "keyword": "MAY", "axis": "x1", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-b7371279", "keyword": "MAY", "axis": "x1", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-3744c2a4", "keyword": "SHOULD", "axis": "x1", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-ed221651", "keyword": "SHOULD", "axis": "x1", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-42a422ec", "keyword": "MAY", "axis": "x1", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-75e502fa", "keyword": "MUST", "axis": "x1", "step": 3, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "carol", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:carol};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rcarol}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob2-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:carol@{lab}:{port:carol}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 600, "msg": "INVITE sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "methods:carol", "x2": "has:bob/0/hdr/via", "x3": "same:bob/0/hdr/via/0,carol/0/hdr/via/0"}}
+      - {"op": "reply", "from": "carol", "code": 180, "reason": "Ringing", "window_ms": 600}
+      - {"op": "reply", "from": "bob", "code": 200, "reason": "OK", "window_ms": 600, "extract": {"x4": "methods:carol"}}
+      - {"op": "ack", "from": "alice", "window_ms": 600}
+
+  px_canonical_lookup:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-d1bc3e9f", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [["OPTIONS"]]}
+      - {"req_id": "SIP-777d5a8e", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [["OPTIONS"]]}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "OPTIONS sip:%62ob@{domain};user=ip SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "methods:bob"}}
+
+  px_best_response_6xx:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-1a41408e", "keyword": "MUST", "axis": "x1", "step": 5, "allowed": [[603]]}
+      - {"req_id": "SIP-6cad2185", "keyword": "MUST", "axis": "x2", "step": 4, "allowed": [[]]}
+      - {"req_id": "SIP-0ca89195", "keyword": "SHOULD", "axis": "x3", "step": 4, "note": "comparison only"}
+      - {"req_id": "SIP-09538356", "keyword": "MUST", "axis": "x1", "step": 5, "allowed": [[603]]}
+      - {"req_id": "SIP-dd5f10bc", "keyword": "MAY", "axis": "x1", "step": 5, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "carol", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:carol};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rcarol}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob2-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:carol@{lab}:{port:carol}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 600, "msg": "INVITE sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
+      - {"op": "reply", "from": "bob", "code": 603, "reason": "Decline", "window_ms": 600, "extract": {"x2": "codes:alice", "x3": "methods:carol"}}
+      - {"op": "reply", "from": "carol", "code": 486, "reason": "Busy Here", "window_ms": 1200, "extract": {"x1": "codes:alice"}}
+      - {"op": "ack", "from": "alice", "window_ms": 600}
+
+  px_best_response_lowest_class:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-9d03cc77", "keyword": "SHOULD", "axis": "x1", "step": 5, "allowed": [[404], [486]]}
+      - {"req_id": "SIP-4887a384", "keyword": "MUST", "axis": "x2", "step": 4, "allowed": [[]]}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "carol", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:carol};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rcarol}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob2-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:carol@{lab}:{port:carol}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 600, "msg": "INVITE sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
+      - {"op": "reply", "from": "bob", "code": 486, "reason": "Busy Here", "window_ms": 600, "extract": {"x2": "codes:alice"}}
+      - {"op": "reply", "from": "carol", "code": 404, "reason": "Not Found", "window_ms": 1200, "extract": {"x1": "codes:alice"}}
+      - {"op": "ack", "from": "alice", "window_ms": 600}
+
+  px_only_503:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-407b6738", "keyword": "SHOULD", "axis": "x1", "step": 3, "allowed": [[500]]}
+      - {"req_id": "SIP-9d2a22f7", "keyword": "SHOULD", "axis": "x1", "step": 3, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 600, "msg": "INVITE sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
+      - {"op": "reply", "from": "bob", "code": 503, "reason": "Service Unavailable", "window_ms": 1200, "extract": {"x1": "codes:alice"}}
+      - {"op": "ack", "from": "alice", "window_ms": 600}
+
+  px_no_100_forwarded:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-c45c4a96", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [[]]}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 300, "msg": "INVITE sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
+      - {"op": "reply", "from": "bob", "code": 100, "reason": "Trying", "window_ms": 500, "extract": {"x1": "codes:alice"}}
+
+  px_to_tag_kept_on_error:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-273e3b7f", "keyword": "SHOULD", "axis": "x1", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-20e6995f", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [true]}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 300, "msg": "OPTIONS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n"}
+      - {"op": "reply", "from": "bob", "code": 488, "reason": "Not Acceptable Here", "window_ms": 600, "extract": {"x1": "re:alice/0/hdr/to/0=.*;tag={tag:bob}.*"}}
+
+  px_received_param_kept:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-5238aba4", "keyword": "MUST", "axis": "x1", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-10364d5e", "keyword": "MUST", "axis": "x1", "step": 3, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 300, "msg": "OPTIONS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n"}
+      - {"op": "reply", "from": "bob", "code": 200, "reason": "OK", "window_ms": 600, "extract": {"x1": "alice/0/hdr/via"}}
+
+  px_3xx_recursion:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-7bebb592", "keyword": "MUST", "axis": "x1", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-f171c7b5", "keyword": "SHOULD", "axis": "x1", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-de657ee2", "keyword": "SHOULD", "axis": "x1", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-06c61c3b", "keyword": "SHOULD", "axis": "x1", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-9a5d0a3e", "keyword": "SHOULD", "axis": "x1", "step": 3, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 300, "msg": "OPTIONS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n"}
+      - {"op": "reply", "from": "bob", "code": 302, "reason": "Moved", "window_ms": 800, "headers": {"Contact": "<sip:dave@{lab}:{port:dave}>"}, "extract": {"x1": "codes:alice", "x2": "methods:dave"}}
+
+  px_transport_error:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-da656884", "keyword": "MUST", "axis": "x1", "step": 2, "note": "unreachable target (no listener); comparison only"}
+      - {"req_id": "SIP-e0a88222", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@172.31.60.250:5099;transport=tcp>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 6000, "msg": "OPTIONS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
+
+  px_timeout_408:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-d620dd59", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [[408]]}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 34000, "msg": "OPTIONS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
+
+  px_cancel:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-c6bf2b74", "keyword": "MUST", "axis": "x1", "step": 4, "allowed": [true]}
+      - {"req_id": "SIP-33e24f49", "keyword": "MUST", "axis": "x2", "step": 4, "allowed": [true]}
+      - {"req_id": "SIP-1dc6859d", "keyword": "MUST", "axis": "x2", "step": 4, "allowed": [true]}
+      - {"req_id": "SIP-45363663", "keyword": "SHOULD", "axis": "x3", "step": 3, "allowed": [[]]}
+      - {"req_id": "SIP-1d9a9444", "keyword": "MAY", "axis": "x3", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-d0efc6ed", "keyword": "MAY", "axis": "x3", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-4fe899f2", "keyword": "MUST", "axis": "x4", "step": 4, "allowed": [true]}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 300, "msg": "INVITE sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:inv};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
+      - {"op": "reply", "from": "bob", "code": 180, "reason": "Ringing", "window_ms": 600, "extract": {"x3": "methods:bob"}}
+      - {"op": "send", "from": "alice", "window_ms": 800, "msg": "CANCEL sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:inv};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 CANCEL\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "in:alice/0/hdr/cseq/0=CANCEL", "x2": "eq:bob/0/method=CANCEL", "x4": "has:bob/0/hdr/via"}}
+      - {"op": "reply", "from": "bob", "code": 487, "reason": "Request Terminated", "window_ms": 600}
+      - {"op": "ack", "from": "alice", "window_ms": 600}
+
+  px_options_allow:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-169916f0", "keyword": "SHOULD", "axis": "x1", "step": 1, "allowed": [false]}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "OPTIONS sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "has:alice/0/hdr/allow"}}
+
+  px_uri_header_component:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-64f0de31", "keyword": "MUST", "axis": "x1", "step": 2, "note": "lookup of a URI with a header component; comparison only"}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "OPTIONS sip:bob@{domain}?Subject=pd SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
+
+  px_route_preloaded:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-8aaf4660", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-b1899cd2", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-3685d3e0", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-6e56468d", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-5a456858", "keyword": "MUST", "axis": "x2", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-c3c127c6", "keyword": "MUST", "axis": "x2", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-3df137ab", "keyword": "MUST", "axis": "x2", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-759a00a4", "keyword": "MUST", "axis": "x2", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-4c2de81a", "keyword": "MUST", "axis": "x2", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-c2aff711", "keyword": "SHOULD", "axis": "x2", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-fbb94309", "keyword": "MUST", "axis": "x3", "step": 4, "allowed": [true]}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "OPTIONS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nRoute: <sip:{eut};lr>, <sip:dave@{lab}:{port:dave};lr>\nContent-Length: {clen}\n\n", "extract": {"x1": "methods:dave"}}
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "OPTIONS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nRoute: <sip:{eut};lr>, <sip:dave@{lab}:{port:dave}>\nContent-Length: {clen}\n\n", "extract": {"x2": "dave/0/ruri"}}
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "OPTIONS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/TCP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "transport": "tcp", "extract": {"x3": "has:bob/0/hdr/content-length"}}
+
+  px_stateless_forward:
+    kind: probe
+    roles: ["stateless"]
+    spec_refs:
+      - {"req_id": "SIP-57207e2b", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [[]]}
+      - {"req_id": "SIP-aa06cd58", "keyword": "MUST", "axis": "x2", "step": 3, "allowed": [[483]]}
+      - {"req_id": "SIP-b1ffc4df", "keyword": "MUST", "axis": "x3", "step": 2, "allowed": [["INVITE"]]}
+      - {"req_id": "SIP-b2e57f4c", "keyword": "MUST", "axis": "x3", "step": 2, "allowed": [["INVITE"]]}
+      - {"req_id": "SIP-10c4d908", "keyword": "MUST", "axis": "x3", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-f9e7ff85", "keyword": "MUST", "axis": "x4", "step": 2, "allowed": [true]}
+      - {"req_id": "SIP-3612d184", "keyword": "MAY", "axis": "x4", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-33e9f998", "keyword": "SHOULD", "axis": "x4", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-8c98bab7", "keyword": "MUST", "axis": "x4", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-b2d2c2db", "keyword": "MUST", "axis": "x5", "step": 4, "allowed": [1]}
+      - {"req_id": "SIP-3e663106", "keyword": "MUST", "axis": "x5", "step": 4, "allowed": [1]}
+      - {"req_id": "SIP-a56d464e", "keyword": "MUST", "axis": "x6", "step": 4, "allowed": [true]}
+      - {"req_id": "SIP-c11a2cb4", "keyword": "MUST", "axis": "x6", "step": 4, "allowed": [true]}
+      - {"req_id": "SIP-e6330b84", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [[]]}
+      - {"req_id": "SIP-5ee483b8", "keyword": "MAY", "axis": "x3", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-3e029c3b", "keyword": "MAY", "axis": "x3", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-bd54ab63", "keyword": "MUST", "axis": "x3", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-605d1b9b", "keyword": "MAY", "axis": "x3", "step": 2, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 300, "msg": "INVITE sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:inv};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "codes:alice", "x3": "methods:bob", "x4": "re:bob/0/hdr/via/0=SIP/2.0/UDP .*;branch=z9hG4bK.*"}}
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "OPTIONS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 0\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x2": "codes:alice"}}
+      - {"op": "reply", "from": "bob", "code": 200, "reason": "OK", "window_ms": 600, "headers": {"Content-Type": "application/sdp"}, "body": "v=0\no=bob 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x5": "len:alice/0/hdr/via", "x6": "same:alice/0/body,bob/0/body"}}
+
+  px_stateless_retransmission:
+    kind: probe
+    roles: ["stateless"]
+    spec_refs:
+      - {"req_id": "SIP-ebcb8554", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-53f078a7", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-c1422ad2", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-036ea8ab", "keyword": "MUST", "axis": "x2", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-0259fe3b", "keyword": "MUST", "axis": "x2", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-51ac9e80", "keyword": "MUST", "axis": "x3", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-c1639d01", "keyword": "MUST", "axis": "x4", "step": 4, "allowed": [true, "null"]}
+      - {"req_id": "SIP-aa8001ff", "keyword": "MUST", "axis": "x4", "step": 4, "note": "comparison only"}
+      - {"req_id": "SIP-3b211696", "keyword": "MUST", "axis": "x5", "step": 4, "note": "comparison only"}
+      - {"req_id": "SIP-7a8ec869", "keyword": "MUST", "axis": "x5", "step": 4, "note": "comparison only"}
+      - {"req_id": "SIP-6c19abdd", "keyword": "MUST", "axis": "x5", "step": 4, "note": "comparison only"}
+      - {"req_id": "SIP-20164107", "keyword": "MUST", "axis": "x6", "step": 5, "allowed": [[]]}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 300, "msg": "INVITE sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:inv};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
+      - {"op": "send", "from": "alice", "window_ms": 300, "msg": "INVITE sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:inv};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "same:hist/bob/1/hdr/via/0,hist/bob/2/hdr/via/0", "x2": "same:hist/bob/1/hdr/record-route,hist/bob/2/hdr/record-route", "x3": "codes:alice"}}
+      - {"op": "send", "from": "alice", "window_ms": 500, "msg": "CANCEL sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:inv};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 CANCEL\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x4": "has:bob/0", "x5": "codes:alice"}}
+      - {"op": "send", "from": "dave", "window_ms": 500, "msg": "SIP/2.0 200 OK\nVia: SIP/2.0/UDP 192.0.2.77:5060;branch=z9hG4bKpdstray\nFrom: <sip:x@{domain}>;tag=1\nTo: <sip:y@{domain}>;tag=2\nCall-ID: stray-{U}\nCSeq: 1 OPTIONS\nContent-Length: 0\n\n", "extract": {"x6": "codes:alice"}}
+
+  rd_redirect:
+    kind: probe
+    roles: ["redirect"]
+    spec_refs:
+      - {"req_id": "SIP-b3dfac91", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [true]}
+      - {"req_id": "SIP-a54956c7", "keyword": "MAY", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-44ebaf00", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [[302]]}
+      - {"req_id": "SIP-3bd6587d", "keyword": "SHOULD", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-cff27da4", "keyword": "MAY", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-e1ab85c5", "keyword": "SHOULD", "axis": "x4", "step": 2, "allowed": [true]}
+      - {"req_id": "SIP-25cff394", "keyword": "MAY", "axis": "x2", "step": 2, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 600, "msg": "OPTIONS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "nre:alice/0/hdr/contact/0=.*sip:bob@{domain}>?", "x2": "alice/0/hdr/contact", "x4": "has:alice/0/hdr/contact"}}
+      - {"op": "send", "from": "alice", "window_ms": 600, "msg": "OPTIONS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nRequire: x-pd-unknown\nX-Pd-Odd: 1\nContent-Length: {clen}\n\n", "extract": {"x3": "codes:alice"}}
+
+  rg_register_basics:
+    kind: control
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-c39a832d", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-e0771ec3", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-033a556b", "keyword": "SHOULD", "axis": "x3", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-452586ee", "keyword": "MUST", "axis": "x4", "step": 1, "allowed": [false]}
+      - {"req_id": "SIP-dbc5e252", "keyword": "MUST", "axis": "x4", "step": 1, "allowed": [false]}
+      - {"req_id": "SIP-8280874e", "keyword": "MUST", "axis": "x4", "step": 1, "allowed": [false]}
+      - {"req_id": "SIP-a293e04c", "keyword": "MUST", "axis": "x5", "step": 1, "allowed": [[200]]}
+      - {"req_id": "SIP-2de8fc05", "keyword": "MAY", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-dc27ce07", "keyword": "MAY", "axis": "x6", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-3b47b7e2", "keyword": "MUST", "axis": "x7", "step": 2, "allowed": [["OPTIONS"]]}
+      - {"req_id": "SIP-c5be7c2b", "keyword": "MUST", "axis": "x7", "step": 2, "allowed": [["OPTIONS"]]}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nRecord-Route: <sip:pd-rr.example;lr>\nContent-Length: {clen}\n\n", "extract": {"x1": "re:bob/0/hdr/contact/0=.*sip:bob@{lab}:{port:bob}.*", "x2": "re:bob/0/hdr/contact/0=.*;expires=\\d+.*", "x3": "has:bob/0/hdr/date", "x4": "has:bob/0/hdr/record-route", "x5": "codes:bob", "x6": "bob/0/hdr/contact"}}
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "OPTIONS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x7": "methods:bob"}}
+
+  rg_expires_precedence:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-bdb51552", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-6063b8db", "keyword": "MUST", "axis": "x2", "step": 2, "allowed": [true]}
+      - {"req_id": "SIP-9723e393", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-8550a36b", "keyword": "SHOULD", "axis": "x4", "step": 4, "allowed": [true]}
+      - {"req_id": "SIP-fdfa32d9", "keyword": "MAY", "axis": "x5", "step": 5, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>;expires=120\nExpires: 600\nContent-Length: {clen}\n\n", "extract": {"x1": "re:bob/0/hdr/contact/0=.*expires=1[01]\\d.*"}}
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 2 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 240\nContent-Length: {clen}\n\n", "extract": {"x2": "re:bob/0/hdr/contact/0=.*expires=2[23]\\d.*"}}
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 3 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nContent-Length: {clen}\n\n", "extract": {"x3": "re:bob/0/hdr/contact/0=.*expires=\\d+.*"}}
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 4 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: pd-not-a-number\nContent-Length: {clen}\n\n", "extract": {"x4": "re:bob/0/hdr/contact/0=.*expires=3[56]\\d\\d.*"}}
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 5 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 5000000000\nContent-Length: {clen}\n\n", "extract": {"x5": "codes:bob"}}
+
+  rg_min_expires:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-b6b58ea9", "keyword": "MAY", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-8a8b2319", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true, "null"]}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 1\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:bob", "x2": "re:bob/0/hdr/min-expires/0=\\d+"}}
+
+  rg_wildcard_rules:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-1f6b12ad", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [[400]]}
+      - {"req_id": "SIP-1f6b12ad", "keyword": "MUST", "axis": "x2", "step": 3, "allowed": [[400]]}
+      - {"req_id": "SIP-fffd2d29", "keyword": "MUST", "axis": "x3", "step": 4, "allowed": [[200]]}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 2 REGISTER\nContact: *\nExpires: 300\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:bob"}}
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 3 REGISTER\nContact: *, <sip:bob@{lab}:{port:bob}>\nExpires: 0\nContent-Length: {clen}\n\n", "extract": {"x2": "codes:bob"}}
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 4 REGISTER\nContact: *\nExpires: 0\nContent-Length: {clen}\n\n", "extract": {"x3": "codes:bob"}}
+
+  rg_cseq_ordering:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-f435957e", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-b27f8671", "keyword": "MUST", "axis": "x2", "step": 4, "allowed": [true]}
+      - {"req_id": "SIP-a7e15e02", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-6b292a34", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [true]}
+      - {"req_id": "SIP-bc0d1fde", "keyword": "MUST", "axis": "x3", "step": 5, "allowed": [true]}
+      - {"req_id": "SIP-cc4949de", "keyword": "MUST", "axis": "x2", "step": 4, "allowed": [true]}
+      - {"req_id": "SIP-7ff3898a", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [true]}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 10 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 11 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 5 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 0\nContent-Length: {clen}\n\n", "extract": {"x1": "ge:bob/0/code=300"}}
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 12 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n", "extract": {"x2": "re:bob/0/hdr/contact/0=.*sip:bob@{lab}:{port:bob}.*"}}
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-other-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 0\nContent-Length: {clen}\n\n", "extract": {"x3": "nre:bob/0/hdr/contact/0=.*{port:bob}.*"}}
+
+  rg_foreign_aor:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-a1f3155a", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [[404], [403]]}
+      - {"req_id": "SIP-be2bb0be", "keyword": "SHOULD", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-b3cb8dff", "keyword": "MAY", "axis": "x2", "step": 2, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@pd-other.example>;tag={tag:rbob}\nTo: <sip:bob@pd-other.example>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:bob"}}
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:pd-other.example SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@pd-other.example>;tag={tag:rbob}\nTo: <sip:bob@pd-other.example>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 2 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n", "extract": {"x2": "codes:bob"}}
+
+  rg_require_unknown:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-5c2a1012", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [[420]]}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nRequire: x-pd-unknown\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:bob"}}
+
+  px_non_invite_and_max_forwards:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-bf07c60b", "keyword": "SHOULD", "axis": "x1", "step": 2, "allowed": [[]]}
+      - {"req_id": "SIP-fd4d3d3f", "keyword": "MUST", "axis": "x2", "step": 3, "allowed": ["70", "69"], "note": "added, and SHOULD be 70"}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "OPTIONS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "OPTIONS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContent-Length: {clen}\n\n", "extract": {"x2": "bob/0/hdr/max-forwards/0"}}
+

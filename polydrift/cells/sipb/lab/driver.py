@@ -146,6 +146,8 @@ class Lab:
         self.callid = f"{self.unique}-{random.getrandbits(40):x}@{self.host}"
         self.sent: dict[str, dict] = {}
         self.last_invite: dict[str, str] = {}
+        self.last_raw: dict[str, str] = {}
+        self.creds: dict[str, str] = req.get("creds") or {}
 
     # ---------- templates ----------
     def fill(self, text: str, party: str) -> str:
@@ -231,6 +233,7 @@ class Lab:
         text = self.fill(st["msg"], party)
         data = self.finish(text)
         self.sent[party] = parse(data, st.get("transport", "udp"))
+        self.last_raw[party] = data.decode("utf-8", "replace")
         if self.sent[party].get("method") == "INVITE":
             self.last_invite[party] = data.decode("utf-8", "replace")
         dest = None
@@ -252,7 +255,7 @@ class Lab:
                 lines.append(f"Record-Route: {v}")
         lines.append(f"From: {req['hdr'].get('from', [''])[0]}")
         to = req["hdr"].get("to", [""])[0]
-        if ";tag=" not in to and code > 100:
+        if ";tag=" not in to and code > 100 and not st.get("no_to_tag"):
             to += f";tag={self.named.setdefault('tag:' + p.name, f'{random.getrandbits(40):x}')}"
         lines.append(f"To: {to}")
         lines.append(f"Call-ID: {req['hdr'].get('call-id', [''])[0]}")
@@ -320,7 +323,7 @@ def _walk(cur, parts):
     return cur
 
 
-FN = r"^(len|keys|type|has|eq|ne|in|re|allre|allin|sorted|lower|ge|le|hasall|count|codes|methods):"
+FN = r"^(len|keys|type|has|eq|ne|in|re|allre|allin|sorted|lower|ge|le|hasall|count|codes|methods|same|nre):"
 
 
 def _lit(s):
@@ -332,6 +335,11 @@ def _lit(s):
 
 def evaluate(expr: str, ctx: dict):
     fn, _, body = expr.partition(":") if re.match(FN, expr) else ("", "", expr)
+    if fn == "same":
+        # same:p1,p2: the values at two paths are equal (a forwarded body against the sent one)
+        pa, pb = body.split(",", 1)
+        va, vb = _walk(ctx, [x for x in pa.split("/") if x]), _walk(ctx, [x for x in pb.split("/") if x])
+        return va is not _MISSING and va == vb
     path, _, lit = body.partition("=") if fn else (expr, "", "")
     parts = [p for p in path.split("/") if p]
     v = _walk(ctx, parts) if parts else ctx
@@ -359,6 +367,8 @@ def evaluate(expr: str, ctx: dict):
         return isinstance(v, (list, str, dict)) and _lit(lit) in v
     if fn == "re":
         return isinstance(v, str) and re.fullmatch(lit, v, re.S) is not None
+    if fn == "nre":
+        return not (isinstance(v, str) and re.fullmatch(lit, v, re.S) is not None)
     if fn == "allre":
         return isinstance(v, list) and all(isinstance(x, str) and re.fullmatch(lit, x, re.S) for x in v)
     if fn == "allin":
@@ -378,6 +388,59 @@ def evaluate(expr: str, ctx: dict):
     return None
 
 
+def digest_header(challenge: str, method: str, uri: str, user: str, password: str) -> str:
+    """Authorization/Proxy-Authorization value for an MD5 digest challenge (RFC 3261 22.4, RFC 2617)."""
+    import hashlib
+    kv = dict(re.findall(r'(\w+)="?([^",]*)"?', challenge))
+    realm, nonce, qop = kv.get("realm", ""), kv.get("nonce", ""), kv.get("qop", "")
+
+    def h(x: str) -> str:
+        return hashlib.md5(x.encode()).hexdigest()
+
+    ha1, ha2 = h(f"{user}:{realm}:{password}"), h(f"{method}:{uri}")
+    parts = [f'username="{user}"', f'realm="{realm}"', f'nonce="{nonce}"', f'uri="{uri}"', "algorithm=MD5"]
+    if "auth" in qop.split(","):
+        cnonce, nc = f"{random.getrandbits(32):08x}", "00000001"
+        parts += [f'response="{h(f"{ha1}:{nonce}:{nc}:{cnonce}:auth:{ha2}")}"', "qop=auth", f"nc={nc}",
+                  f'cnonce="{cnonce}"']
+    else:
+        parts.append(f'response="{h(f"{ha1}:{nonce}:{ha2}")}"')
+    if kv.get("opaque"):
+        parts.append(f'opaque="{kv["opaque"]}"')
+    return "Digest " + ", ".join(parts)
+
+
+def authenticate(lab: "Lab", st: dict, start: int) -> str | None:
+    """If the actor got 401/407 for the request it just sent, resend it once with credentials (new branch, CSeq+1).
+    Used where the element requires authentication (ejabberd's registrar); the challenge itself stays observed."""
+    party = st.get("from", "alice")
+    p = lab.parties[party]
+    ch = next((m for m in p.inbox[start:] if m.get("kind") == "resp" and m.get("code") in (401, 407)), None)
+    if ch is None:
+        return None
+    hname = "www-authenticate" if ch["code"] == 401 else "proxy-authenticate"
+    challenge = (ch["hdr"].get(hname) or [""])[0]
+    sent = lab.last_raw.get(party, "")
+    head, _sep, body = sent.partition("\r\n\r\n")
+    lines = head.split("\r\n")
+    method, uri = lines[0].split(" ")[0], lines[0].split(" ")[1]
+    out = [lines[0]]
+    for ln in lines[1:]:
+        low = ln.lower()
+        if low.startswith("via:"):
+            ln = re.sub(r"branch=[^;\s]+", f"branch=z9hG4bK{random.getrandbits(48):x}", ln)
+        elif low.startswith("cseq:"):
+            n, m = ln.split(":", 1)[1].split()
+            ln = f"CSeq: {int(n) + 1} {m}"
+        out.append(ln)
+    user, pw = st["auth"]["user"], st["auth"]["password"]
+    out.insert(1, f"{'Authorization' if ch['code'] == 401 else 'Proxy-Authorization'}: "
+                  f"{digest_header(challenge, method, uri, user, pw)}")
+    data = ("\r\n".join(out) + "\r\n\r\n" + body).encode()
+    lab.last_raw[party] = data.decode("utf-8", "replace")
+    return lab.send_bytes(party, data, st.get("transport", "udp"))
+
+
 def run(req: dict) -> list[dict]:
     lab = Lab(req)
     out = []
@@ -393,12 +456,21 @@ def run(req: dict) -> list[dict]:
         except Exception as e:  # noqa: BLE001
             err = f"driver: {e!r}"[:200]
         lab.listen(int(st.get("window_ms", 1500)))
+        party = st.get("from", "alice")
+        if op == "send" and not st.get("auth") and lab.creds.get(party):
+            # the element requires authentication (target credentials): answer its challenge once
+            st = {**st, "auth": {"user": party, "password": lab.creds[party]}}
+        if op == "send" and st.get("auth") and err is None:
+            err = authenticate(lab, st, start[st.get("from", "alice")])
+            lab.listen(int(st.get("window_ms", 1500)))
         got = {n: p.inbox[start[n]:] for n, p in lab.parties.items()}
         obs = {"step": i, "op": op, "actor": st.get("from", "alice" if op != "reply" else "bob"), "error": err,
                "got": got, "ms": int((time.time() - t0) * 1000)}
         if st.get("extract"):
-            ctx = {**got, "sent": lab.sent}
-            obs["extract"] = {k: _unu(evaluate(e, ctx), lab) for k, e in st["extract"].items()}
+            # step messages per party, the last request each party sent, and every message each party received so
+            # far in the fixture ("hist", for clauses that compare a retransmission with the first transmission)
+            ctx = {**got, "sent": lab.sent, "hist": {n: list(p.inbox) for n, p in lab.parties.items()}}
+            obs["extract"] = {k: _unu(evaluate(lab.fill(e, obs["actor"]), ctx), lab) for k, e in st["extract"].items()}
         out.append(obs)
     return out
 

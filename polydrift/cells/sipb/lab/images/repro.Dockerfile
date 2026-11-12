@@ -4,7 +4,7 @@ FROM debian:trixie-slim AS build
 ARG VER
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl build-essential autoconf \
       automake libtool pkg-config libssl-dev libdb++-dev libpopt-dev libc-ares-dev libasio-dev libboost-system-dev \
-      libpcre2-dev libpcre3-dev libcajun-dev python3 \
+      libpcre2-dev python3 \
  && curl -fsSL -o r.tar.gz https://github.com/resiprocate/resiprocate/archive/refs/tags/resiprocate-${VER}.tar.gz \
  && echo "TARBALL-SHA256 $(sha256sum r.tar.gz)" \
  && tar xzf r.tar.gz && cd resiprocate-resiprocate-${VER} \

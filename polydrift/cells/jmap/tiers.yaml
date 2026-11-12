@@ -44,3 +44,39 @@ axes:
     tier: 3
     kappa: identity
     clause: "T3: whether each response carries a state string (values are opaque)"
+  x1:
+    tier: 2
+    kappa: identity
+    clause: "T2: fixture-named observation 1 (the step's extract expression names the response field and the clause; values that are server-chosen ids or states are compared through type, presence or equality functions, never raw)"
+  x2:
+    tier: 2
+    kappa: identity
+    clause: "T2: fixture-named observation 2 (the step's extract expression names the response field and the clause; values that are server-chosen ids or states are compared through type, presence or equality functions, never raw)"
+  x3:
+    tier: 2
+    kappa: identity
+    clause: "T2: fixture-named observation 3 (the step's extract expression names the response field and the clause; values that are server-chosen ids or states are compared through type, presence or equality functions, never raw)"
+  x4:
+    tier: 2
+    kappa: identity
+    clause: "T2: fixture-named observation 4 (the step's extract expression names the response field and the clause; values that are server-chosen ids or states are compared through type, presence or equality functions, never raw)"
+  x5:
+    tier: 2
+    kappa: identity
+    clause: "T2: fixture-named observation 5 (the step's extract expression names the response field and the clause; values that are server-chosen ids or states are compared through type, presence or equality functions, never raw)"
+  x6:
+    tier: 2
+    kappa: identity
+    clause: "T2: fixture-named observation 6 (the step's extract expression names the response field and the clause; values that are server-chosen ids or states are compared through type, presence or equality functions, never raw)"
+  x7:
+    tier: 2
+    kappa: identity
+    clause: "T2: fixture-named observation 7 (the step's extract expression names the response field and the clause; values that are server-chosen ids or states are compared through type, presence or equality functions, never raw)"
+  x8:
+    tier: 2
+    kappa: identity
+    clause: "T2: fixture-named observation 8 (the step's extract expression names the response field and the clause; values that are server-chosen ids or states are compared through type, presence or equality functions, never raw)"
+  event_types:
+    tier: 2
+    kappa: identity
+    clause: "T2: event names received on the EventSource stream, in order (RFC 8620 7.3: state, ping)"

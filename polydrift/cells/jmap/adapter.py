@@ -57,6 +57,18 @@ def _type(t: Any) -> Any:
 
 
 def step_fields(obs: dict[str, Any], spec: CellSpec) -> dict:
+    fields = _step_fields(obs, spec)
+    # fixture-named observations (driver `extract`), on the generic axes x1 to x8
+    for k, val in (obs.get("extract") or {}).items():
+        if k in spec.axes:
+            fields[k] = spec.axis(k).field(val if val is not None else "null")
+    if obs.get("op") == "eventsource":
+        evs = obs.get("events") or []
+        fields["event_types"] = spec.axis("event_types").field([e.get("event") for e in evs])
+    return fields
+
+
+def _step_fields(obs: dict[str, Any], spec: CellSpec) -> dict:
     v: dict[str, Any] = {}
     code = obs.get("http", 0)
     j = obs.get("json") if isinstance(obs.get("json"), dict) else None

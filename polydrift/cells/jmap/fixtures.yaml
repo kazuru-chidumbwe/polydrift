@@ -200,3 +200,642 @@ fixtures:
       - {req_id: JMAP-849289e9, keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
     steps:
       - {op: call, calls: [["Email/query", {accountId: "{acct}", position: -5, calculateTotal: true}, c0]]}
+
+  # ---------------- census (12 Nov 2026): every testable ledger row not named above ----------------
+  # Generated with the census authoring aid. Fixture-specific observations use the generic axes x1..x8
+  # through each step's `extract` expressions (driver.py); new ops upload, download, eventsource.
+  census_session_core_limits:
+    kind: control
+    spec_refs:
+      - {"req_id": "JMAP-7644f7a6", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-fae0bdc2", "keyword": "SHOULD", "axis": "x2", "step": 1, "allowed": [false]}
+      - {"req_id": "JMAP-c8ae89ce", "keyword": "MUST", "axis": "x3", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-10296288", "keyword": "MUST", "axis": "x3", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-433daa12", "keyword": "SHOULD", "axis": "x4", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-5b8c263d", "keyword": "MUST", "axis": "x5", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-24b24c13", "keyword": "MUST", "axis": "x5", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-08a9f4b2", "keyword": "MUST", "axis": "x6", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-b405886e", "keyword": "MUST", "axis": "x6", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-714ab938", "keyword": "MUST", "axis": "x7", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-316df093", "keyword": "MAY", "axis": "x8", "step": 1, "note": "other Session properties; comparison only"}
+      - {"req_id": "JMAP-0d6267e3", "keyword": "MAY", "axis": "x8", "step": 1, "note": "vendor capabilities; comparison only"}
+    steps:
+      - {"op": "session", "extract": {"x1": "hasall:body/capabilities/urn:ietf:params:jmap:core=[\"maxSizeUpload\", \"maxConcurrentUpload\", \"maxSizeRequest\", \"maxConcurrentRequests\", \"maxCallsInRequest\", \"maxObjectsInGet\", \"maxObjectsInSet\", \"collationAlgorithms\"]", "x2": "has:body/accounts/{acct}/accountCapabilities/urn:ietf:params:jmap:core", "x3": "re:body/downloadUrl=(?=.*\\{accountId\\})(?=.*\\{blobId\\})(?=.*\\{type\\})(?=.*\\{name\\}).*", "x4": "re:body/downloadUrl=.*\\?.*type.*", "x5": "re:body/uploadUrl=.*\\{accountId\\}.*", "x6": "re:body/eventSourceUrl=(?=.*\\{types\\})(?=.*\\{closeafter\\})(?=.*\\{ping\\}).*", "x7": "has:body/eventSourceUrl", "x8": "keys:body"}}
+
+  census_session_mail_capability:
+    kind: control
+    spec_refs:
+      - {"req_id": "JMAP-fe8a294a", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-0dbafb6e", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-461ce6f4", "keyword": "MUST", "axis": "x2", "step": 1, "note": "capabilities the user cannot use are absent; comparison only"}
+      - {"req_id": "JMAP-0a908289", "keyword": "MUST", "axis": "x3", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-2457628a", "keyword": "MUST", "axis": "x4", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-5f1d8b46", "keyword": "MUST", "axis": "x5", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-300e892c", "keyword": "MAY", "axis": "x6", "step": 1, "note": "comparison only"}
+      - {"req_id": "JMAP-2a352e96", "keyword": "MAY", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "JMAP-c944e6b4", "keyword": "MUST", "axis": "x7", "step": 1, "allowed": [true, "null"]}
+      - {"req_id": "JMAP-4f8566c6", "keyword": "MAY", "axis": "x8", "step": 1, "note": "comparison only"}
+      - {"req_id": "JMAP-6dc58936", "keyword": "MAY", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "JMAP-5b9d74a9", "keyword": "MUST", "axis": "x2", "step": 1, "note": "all properties of the mail types; comparison only"}
+    steps:
+      - {"op": "session", "extract": {"x1": "has:body/accounts/{acct}/accountCapabilities/urn:ietf:params:jmap:mail", "x2": "keys:body/accounts/{acct}/accountCapabilities", "x3": "hasall:body/accounts/{acct}/accountCapabilities/urn:ietf:params:jmap:mail=[\"maxMailboxesPerEmail\", \"maxMailboxDepth\", \"maxSizeMailboxName\", \"maxSizeAttachmentsPerEmail\", \"emailQuerySortOptions\", \"mayCreateTopLevelMailbox\"]", "x4": "nullorge:body/accounts/{acct}/accountCapabilities/urn:ietf:params:jmap:mail/maxMailboxesPerEmail=1", "x5": "ge:body/accounts/{acct}/accountCapabilities/urn:ietf:params:jmap:mail/maxSizeMailboxName=100", "x6": "body/accounts/{acct}/accountCapabilities/urn:ietf:params:jmap:mail/maxSizeAttachmentsPerEmail", "x7": "hasall:body/accounts/{acct}/accountCapabilities/urn:ietf:params:jmap:submission=[\"maxDelayedSend\", \"submissionExtensions\"]", "x8": "body/accounts/{acct}/accountCapabilities/urn:ietf:params:jmap:submission/submissionExtensions"}}
+
+  census_unauthenticated:
+    kind: probe
+    spec_refs:
+      - {"req_id": "JMAP-0e0895ce", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [401, 403]}
+    steps:
+      - {"op": "unauth", "calls": [["Core/echo", {"a": 1}, "c0"]], "extract": {"x1": "http"}}
+
+  census_response_json:
+    kind: control
+    spec_refs:
+      - {"req_id": "JMAP-a54684f5", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": ["application/json"]}
+      - {"req_id": "JMAP-3883a039", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": ["object"]}
+    steps:
+      - {"op": "call", "calls": [["Core/echo", {"a": 1}, "c0"]], "extract": {"x1": "ctype", "x2": "type:body"}}
+
+  census_opt_in_only:
+    kind: probe
+    spec_refs:
+      - {"req_id": "JMAP-8a368cf0", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/get", {"accountId": "{acct}", "ids": []}, "c0"]], "using": ["urn:ietf:params:jmap:core"], "extract": {"x1": "eq:r0/type=unknownMethod"}}
+
+  census_method_error_sequence:
+    kind: probe
+    spec_refs:
+      - {"req_id": "JMAP-3b95614b", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [["Core/echo", "error", "Core/echo"]]}
+      - {"req_id": "JMAP-81de09b5", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [["Core/echo", "error", "Core/echo"]]}
+      - {"req_id": "JMAP-58c49786", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [200]}
+      - {"req_id": "JMAP-32c876e5", "keyword": "MUST", "axis": "x3", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-d6777436", "keyword": "MAY", "axis": "x4", "step": 1, "note": "comparison only"}
+    steps:
+      - {"op": "call", "calls": [["Core/echo", {"a": 1}, "c0"], ["Pd/noSuchMethod", {}, "c1"], ["Core/echo", {"b": 2}, "c2"]], "extract": {"x1": "m0", "x2": "http", "x3": "has:r1/type", "x4": "has:r1/description"}}
+
+  census_method_error_no_change:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-6e6f0c1f", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [true]}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/get", {"accountId": "{acct}", "ids": []}, "c0"]], "key": "s1"}
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"k": {"name": "pd{U}x"}}, "ifInState": "pd-not-a-state"}, "c0"]]}
+      - {"op": "call", "calls": [["Mailbox/get", {"accountId": "{acct}", "ids": []}, "c0"]], "extract": {"x1": "eq:r0/state={state:s1}"}}
+
+  census_result_reference:
+    kind: control
+    spec_refs:
+      - {"req_id": "JMAP-57318545", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": ["Mailbox/get"]}
+      - {"req_id": "JMAP-57318545", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [false]}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/query", {"accountId": "{acct}"}, "q"], ["Mailbox/get", {"accountId": "{acct}", "#ids": {"resultOf": "q", "name": "Mailbox/query", "path": "/ids"}, "properties": ["name"]}, "g"]], "extract": {"x1": "m1", "x2": "eq:m1=error"}}
+
+  census_created_ids:
+    kind: probe
+    spec_refs:
+      - {"req_id": "JMAP-7724a394", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true, "null"]}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"ci": {"name": "pd{U}ci"}}}, "mc"]], "createdIds": {"pdprior": "pd-prior-id"}, "extract": {"x1": "hasall:body/createdIds=[\"pdprior\", \"ci\"]"}}
+
+  census_default_arguments:
+    kind: control
+    spec_refs:
+      - {"req_id": "JMAP-d85d18da", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-7e40c109", "keyword": "MAY", "axis": "x2", "step": 1, "note": "comparison only"}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/get", {"accountId": "{acct}"}, "c0"]], "extract": {"x1": "has:r0/list/0/name", "x2": "keys:r0"}}
+
+  census_problem_details:
+    kind: probe
+    spec_refs:
+      - {"req_id": "JMAP-c3627067", "keyword": "SHOULD", "axis": "x1", "step": 1, "allowed": ["application/problem+json"]}
+    steps:
+      - {"op": "raw", "body": "{not json", "extract": {"x1": "ctype"}}
+
+  census_limit_problem:
+    kind: probe
+    spec_refs:
+      - {"req_id": "JMAP-12c13f8c", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-12c13f8c", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
+    steps:
+      - {"op": "call", "calls": [["Core/echo", {"n": 0}, "c0"], ["Core/echo", {"n": 1}, "c1"], ["Core/echo", {"n": 2}, "c2"], ["Core/echo", {"n": 3}, "c3"], ["Core/echo", {"n": 4}, "c4"], ["Core/echo", {"n": 5}, "c5"], ["Core/echo", {"n": 6}, "c6"], ["Core/echo", {"n": 7}, "c7"], ["Core/echo", {"n": 8}, "c8"], ["Core/echo", {"n": 9}, "c9"], ["Core/echo", {"n": 10}, "c10"], ["Core/echo", {"n": 11}, "c11"], ["Core/echo", {"n": 12}, "c12"], ["Core/echo", {"n": 13}, "c13"], ["Core/echo", {"n": 14}, "c14"], ["Core/echo", {"n": 15}, "c15"], ["Core/echo", {"n": 16}, "c16"], ["Core/echo", {"n": 17}, "c17"], ["Core/echo", {"n": 18}, "c18"], ["Core/echo", {"n": 19}, "c19"], ["Core/echo", {"n": 20}, "c20"], ["Core/echo", {"n": 21}, "c21"], ["Core/echo", {"n": 22}, "c22"], ["Core/echo", {"n": 23}, "c23"], ["Core/echo", {"n": 24}, "c24"], ["Core/echo", {"n": 25}, "c25"], ["Core/echo", {"n": 26}, "c26"], ["Core/echo", {"n": 27}, "c27"], ["Core/echo", {"n": 28}, "c28"], ["Core/echo", {"n": 29}, "c29"], ["Core/echo", {"n": 30}, "c30"], ["Core/echo", {"n": 31}, "c31"], ["Core/echo", {"n": 32}, "c32"], ["Core/echo", {"n": 33}, "c33"], ["Core/echo", {"n": 34}, "c34"], ["Core/echo", {"n": 35}, "c35"], ["Core/echo", {"n": 36}, "c36"], ["Core/echo", {"n": 37}, "c37"], ["Core/echo", {"n": 38}, "c38"], ["Core/echo", {"n": 39}, "c39"], ["Core/echo", {"n": 40}, "c40"], ["Core/echo", {"n": 41}, "c41"], ["Core/echo", {"n": 42}, "c42"], ["Core/echo", {"n": 43}, "c43"], ["Core/echo", {"n": 44}, "c44"], ["Core/echo", {"n": 45}, "c45"], ["Core/echo", {"n": 46}, "c46"], ["Core/echo", {"n": 47}, "c47"], ["Core/echo", {"n": 48}, "c48"], ["Core/echo", {"n": 49}, "c49"], ["Core/echo", {"n": 50}, "c50"], ["Core/echo", {"n": 51}, "c51"], ["Core/echo", {"n": 52}, "c52"], ["Core/echo", {"n": 53}, "c53"], ["Core/echo", {"n": 54}, "c54"], ["Core/echo", {"n": 55}, "c55"], ["Core/echo", {"n": 56}, "c56"], ["Core/echo", {"n": 57}, "c57"], ["Core/echo", {"n": 58}, "c58"], ["Core/echo", {"n": 59}, "c59"], ["Core/echo", {"n": 60}, "c60"], ["Core/echo", {"n": 61}, "c61"], ["Core/echo", {"n": 62}, "c62"], ["Core/echo", {"n": 63}, "c63"], ["Core/echo", {"n": 64}, "c64"], ["Core/echo", {"n": 65}, "c65"], ["Core/echo", {"n": 66}, "c66"], ["Core/echo", {"n": 67}, "c67"], ["Core/echo", {"n": 68}, "c68"], ["Core/echo", {"n": 69}, "c69"], ["Core/echo", {"n": 70}, "c70"], ["Core/echo", {"n": 71}, "c71"], ["Core/echo", {"n": 72}, "c72"], ["Core/echo", {"n": 73}, "c73"], ["Core/echo", {"n": 74}, "c74"], ["Core/echo", {"n": 75}, "c75"], ["Core/echo", {"n": 76}, "c76"], ["Core/echo", {"n": 77}, "c77"], ["Core/echo", {"n": 78}, "c78"], ["Core/echo", {"n": 79}, "c79"], ["Core/echo", {"n": 80}, "c80"], ["Core/echo", {"n": 81}, "c81"], ["Core/echo", {"n": 82}, "c82"], ["Core/echo", {"n": 83}, "c83"], ["Core/echo", {"n": 84}, "c84"], ["Core/echo", {"n": 85}, "c85"], ["Core/echo", {"n": 86}, "c86"], ["Core/echo", {"n": 87}, "c87"], ["Core/echo", {"n": 88}, "c88"], ["Core/echo", {"n": 89}, "c89"], ["Core/echo", {"n": 90}, "c90"], ["Core/echo", {"n": 91}, "c91"], ["Core/echo", {"n": 92}, "c92"], ["Core/echo", {"n": 93}, "c93"], ["Core/echo", {"n": 94}, "c94"], ["Core/echo", {"n": 95}, "c95"], ["Core/echo", {"n": 96}, "c96"], ["Core/echo", {"n": 97}, "c97"], ["Core/echo", {"n": 98}, "c98"], ["Core/echo", {"n": 99}, "c99"], ["Core/echo", {"n": 100}, "c100"], ["Core/echo", {"n": 101}, "c101"], ["Core/echo", {"n": 102}, "c102"], ["Core/echo", {"n": 103}, "c103"], ["Core/echo", {"n": 104}, "c104"], ["Core/echo", {"n": 105}, "c105"], ["Core/echo", {"n": 106}, "c106"], ["Core/echo", {"n": 107}, "c107"], ["Core/echo", {"n": 108}, "c108"], ["Core/echo", {"n": 109}, "c109"], ["Core/echo", {"n": 110}, "c110"], ["Core/echo", {"n": 111}, "c111"], ["Core/echo", {"n": 112}, "c112"], ["Core/echo", {"n": 113}, "c113"], ["Core/echo", {"n": 114}, "c114"], ["Core/echo", {"n": 115}, "c115"], ["Core/echo", {"n": 116}, "c116"], ["Core/echo", {"n": 117}, "c117"], ["Core/echo", {"n": 118}, "c118"], ["Core/echo", {"n": 119}, "c119"], ["Core/echo", {"n": 120}, "c120"], ["Core/echo", {"n": 121}, "c121"], ["Core/echo", {"n": 122}, "c122"], ["Core/echo", {"n": 123}, "c123"], ["Core/echo", {"n": 124}, "c124"], ["Core/echo", {"n": 125}, "c125"], ["Core/echo", {"n": 126}, "c126"], ["Core/echo", {"n": 127}, "c127"], ["Core/echo", {"n": 128}, "c128"], ["Core/echo", {"n": 129}, "c129"], ["Core/echo", {"n": 130}, "c130"], ["Core/echo", {"n": 131}, "c131"], ["Core/echo", {"n": 132}, "c132"], ["Core/echo", {"n": 133}, "c133"], ["Core/echo", {"n": 134}, "c134"], ["Core/echo", {"n": 135}, "c135"], ["Core/echo", {"n": 136}, "c136"], ["Core/echo", {"n": 137}, "c137"], ["Core/echo", {"n": 138}, "c138"], ["Core/echo", {"n": 139}, "c139"], ["Core/echo", {"n": 140}, "c140"], ["Core/echo", {"n": 141}, "c141"], ["Core/echo", {"n": 142}, "c142"], ["Core/echo", {"n": 143}, "c143"], ["Core/echo", {"n": 144}, "c144"], ["Core/echo", {"n": 145}, "c145"], ["Core/echo", {"n": 146}, "c146"], ["Core/echo", {"n": 147}, "c147"], ["Core/echo", {"n": 148}, "c148"], ["Core/echo", {"n": 149}, "c149"], ["Core/echo", {"n": 150}, "c150"], ["Core/echo", {"n": 151}, "c151"], ["Core/echo", {"n": 152}, "c152"], ["Core/echo", {"n": 153}, "c153"], ["Core/echo", {"n": 154}, "c154"], ["Core/echo", {"n": 155}, "c155"], ["Core/echo", {"n": 156}, "c156"], ["Core/echo", {"n": 157}, "c157"], ["Core/echo", {"n": 158}, "c158"], ["Core/echo", {"n": 159}, "c159"], ["Core/echo", {"n": 160}, "c160"], ["Core/echo", {"n": 161}, "c161"], ["Core/echo", {"n": 162}, "c162"], ["Core/echo", {"n": 163}, "c163"], ["Core/echo", {"n": 164}, "c164"], ["Core/echo", {"n": 165}, "c165"], ["Core/echo", {"n": 166}, "c166"], ["Core/echo", {"n": 167}, "c167"], ["Core/echo", {"n": 168}, "c168"], ["Core/echo", {"n": 169}, "c169"], ["Core/echo", {"n": 170}, "c170"], ["Core/echo", {"n": 171}, "c171"], ["Core/echo", {"n": 172}, "c172"], ["Core/echo", {"n": 173}, "c173"], ["Core/echo", {"n": 174}, "c174"], ["Core/echo", {"n": 175}, "c175"], ["Core/echo", {"n": 176}, "c176"], ["Core/echo", {"n": 177}, "c177"], ["Core/echo", {"n": 178}, "c178"], ["Core/echo", {"n": 179}, "c179"], ["Core/echo", {"n": 180}, "c180"], ["Core/echo", {"n": 181}, "c181"], ["Core/echo", {"n": 182}, "c182"], ["Core/echo", {"n": 183}, "c183"], ["Core/echo", {"n": 184}, "c184"], ["Core/echo", {"n": 185}, "c185"], ["Core/echo", {"n": 186}, "c186"], ["Core/echo", {"n": 187}, "c187"], ["Core/echo", {"n": 188}, "c188"], ["Core/echo", {"n": 189}, "c189"], ["Core/echo", {"n": 190}, "c190"], ["Core/echo", {"n": 191}, "c191"], ["Core/echo", {"n": 192}, "c192"], ["Core/echo", {"n": 193}, "c193"], ["Core/echo", {"n": 194}, "c194"], ["Core/echo", {"n": 195}, "c195"], ["Core/echo", {"n": 196}, "c196"], ["Core/echo", {"n": 197}, "c197"], ["Core/echo", {"n": 198}, "c198"], ["Core/echo", {"n": 199}, "c199"], ["Core/echo", {"n": 200}, "c200"], ["Core/echo", {"n": 201}, "c201"], ["Core/echo", {"n": 202}, "c202"], ["Core/echo", {"n": 203}, "c203"], ["Core/echo", {"n": 204}, "c204"], ["Core/echo", {"n": 205}, "c205"], ["Core/echo", {"n": 206}, "c206"], ["Core/echo", {"n": 207}, "c207"], ["Core/echo", {"n": 208}, "c208"], ["Core/echo", {"n": 209}, "c209"], ["Core/echo", {"n": 210}, "c210"], ["Core/echo", {"n": 211}, "c211"], ["Core/echo", {"n": 212}, "c212"], ["Core/echo", {"n": 213}, "c213"], ["Core/echo", {"n": 214}, "c214"], ["Core/echo", {"n": 215}, "c215"], ["Core/echo", {"n": 216}, "c216"], ["Core/echo", {"n": 217}, "c217"], ["Core/echo", {"n": 218}, "c218"], ["Core/echo", {"n": 219}, "c219"], ["Core/echo", {"n": 220}, "c220"], ["Core/echo", {"n": 221}, "c221"], ["Core/echo", {"n": 222}, "c222"], ["Core/echo", {"n": 223}, "c223"], ["Core/echo", {"n": 224}, "c224"], ["Core/echo", {"n": 225}, "c225"], ["Core/echo", {"n": 226}, "c226"], ["Core/echo", {"n": 227}, "c227"], ["Core/echo", {"n": 228}, "c228"], ["Core/echo", {"n": 229}, "c229"], ["Core/echo", {"n": 230}, "c230"], ["Core/echo", {"n": 231}, "c231"], ["Core/echo", {"n": 232}, "c232"], ["Core/echo", {"n": 233}, "c233"], ["Core/echo", {"n": 234}, "c234"], ["Core/echo", {"n": 235}, "c235"], ["Core/echo", {"n": 236}, "c236"], ["Core/echo", {"n": 237}, "c237"], ["Core/echo", {"n": 238}, "c238"], ["Core/echo", {"n": 239}, "c239"], ["Core/echo", {"n": 240}, "c240"], ["Core/echo", {"n": 241}, "c241"], ["Core/echo", {"n": 242}, "c242"], ["Core/echo", {"n": 243}, "c243"], ["Core/echo", {"n": 244}, "c244"], ["Core/echo", {"n": 245}, "c245"], ["Core/echo", {"n": 246}, "c246"], ["Core/echo", {"n": 247}, "c247"], ["Core/echo", {"n": 248}, "c248"], ["Core/echo", {"n": 249}, "c249"], ["Core/echo", {"n": 250}, "c250"], ["Core/echo", {"n": 251}, "c251"], ["Core/echo", {"n": 252}, "c252"], ["Core/echo", {"n": 253}, "c253"], ["Core/echo", {"n": 254}, "c254"], ["Core/echo", {"n": 255}, "c255"], ["Core/echo", {"n": 256}, "c256"], ["Core/echo", {"n": 257}, "c257"], ["Core/echo", {"n": 258}, "c258"], ["Core/echo", {"n": 259}, "c259"], ["Core/echo", {"n": 260}, "c260"], ["Core/echo", {"n": 261}, "c261"], ["Core/echo", {"n": 262}, "c262"], ["Core/echo", {"n": 263}, "c263"], ["Core/echo", {"n": 264}, "c264"], ["Core/echo", {"n": 265}, "c265"], ["Core/echo", {"n": 266}, "c266"], ["Core/echo", {"n": 267}, "c267"], ["Core/echo", {"n": 268}, "c268"], ["Core/echo", {"n": 269}, "c269"], ["Core/echo", {"n": 270}, "c270"], ["Core/echo", {"n": 271}, "c271"], ["Core/echo", {"n": 272}, "c272"], ["Core/echo", {"n": 273}, "c273"], ["Core/echo", {"n": 274}, "c274"], ["Core/echo", {"n": 275}, "c275"], ["Core/echo", {"n": 276}, "c276"], ["Core/echo", {"n": 277}, "c277"], ["Core/echo", {"n": 278}, "c278"], ["Core/echo", {"n": 279}, "c279"], ["Core/echo", {"n": 280}, "c280"], ["Core/echo", {"n": 281}, "c281"], ["Core/echo", {"n": 282}, "c282"], ["Core/echo", {"n": 283}, "c283"], ["Core/echo", {"n": 284}, "c284"], ["Core/echo", {"n": 285}, "c285"], ["Core/echo", {"n": 286}, "c286"], ["Core/echo", {"n": 287}, "c287"], ["Core/echo", {"n": 288}, "c288"], ["Core/echo", {"n": 289}, "c289"], ["Core/echo", {"n": 290}, "c290"], ["Core/echo", {"n": 291}, "c291"], ["Core/echo", {"n": 292}, "c292"], ["Core/echo", {"n": 293}, "c293"], ["Core/echo", {"n": 294}, "c294"], ["Core/echo", {"n": 295}, "c295"], ["Core/echo", {"n": 296}, "c296"], ["Core/echo", {"n": 297}, "c297"], ["Core/echo", {"n": 298}, "c298"], ["Core/echo", {"n": 299}, "c299"]], "extract": {"x1": "eq:body/type=urn:ietf:params:jmap:error:limit", "x2": "has:body/limit"}}
+
+  census_language_headers:
+    kind: probe
+    spec_refs:
+      - {"req_id": "JMAP-4b9f6ecf", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "JMAP-3b1ea762", "keyword": "SHOULD", "axis": "x2", "step": 1, "note": "comparison only"}
+    steps:
+      - {"op": "call", "calls": [["Pd/noSuchMethod", {}, "c0"]], "headers": {"Accept-Language": "de"}, "extract": {"x1": "r0/description", "x2": "has:hdr/content-language"}}
+
+  census_id_and_number_types:
+    kind: control
+    spec_refs:
+      - {"req_id": "JMAP-8701b05e", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-707424d4", "keyword": "MUST", "axis": "x2", "step": 2, "allowed": [true]}
+      - {"req_id": "JMAP-56ed29b0", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [2]}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/query", {"accountId": "{acct}"}, "c0"]], "extract": {"x1": "allre:r0/ids=[A-Za-z0-9_-]{1,255}"}}
+      - {"op": "call", "calls": [["Mailbox/get", {"accountId": "{acct}", "properties": ["totalEmails"]}, "c0"]], "extract": {"x2": "ge:r0/list/0/totalEmails=0"}}
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"u1": {"name": "pd{U}u1"}, "u2": {"name": "pd{U}u2"}}}, "mc"], ["Mailbox/get", {"accountId": "{acct}", "#ids": {"resultOf": "mc", "name": "Mailbox/set", "path": "/created/*/id"}}, "g"]], "extract": {"x3": "len:r1/list"}}
+
+  census_state_changes:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-4ce4b891", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [true]}
+      - {"req_id": "JMAP-9424d71b", "keyword": "MAY", "axis": "x2", "step": 3, "note": "comparison only"}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/get", {"accountId": "{acct}", "ids": []}, "c0"]], "key": "s1"}
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"sc": {"name": "pd{U}sc"}}}, "mc"]]}
+      - {"op": "call", "calls": [["Mailbox/get", {"accountId": "{acct}", "ids": ["{id:sc}"]}, "c0"]], "extract": {"x1": "ne:r0/state={state:s1}", "x2": "len:r0/list"}}
+
+  census_immutable_property:
+    kind: probe
+    spec_refs:
+      - {"req_id": "JMAP-47ee02bd", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [true]}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"im": {"name": "pd{U}im"}}}, "mc"]]}
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "update": {"{id:im}": {"id": "pd-other-id"}}}, "c0"]], "extract": {"x1": "has:r0/notUpdated/{id:im}"}}
+
+  census_changes_created_then_updated:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-d4e1cd65", "keyword": "SHOULD", "axis": "x1", "step": 4, "allowed": [true]}
+      - {"req_id": "JMAP-d4e1cd65", "keyword": "SHOULD", "axis": "x2", "step": 4, "allowed": [false]}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/get", {"accountId": "{acct}", "ids": []}, "c0"]], "key": "s1"}
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"cu": {"name": "pd{U}cu"}}}, "mc"]]}
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "update": {"{id:cu}": {"sortOrder": 7}}}, "c0"]]}
+      - {"op": "call", "calls": [["Mailbox/changes", {"accountId": "{acct}", "sinceState": "{state:s1}"}, "c0"]], "extract": {"x1": "in:r0/created={id:cu}", "x2": "in:r0/updated={id:cu}"}}
+
+  census_changes_updated_then_destroyed:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-b4f5c9ef", "keyword": "SHOULD", "axis": "x1", "step": 5, "allowed": [true]}
+      - {"req_id": "JMAP-b4f5c9ef", "keyword": "SHOULD", "axis": "x2", "step": 5, "allowed": [false]}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"ud": {"name": "pd{U}ud"}}}, "mc"]]}
+      - {"op": "call", "calls": [["Mailbox/get", {"accountId": "{acct}", "ids": []}, "c0"]], "key": "s1"}
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "update": {"{id:ud}": {"sortOrder": 9}}}, "c0"]]}
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "destroy": ["{id:ud}"]}, "c0"]]}
+      - {"op": "call", "calls": [["Mailbox/changes", {"accountId": "{acct}", "sinceState": "{state:s1}"}, "c0"]], "extract": {"x1": "in:r0/destroyed={id:ud}", "x2": "in:r0/updated={id:ud}"}}
+
+  census_changes_created_then_destroyed:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-89bbba62", "keyword": "SHOULD", "axis": "x1", "step": 4, "allowed": [false]}
+      - {"req_id": "JMAP-5da2a432", "keyword": "MAY", "axis": "x2", "step": 4, "allowed": [true, false]}
+      - {"req_id": "JMAP-79d95d9d", "keyword": "MUST", "axis": "x3", "step": 4, "note": "comparison only"}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/get", {"accountId": "{acct}", "ids": []}, "c0"]], "key": "s1"}
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"cd": {"name": "pd{U}cd"}}}, "mc"]]}
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "destroy": ["{id:cd}"]}, "c0"]]}
+      - {"op": "call", "calls": [["Mailbox/changes", {"accountId": "{acct}", "sinceState": "{state:s1}"}, "c0"]], "extract": {"x1": "in:r0/created={id:cd}", "x2": "in:r0/destroyed={id:cd}", "x3": "keys:r0"}}
+
+  census_changes_max:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-c87443f9", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [0, 1]}
+      - {"req_id": "JMAP-ad9daa2b", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [0, 1]}
+      - {"req_id": "JMAP-9406f120", "keyword": "SHOULD", "axis": "x2", "step": 3, "allowed": [true]}
+      - {"req_id": "JMAP-e897fd8a", "keyword": "SHOULD", "axis": "x3", "step": 3, "note": "comparison only"}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/get", {"accountId": "{acct}", "ids": []}, "c0"]], "key": "s1"}
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"m1": {"name": "pd{U}m1"}, "m2": {"name": "pd{U}m2"}, "m3": {"name": "pd{U}m3"}}}, "mc"]]}
+      - {"op": "call", "calls": [["Mailbox/changes", {"accountId": "{acct}", "sinceState": "{state:s1}", "maxChanges": 1}, "c0"]], "extract": {"x1": "lensum:r0/created,r0/updated,r0/destroyed", "x2": "eq:r0/hasMoreChanges=true", "x3": "m0"}}
+
+  census_set_patch_rules:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-be1162a8", "keyword": "MUST", "axis": "x1", "step": 4, "allowed": [true]}
+      - {"req_id": "JMAP-d0df5331", "keyword": "MUST", "axis": "x1", "step": 4, "allowed": [true]}
+      - {"req_id": "JMAP-1aacfc36", "keyword": "MUST", "axis": "x2", "step": 5, "allowed": [true]}
+      - {"req_id": "JMAP-57725553", "keyword": "MUST", "axis": "x3", "step": 6, "allowed": [true, "null"]}
+      - {"req_id": "JMAP-f8dc2370", "keyword": "MUST", "axis": "x4", "step": 7, "allowed": [true]}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"box": {"name": "pd{U}box"}}}, "mc"]]}
+      - {"op": "upload", "key": "m", "data": "From: Alice <alice@example.invalid>\r\nTo: user@lab.test\r\nSubject: pd census\r\nDate: Thu, 12 Nov 2026 10:00:00 +0000\r\nMessage-ID: <pd-{U}@example.invalid>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nhello census\r\n", "content_type": "message/rfc822"}
+      - {"op": "call", "calls": [["Email/import", {"accountId": "{acct}", "emails": {"e": {"blobId": "{blob:m}", "mailboxIds": {"{id:box}": true}}}}, "ei"]]}
+      - {"op": "call", "calls": [["Email/set", {"accountId": "{acct}", "update": {"{id:e}": {"keywords/$seen/deeper": true}}}, "c1"]], "extract": {"x1": "eq:r0/notUpdated/{id:e}/type=\"invalidPatch\""}}
+      - {"op": "call", "calls": [["Email/set", {"accountId": "{acct}", "update": {"{id:e}": {"keywords": {"$seen": true}, "keywords/$flagged": true}}}, "c0"]], "extract": {"x2": "has:r0/notUpdated/{id:e}"}}
+      - {"op": "call", "calls": [["Email/set", {"accountId": "{acct}", "update": {"{id:e}": {"mailboxIds/0": true}}}, "c0"]], "extract": {"x3": "has:r0/notUpdated/{id:e}"}}
+      - {"op": "call", "calls": [["Email/set", {"accountId": "{acct}", "update": {"{id:e}": {"keywords/$flagged": true, "size": 1}}}, "c0"], ["Email/get", {"accountId": "{acct}", "ids": ["{id:e}"], "properties": ["keywords"]}, "g"]], "extract": {"x4": "eq:r1/list/0/keywords/$flagged=null"}}
+
+  census_set_server_set_property:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-71efd8f8", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [true]}
+      - {"req_id": "JMAP-f82fd013", "keyword": "MAY", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "JMAP-e68b1b4c", "keyword": "SHOULD", "axis": "x3", "step": 2, "allowed": [true]}
+      - {"req_id": "JMAP-e3a528eb", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [true]}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"ss": {"name": "pd{U}ss"}}}, "mc"]]}
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "update": {"{id:ss}": {"totalEmails": 42}}}, "c0"]], "extract": {"x1": "eq:r0/notUpdated/{id:ss}/type=\"invalidProperties\"", "x2": "keys:r0", "x3": "has:r0/notUpdated/{id:ss}/properties"}}
+
+  census_set_final_state_valid:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-e51c4778", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-96c560d6", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-3662b88e", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"child": {"name": "pd{U}child", "parentId": "#parent"}, "parent": {"name": "pd{U}parent"}}}, "c0"]], "extract": {"x1": "has:r0/created/child", "x2": "has:r0/created/parent"}}
+
+  census_set_creation_id_reuse:
+    kind: probe
+    spec_refs:
+      - {"req_id": "JMAP-83c786ce", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"k": {"name": "pd{U}first"}}}, "a"], ["Mailbox/set", {"accountId": "{acct}", "create": {"k": {"name": "pd{U}second"}}}, "b"], ["Mailbox/get", {"accountId": "{acct}", "ids": ["#k"], "properties": ["name"]}, "g"]], "extract": {"x1": "eq:r2/list/0/name=pd{U}second"}}
+
+  census_set_specific_error:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-5445e4a1", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [true]}
+      - {"req_id": "JMAP-eb974515", "keyword": "MAY", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "JMAP-8766989b", "keyword": "MAY", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "JMAP-ae814866", "keyword": "MAY", "axis": "x3", "step": 2, "note": "comparison only"}
+      - {"req_id": "JMAP-072fe9e3", "keyword": "MAY", "axis": "x2", "step": 3, "note": "willDestroy; comparison only"}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"sp": {"name": "pd{U}sp"}}}, "mc"], ["Mailbox/set", {"accountId": "{acct}", "create": {"spc": {"name": "pd{U}spc", "parentId": "#sp"}}}, "c1"]]}
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "destroy": ["{id:sp}"]}, "c0"]], "extract": {"x1": "eq:r0/notDestroyed/{id:sp}/type=\"mailboxHasChild\"", "x2": "r0/notDestroyed/{id:sp}/type", "x3": "keys:r0/notDestroyed/{id:sp}"}}
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "update": {"{id:spc}": {"sortOrder": 3}}, "destroy": ["{id:spc}"]}, "c0"]], "extract": {"x2": "keys:r0"}}
+
+  census_copy_single_account:
+    kind: probe
+    spec_refs:
+      - {"req_id": "JMAP-3c44fa85", "keyword": "MUST", "axis": "x1", "step": 1, "note": "needs a second account; comparison only"}
+      - {"req_id": "JMAP-2b774e5d", "keyword": "MUST", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "JMAP-148194cd", "keyword": "MAY", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "JMAP-d1152554", "keyword": "MUST", "axis": "x1", "step": 1, "note": "comparison only"}
+    steps:
+      - {"op": "call", "calls": [["Email/copy", {"fromAccountId": "{acct}", "accountId": "{acct}", "create": {}}, "c0"]], "extract": {"x1": "m0"}}
+
+  census_query_arguments:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-c2155389", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [true]}
+      - {"req_id": "JMAP-dabeb824", "keyword": "MUST", "axis": "x2", "step": 3, "allowed": [0]}
+      - {"req_id": "JMAP-58e7dd58", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [false]}
+      - {"req_id": "JMAP-14eac012", "keyword": "MUST", "axis": "x4", "step": 4, "allowed": [true]}
+      - {"req_id": "JMAP-f8c351be", "keyword": "MUST", "axis": "x5", "step": 5, "allowed": [true]}
+      - {"req_id": "JMAP-35b6b0f5", "keyword": "MAY", "axis": "x6", "step": 6, "note": "comparison only"}
+      - {"req_id": "JMAP-d43e7bde", "keyword": "MAY", "axis": "x7", "step": 2, "note": "comparison only"}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"qa": {"name": "pd{U}qa"}, "qb": {"name": "pd{U}qb"}, "qc": {"name": "pd{U}qc"}}}, "mc"]]}
+      - {"op": "call", "calls": [["Mailbox/query", {"accountId": "{acct}", "limit": -1}, "c0"]], "extract": {"x1": "eq:r0/type=\"invalidArguments\"", "x7": "m0"}}
+      - {"op": "call", "calls": [["Mailbox/query", {"accountId": "{acct}", "position": 100000}, "c0"]], "extract": {"x2": "len:r0/ids", "x3": "has:r0/total"}}
+      - {"op": "call", "calls": [["Mailbox/query", {"accountId": "{acct}", "position": 0, "anchorOffset": 5}, "a"], ["Mailbox/query", {"accountId": "{acct}", "position": 0}, "b"]], "extract": {"x4": "eq:r0/position=0"}}
+      - {"op": "call", "calls": [["Mailbox/query", {"accountId": "{acct}", "anchor": "{id:qa}", "position": 99}, "c0"]], "extract": {"x5": "ne:r0/position=99"}}
+      - {"op": "call", "calls": [["Mailbox/query", {"accountId": "{acct}", "position": -1}, "c0"]], "extract": {"x6": "len:r0/ids"}}
+
+  census_query_state:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-3698c9f7", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [true]}
+      - {"req_id": "JMAP-5269345c", "keyword": "MAY", "axis": "x2", "step": 3, "note": "comparison only"}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/query", {"accountId": "{acct}"}, "c0"]], "key": "q1"}
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"qs": {"name": "pd{U}qs"}}}, "mc"]]}
+      - {"op": "call", "calls": [["Mailbox/query", {"accountId": "{acct}"}, "c0"]], "extract": {"x1": "ne:r0/queryState={state:q1}", "x2": "has:r0/queryState"}}
+
+  census_query_sort_collation:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-c13727e1", "keyword": "MUST", "axis": "x1", "step": 2, "note": "unicode-aware collation; comparison only"}
+      - {"req_id": "JMAP-d8b2e847", "keyword": "MUST", "axis": "x2", "step": 3, "note": "same comparators: server order, stable; comparison only"}
+      - {"req_id": "JMAP-5bfe3ec9", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "JMAP-9010c574", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "JMAP-2b5b2ad2", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "JMAP-ce900c53", "keyword": "MUST", "axis": "x3", "step": 4, "allowed": [false]}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"a": {"name": "pd{U}apple"}, "b": {"name": "pd{U}éclair"}, "c": {"name": "pd{U}Zebra"}}}, "c0"]]}
+      - {"op": "call", "calls": [["Mailbox/query", {"accountId": "{acct}", "sort": [{"property": "name", "isAscending": true}]}, "q"], ["Mailbox/get", {"accountId": "{acct}", "#ids": {"resultOf": "q", "name": "Mailbox/query", "path": "/ids"}, "properties": ["name"]}, "g"]], "headers": {"Accept-Language": "en"}, "extract": {"x1": "r1/list/*/name"}}
+      - {"op": "call", "calls": [["Mailbox/query", {"accountId": "{acct}", "sort": []}, "c0"]], "extract": {"x2": "len:r0/ids"}}
+      - {"op": "call", "calls": [["Mailbox/query", {"accountId": "{acct}", "sort": [{"property": "sortOrder"}, {"property": "name"}]}, "c0"]], "extract": {"x3": "eq:m0=error"}}
+
+  census_query_changes:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-177a25f7", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [false, "null"]}
+      - {"req_id": "JMAP-6981e203", "keyword": "MUST", "axis": "x2", "step": 3, "allowed": [true, "null"]}
+      - {"req_id": "JMAP-480c43f5", "keyword": "MUST", "axis": "x3", "step": 3, "note": "comparison only"}
+      - {"req_id": "JMAP-e69e676f", "keyword": "MAY", "axis": "x3", "step": 3, "note": "comparison only"}
+      - {"req_id": "JMAP-e0274016", "keyword": "SHOULD", "axis": "x3", "step": 3, "note": "comparison only"}
+      - {"req_id": "JMAP-2711011b", "keyword": "SHOULD", "axis": "x3", "step": 3, "note": "comparison only"}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/query", {"accountId": "{acct}", "sort": [{"property": "name"}]}, "c0"]], "key": "q1"}
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"qx": {"name": "pd{U}qx"}, "qy": {"name": "pd{U}qy"}}}, "mc"]]}
+      - {"op": "call", "calls": [["Mailbox/queryChanges", {"accountId": "{acct}", "sinceQueryState": "{state:q1}", "sort": [{"property": "name"}]}, "c0"]], "extract": {"x1": "has:r0/total", "x2": "sortedby:r0/added=index", "x3": "m0"}}
+
+  census_upload_download:
+    kind: control
+    spec_refs:
+      - {"req_id": "JMAP-fbb95be7", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-e49f959d", "keyword": "MAY", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "JMAP-943caf35", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [true, "null"]}
+      - {"req_id": "JMAP-8d2e7214", "keyword": "MUST", "axis": "x4", "step": 3, "note": "single user lab; comparison only"}
+      - {"req_id": "JMAP-5b295d5c", "keyword": "SHOULD", "axis": "x5", "step": 1, "note": "comparison only"}
+      - {"req_id": "JMAP-e5f5bff9", "keyword": "MAY", "axis": "x5", "step": 1, "note": "comparison only"}
+      - {"req_id": "JMAP-469ea7d6", "keyword": "MUST", "axis": "x5", "step": 1, "note": "quota-driven deletion; comparison only"}
+      - {"req_id": "JMAP-eb10830e", "keyword": "MUST", "axis": "x5", "step": 1, "note": "comparison only"}
+      - {"req_id": "JMAP-1721872b", "keyword": "MUST", "axis": "x5", "step": 1, "note": "comparison only"}
+    steps:
+      - {"op": "upload", "key": "b1", "data": "pd census blob", "content_type": "text/plain", "extract": {"x1": "hasall:body=[\"accountId\", \"blobId\", \"type\", \"size\"]", "x5": "body/size"}}
+      - {"op": "upload", "key": "b2", "data": "pd census blob", "content_type": "text/plain", "extract": {"x2": "eq:body/blobId={blob:b1}"}}
+      - {"op": "download", "blob": "{blob:b1}", "name": "pd-file.txt", "type": "text/plain", "extract": {"x3": "in:hdr/content-disposition=pd-file.txt", "x4": "http"}}
+
+  census_upload_download_errors:
+    kind: probe
+    spec_refs:
+      - {"req_id": "JMAP-53dfe543", "keyword": "SHOULD", "axis": "x1", "step": 1, "allowed": ["application/problem+json"]}
+      - {"req_id": "JMAP-9d72da73", "keyword": "SHOULD", "axis": "x2", "step": 2, "allowed": ["application/problem+json"]}
+    steps:
+      - {"op": "upload", "key": "bx", "data": "x", "content_type": "text/plain", "noauth": true, "extract": {"x1": "ctype"}}
+      - {"op": "download", "blob": "pd-no-such-blob", "name": "x", "type": "text/plain", "extract": {"x2": "ctype"}}
+
+  census_blob_reassigned:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-bb57817d", "keyword": "MAY", "axis": "x1", "step": 3, "note": "comparison only"}
+      - {"req_id": "JMAP-a76b2377", "keyword": "MUST", "axis": "x2", "step": 3, "allowed": [true]}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"box": {"name": "pd{U}box"}}}, "mc"]]}
+      - {"op": "upload", "key": "m", "data": "From: Alice <alice@example.invalid>\r\nTo: user@lab.test\r\nSubject: pd census\r\nDate: Thu, 12 Nov 2026 10:00:00 +0000\r\nMessage-ID: <pd-{U}@example.invalid>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nhello census\r\n", "content_type": "message/rfc822"}
+      - {"op": "call", "calls": [["Email/import", {"accountId": "{acct}", "emails": {"e": {"blobId": "{blob:m}", "mailboxIds": {"{id:box}": true}}}}, "ei"]], "extract": {"x1": "ne:r0/created/e/blobId={blob:m}", "x2": "has:r0/created/e/blobId"}}
+
+  census_eventsource_state:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-033ce516", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-d0491b49", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-e4b62f15", "keyword": "MUST", "axis": "x3", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-a2027440", "keyword": "SHOULD", "axis": "x4", "step": 1, "note": "comparison only"}
+      - {"req_id": "JMAP-7f507de2", "keyword": "SHOULD", "axis": "x4", "step": 1, "note": "comparison only"}
+      - {"req_id": "JMAP-5b1722c4", "keyword": "MUST", "axis": "x5", "step": 4, "allowed": [true]}
+      - {"req_id": "JMAP-3a1a45cd", "keyword": "MUST", "axis": "x6", "step": 4, "note": "EmailDelivery state; comparison only"}
+      - {"req_id": "JMAP-11d7b6fb", "keyword": "MUST", "axis": "x7", "step": 1, "allowed": [1]}
+    steps:
+      - {"op": "eventsource", "types": "Mailbox", "closeafter": "state", "ping": 0, "seconds": 8, "during": [["Mailbox/set", {"accountId": "{acct}", "create": {"ev": {"name": "pd{U}ev"}}}, "c0"]], "extract": {"x1": "eq:events/0/event=state", "x2": "eq:events/0/data/@type=StateChange", "x3": "hasall:events/0/data/changed/{acct}=[\"Mailbox\"]", "x4": "len:events", "x7": "len:events"}}
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"box": {"name": "pd{U}box"}}}, "mc"]]}
+      - {"op": "upload", "key": "m", "data": "From: Alice <alice@example.invalid>\r\nTo: user@lab.test\r\nSubject: pd census\r\nDate: Thu, 12 Nov 2026 10:00:00 +0000\r\nMessage-ID: <pd-{U}@example.invalid>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nhello census\r\n", "content_type": "message/rfc822"}
+      - {"op": "eventsource", "types": "*", "closeafter": "state", "ping": 0, "seconds": 10, "during": [["Email/import", {"accountId": "{acct}", "emails": {"e": {"blobId": "{blob:m}", "mailboxIds": {"{id:box}": true}}}}, "ei"]], "extract": {"x5": "hasall:events/0/data/changed/{acct}=[\"EmailDelivery\"]", "x6": "keys:events/0/data/changed/{acct}"}}
+
+  census_eventsource_ping:
+    kind: probe
+    spec_refs:
+      - {"req_id": "JMAP-bebf704a", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-d1afdc31", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-9375762d", "keyword": "MUST", "axis": "x3", "step": 1, "allowed": [true, "null"]}
+      - {"req_id": "JMAP-ad3829b7", "keyword": "MAY", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "JMAP-08c3a6f8", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+    steps:
+      - {"op": "eventsource", "types": "*", "closeafter": "no", "ping": 30, "seconds": 40, "extract": {"x1": "ge:events/0/data/interval=1", "x2": "has:events/0/data/interval", "x3": "eq:events/0/id=null"}}
+
+  census_push_subscription:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-192e7c00", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [false]}
+      - {"req_id": "JMAP-0e4ad761", "keyword": "MUST", "axis": "x2", "step": 2, "allowed": [false]}
+      - {"req_id": "JMAP-a17c61ca", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [true]}
+      - {"req_id": "JMAP-e4d7b72d", "keyword": "SHOULD", "axis": "x4", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-f352ecc4", "keyword": "MUST", "axis": "x5", "step": 4, "allowed": [true]}
+      - {"req_id": "JMAP-79cef567", "keyword": "MAY", "axis": "x6", "step": 1, "note": "comparison only"}
+      - {"req_id": "JMAP-b0f18fea", "keyword": "MAY", "axis": "x6", "step": 1, "note": "comparison only"}
+      - {"req_id": "JMAP-86648395", "keyword": "MUST", "axis": "x6", "step": 1, "note": "maximum expiry at least 48 h; comparison only"}
+      - {"req_id": "JMAP-2a52558f", "keyword": "MUST", "axis": "x6", "step": 1, "note": "needs a push endpoint the server can reach; comparison only"}
+      - {"req_id": "JMAP-5b5a9148", "keyword": "MAY", "axis": "x6", "step": 1, "note": "needs a push endpoint the server can reach; comparison only"}
+      - {"req_id": "JMAP-d6327422", "keyword": "MUST", "axis": "x7", "step": 2, "note": "comparison only"}
+      - {"req_id": "JMAP-53e08a71", "keyword": "MUST", "axis": "x6", "step": 1, "note": "needs a push endpoint the server can reach; comparison only"}
+      - {"req_id": "JMAP-648a4737", "keyword": "MUST", "axis": "x6", "step": 1, "note": "needs a push endpoint the server can reach; comparison only"}
+      - {"req_id": "JMAP-383a6704", "keyword": "MUST", "axis": "x6", "step": 1, "note": "needs a push endpoint the server can reach; comparison only"}
+      - {"req_id": "JMAP-12f4ab63", "keyword": "MUST", "axis": "x6", "step": 1, "note": "needs a push endpoint the server can reach; comparison only"}
+      - {"req_id": "JMAP-a8a5d014", "keyword": "MUST", "axis": "x6", "step": 1, "note": "needs a push endpoint the server can reach; comparison only"}
+      - {"req_id": "JMAP-c298b929", "keyword": "MUST", "axis": "x6", "step": 1, "note": "needs a push endpoint the server can reach; comparison only"}
+      - {"req_id": "JMAP-ab3a7336", "keyword": "MUST", "axis": "x6", "step": 1, "note": "needs a push endpoint the server can reach; comparison only"}
+      - {"req_id": "JMAP-68345c1b", "keyword": "MUST", "axis": "x6", "step": 1, "note": "needs a push endpoint the server can reach; comparison only"}
+      - {"req_id": "JMAP-4e40f46c", "keyword": "MUST", "axis": "x6", "step": 1, "note": "needs a push endpoint the server can reach; comparison only"}
+      - {"req_id": "JMAP-9b2317ec", "keyword": "MUST", "axis": "x6", "step": 1, "note": "needs a push endpoint the server can reach; comparison only"}
+      - {"req_id": "JMAP-9b91073a", "keyword": "SHOULD", "axis": "x6", "step": 1, "note": "needs a push endpoint the server can reach; comparison only"}
+    steps:
+      - {"op": "call", "calls": [["PushSubscription/set", {"create": {"p": {"deviceClientId": "pd{U}dev", "url": "https://pd-push.example.invalid/jmap", "types": null}}}, "c0"]], "extract": {"x4": "has:r0/created/p/expires", "x6": "r0/created/p"}}
+      - {"op": "call", "calls": [["PushSubscription/get", {"ids": null}, "c0"]], "extract": {"x1": "has:r0/list/0/url", "x2": "has:r0/list/0/keys", "x7": "len:r0/list"}}
+      - {"op": "call", "calls": [["PushSubscription/get", {"ids": null, "properties": ["url"]}, "c0"]], "extract": {"x3": "eq:r0/type=\"forbidden\""}}
+      - {"op": "call", "calls": [["PushSubscription/set", {"update": {"{id:p}": {"verificationCode": "pd-wrong-code"}}}, "c0"]], "extract": {"x5": "eq:r0/notUpdated/{id:p}/type=\"invalidProperties\""}}
+
+  census_push_ssrf:
+    kind: probe
+    spec_refs:
+      - {"req_id": "JMAP-55add4a3", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+    steps:
+      - {"op": "call", "calls": [["PushSubscription/set", {"create": {"p": {"deviceClientId": "pd{U}ssrf", "url": "http://127.0.0.1:1/pd"}}}, "c0"]], "extract": {"x1": "has:r0/notCreated/p"}}
+
+  census_mailbox_rules:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-81ece503", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-a2a7a0b9", "keyword": "MAY", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "JMAP-bee3967b", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [true]}
+      - {"req_id": "JMAP-715e509d", "keyword": "MUST", "axis": "x4", "step": 4, "allowed": [true]}
+      - {"req_id": "JMAP-2fcb9094", "keyword": "SHOULD", "axis": "x5", "step": 3, "allowed": [true]}
+      - {"req_id": "JMAP-9f2c83e1", "keyword": "SHOULD", "axis": "x6", "step": 4, "note": "comparison only"}
+      - {"req_id": "JMAP-b33aff88", "keyword": "MUST", "axis": "x5", "step": 3, "note": "per-user subscription in shared mailboxes; comparison only"}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"empty": {"name": ""}, "slash": {"name": "pd{U}a/b"}}}, "c0"]], "extract": {"x1": "has:r0/notCreated/empty", "x2": "has:r0/created/slash"}}
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"lp": {"name": "pd{U}lp"}}}, "mc"]]}
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"lc": {"name": "pd{U}lc", "parentId": "{id:lp}"}}}, "a"], ["Mailbox/set", {"accountId": "{acct}", "update": {"{id:lp}": {"parentId": "#lc"}}}, "b"], ["Mailbox/get", {"accountId": "{acct}", "ids": ["{id:lp}"], "properties": ["isSubscribed"]}, "g"]], "extract": {"x3": "has:r1/notUpdated/{id:lp}", "x5": "eq:r2/list/0/isSubscribed=true"}}
+      - {"op": "call", "calls": [["Mailbox/get", {"accountId": "{acct}", "properties": ["role", "name", "sortOrder"]}, "c0"]], "extract": {"x4": "allin:r0/list/*/role=[\"all\", \"archive\", \"drafts\", \"flagged\", \"important\", \"inbox\", \"junk\", \"sent\", \"subscribed\", \"trash\", \"memos\", \"scheduled\", \"snoozed\"]", "x6": "type:r0/list"}}
+
+  census_mailbox_changes_counts:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-cc19654c", "keyword": "MUST", "axis": "x1", "step": 4, "note": "updatedProperties null when unsure; comparison only"}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"box": {"name": "pd{U}box"}}}, "mc"]]}
+      - {"op": "call", "calls": [["Mailbox/get", {"accountId": "{acct}", "ids": []}, "c0"]], "key": "s1"}
+      - {"op": "upload", "key": "m", "data": "From: Alice <alice@example.invalid>\r\nTo: user@lab.test\r\nSubject: pd census\r\nDate: Thu, 12 Nov 2026 10:00:00 +0000\r\nMessage-ID: <pd-{U}@example.invalid>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nhello census\r\n", "content_type": "message/rfc822"}
+      - {"op": "call", "calls": [["Email/import", {"accountId": "{acct}", "emails": {"e": {"blobId": "{blob:m}", "mailboxIds": {"{id:box}": true}}}}, "ei"], ["Mailbox/changes", {"accountId": "{acct}", "sinceState": "{state:s1}"}, "c1"]], "extract": {"x1": "r1/updatedProperties"}}
+
+  census_email_membership_keywords:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-2fb47272", "keyword": "MUST", "axis": "x1", "step": 4, "allowed": [true]}
+      - {"req_id": "JMAP-a0416376", "keyword": "MUST", "axis": "x1", "step": 4, "allowed": [true]}
+      - {"req_id": "JMAP-04fdf517", "keyword": "MUST", "axis": "x2", "step": 5, "allowed": [true]}
+      - {"req_id": "JMAP-53d91645", "keyword": "MUST", "axis": "x3", "step": 5, "allowed": [true]}
+      - {"req_id": "JMAP-d808b762", "keyword": "MUST", "axis": "x2", "step": 5, "allowed": [true]}
+      - {"req_id": "JMAP-6dd013cd", "keyword": "MUST", "axis": "x4", "step": 5, "allowed": ["string"]}
+      - {"req_id": "JMAP-371d64d1", "keyword": "MUST", "axis": "x5", "step": 6, "allowed": [true]}
+      - {"req_id": "JMAP-d018967a", "keyword": "MUST", "axis": "x6", "step": 7, "allowed": [true]}
+      - {"req_id": "JMAP-0022cf27", "keyword": "MUST", "axis": "x7", "step": 7, "note": "$deleted handling; comparison only"}
+      - {"req_id": "JMAP-c9955d84", "keyword": "MUST", "axis": "x4", "step": 5, "note": "comparison only"}
+      - {"req_id": "JMAP-55eacd2e", "keyword": "MUST", "axis": "x8", "step": 8, "note": "stable order for equal dates; comparison only"}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"box": {"name": "pd{U}box"}}}, "mc"]]}
+      - {"op": "upload", "key": "m", "data": "From: Alice <alice@example.invalid>\r\nTo: user@lab.test\r\nSubject: pd census\r\nDate: Thu, 12 Nov 2026 10:00:00 +0000\r\nMessage-ID: <pd-{U}@example.invalid>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nhello census\r\n", "content_type": "message/rfc822"}
+      - {"op": "call", "calls": [["Email/import", {"accountId": "{acct}", "emails": {"e": {"blobId": "{blob:m}", "mailboxIds": {"{id:box}": true}, "keywords": {"$seen": true}}}}, "ei"]]}
+      - {"op": "call", "calls": [["Email/set", {"accountId": "{acct}", "update": {"{id:e}": {"mailboxIds": {}}}}, "s"]], "extract": {"x1": "has:r0/notUpdated/{id:e}"}}
+      - {"op": "call", "calls": [["Email/get", {"accountId": "{acct}", "ids": ["{id:e}"], "properties": ["mailboxIds", "keywords", "threadId"]}, "eg"]], "extract": {"x2": "allvals:r0/list/0/mailboxIds=true", "x3": "allvals:r0/list/0/keywords=true", "x4": "type:r0/list/0/threadId"}}
+      - {"op": "call", "calls": [["Email/set", {"accountId": "{acct}", "update": {"{id:e}": {"keywords/bad kw": true}}}, "c0"]], "extract": {"x5": "has:r0/notUpdated/{id:e}"}}
+      - {"op": "call", "calls": [["Email/set", {"accountId": "{acct}", "update": {"{id:e}": {"keywords/PdCustomKW": true}}}, "a"], ["Email/get", {"accountId": "{acct}", "ids": ["{id:e}"], "properties": ["keywords"]}, "eg"]], "extract": {"x6": "hasall:r1/list/0/keywords=[\"pdcustomkw\"]", "x7": "keys:r1/list/0/keywords"}}
+      - {"op": "call", "calls": [["Email/query", {"accountId": "{acct}", "sort": [{"property": "receivedAt"}]}, "c0"]], "extract": {"x8": "len:r0/ids"}}
+
+  census_email_header_forms:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-351dac5e", "keyword": "MUST", "axis": "x1", "step": 4, "allowed": [false]}
+      - {"req_id": "JMAP-711dc890", "keyword": "SHOULD", "axis": "x2", "step": 4, "allowed": [true]}
+      - {"req_id": "JMAP-94f45102", "keyword": "MUST", "axis": "x3", "step": 4, "allowed": [true]}
+      - {"req_id": "JMAP-341f3574", "keyword": "SHOULD", "axis": "x4", "step": 4, "note": "comparison only"}
+      - {"req_id": "JMAP-0caca256", "keyword": "SHOULD", "axis": "x5", "step": 4, "allowed": [true]}
+      - {"req_id": "JMAP-4b62c6d6", "keyword": "MUST", "axis": "x6", "step": 4, "allowed": [true]}
+      - {"req_id": "JMAP-77485003", "keyword": "SHOULD", "axis": "x7", "step": 4, "note": "comparison only"}
+      - {"req_id": "JMAP-ad7ce569", "keyword": "MAY", "axis": "x7", "step": 4, "note": "comparison only"}
+      - {"req_id": "JMAP-420b6b33", "keyword": "MUST", "axis": "x8", "step": 4, "allowed": [true]}
+      - {"req_id": "JMAP-079465a8", "keyword": "SHOULD", "axis": "x8", "step": 4, "note": "comparison only"}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"box": {"name": "pd{U}box"}}}, "mc"]]}
+      - {"op": "upload", "key": "m", "data": "From: alice@example.invalid (Alice Comment)\r\nTo: =?UTF-8?Q?J=C3=BCrgen?= <j@example.invalid>\r\nSubject: pd nul\u0000here and bad ÿ byte =?UTF-8?Q?not encoded?= x=?UTF-8?Q?glued?=\r\nX-Pd-List: <https://a.example>, <https://b.example>\r\nX-Pd-Enc: =?UTF-8?B?w6TDtsO8?=\r\nDate: Thu, 12 Nov 2026 10:00:00 +0000\r\nMessage-ID: <pd-forms-{U}@example.invalid>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nbody\r\n", "content_type": "message/rfc822"}
+      - {"op": "call", "calls": [["Email/import", {"accountId": "{acct}", "emails": {"e": {"blobId": "{blob:m}", "mailboxIds": {"{id:box}": true}}}}, "ei"]]}
+      - {"op": "call", "calls": [["Email/get", {"accountId": "{acct}", "ids": ["{id:e}"], "properties": ["header:Subject:asText", "from", "to", "header:X-Pd-Enc:asText", "header:X-Pd-List:asURLs"]}, "eg"]], "extract": {"x1": "in:r0/list/0/header:Subject:asText=\u0000", "x2": "in:r0/list/0/header:Subject:asText=�", "x3": "in:r0/list/0/header:Subject:asText==?UTF-8?Q?not encoded?=", "x4": "r0/list/0/header:Subject:asText", "x5": "eq:r0/list/0/from/0/name=Alice Comment", "x6": "eq:r1/list/0/to/0/name=Jürgen", "x7": "r0/list/0/from", "x8": "eq:r0/list/0/header:X-Pd-Enc:asText=äöü"}}
+
+  census_email_body_values:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-e2ec5cb3", "keyword": "MUST", "axis": "x1", "step": 4, "allowed": [true]}
+      - {"req_id": "JMAP-83142522", "keyword": "MUST", "axis": "x2", "step": 4, "allowed": [true]}
+      - {"req_id": "JMAP-a08748e2", "keyword": "SHOULD", "axis": "x3", "step": 7, "note": "comparison only"}
+      - {"req_id": "JMAP-64b7bac4", "keyword": "MUST", "axis": "x4", "step": 4, "allowed": [true]}
+      - {"req_id": "JMAP-c8b4b180", "keyword": "MUST", "axis": "x4", "step": 4, "note": "comparison only"}
+      - {"req_id": "JMAP-09328e41", "keyword": "SHOULD", "axis": "x4", "step": 4, "note": "comparison only"}
+      - {"req_id": "JMAP-5b99d432", "keyword": "MUST", "axis": "x5", "step": 7, "allowed": [true]}
+      - {"req_id": "JMAP-a60e3d0b", "keyword": "MUST", "axis": "x6", "step": 8, "allowed": [true]}
+      - {"req_id": "JMAP-09f537d6", "keyword": "MUST", "axis": "x7", "step": 9, "allowed": [true]}
+      - {"req_id": "JMAP-2e841ff0", "keyword": "MAY", "axis": "x8", "step": 4, "note": "comparison only"}
+      - {"req_id": "JMAP-d1bdbacd", "keyword": "SHOULD", "axis": "x8", "step": 4, "note": "comparison only"}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"box": {"name": "pd{U}box"}}}, "mc"]]}
+      - {"op": "upload", "key": "m", "data": "From: Alice <alice@example.invalid>\r\nTo: user@lab.test\r\nSubject: pd census\r\nDate: Thu, 12 Nov 2026 10:00:00 +0000\r\nMessage-ID: <pd-{U}@example.invalid>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nääääääääääääääääääääääääääääää word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word \r\n", "content_type": "message/rfc822"}
+      - {"op": "call", "calls": [["Email/import", {"accountId": "{acct}", "emails": {"e": {"blobId": "{blob:m}", "mailboxIds": {"{id:box}": true}}}}, "ei"]]}
+      - {"op": "call", "calls": [["Email/get", {"accountId": "{acct}", "ids": ["{id:e}"], "properties": ["bodyValues", "preview"], "fetchTextBodyValues": true, "maxBodyValueBytes": 7}, "g"]], "extract": {"x1": "eq:r0/list/0/bodyValues/1/isTruncated=true", "x2": "re:r0/list/0/bodyValues/1/value=[ä]{3}", "x4": "re:r0/list/0/preview=(?s).{0,256}", "x8": "r0/list/0/bodyValues/1/isEncodingProblem"}}
+      - {"op": "upload", "key": "h", "data": "From: Alice <alice@example.invalid>\r\nTo: user@lab.test\r\nSubject: pd census\r\nDate: Thu, 12 Nov 2026 10:00:00 +0000\r\nMessage-ID: <pd-html-{U}@example.invalid>\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<p><a href=\"https://example.com/long/path\">link</a></p>\r\n", "content_type": "message/rfc822"}
+      - {"op": "call", "calls": [["Email/import", {"accountId": "{acct}", "emails": {"eh": {"blobId": "{blob:h}", "mailboxIds": {"{id:box}": true}}}}, "ei"]]}
+      - {"op": "call", "calls": [["Email/get", {"accountId": "{acct}", "ids": ["{id:eh}"], "fetchHTMLBodyValues": true, "maxBodyValueBytes": 20}, "g"]], "extract": {"x3": "r0/list/0/bodyValues/*/value", "x5": "hasall:r0/list/0=[\"id\", \"blobId\", \"threadId\", \"mailboxIds\", \"keywords\", \"size\", \"receivedAt\", \"messageId\", \"subject\", \"from\", \"to\", \"preview\", \"hasAttachment\"]"}}
+      - {"op": "call", "calls": [["Email/get", {"accountId": "{acct}", "ids": ["{id:e}"], "properties": ["header:From:asDate"]}, "eg"]], "extract": {"x6": "eq:r0/type=\"invalidArguments\""}}
+      - {"op": "call", "calls": [["Email/get", {"accountId": "{acct}", "ids": ["{id:e}"], "properties": ["header:sUbJeCt"]}, "eg"]], "extract": {"x7": "has:r0/list/0/header:sUbJeCt"}}
+
+  census_email_attachments:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-c9584dd9", "keyword": "SHOULD", "axis": "x1", "step": 4, "allowed": [true]}
+      - {"req_id": "JMAP-a5b8b00c", "keyword": "MAY", "axis": "x2", "step": 4, "note": "comparison only"}
+      - {"req_id": "JMAP-51e6cea7", "keyword": "MAY", "axis": "x2", "step": 4, "note": "comparison only"}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"box": {"name": "pd{U}box"}}}, "mc"]]}
+      - {"op": "upload", "key": "m", "data": "From: a@example.invalid\r\nTo: user@lab.test\r\nSubject: att\r\nMessage-ID: <pd-att-{U}@example.invalid>\r\nDate: Thu, 12 Nov 2026 10:00:00 +0000\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=pdb\r\n\r\n--pdb\r\nContent-Type: text/plain\r\n\r\nsee file\r\n--pdb\r\nContent-Type: application/pdf\r\nContent-Disposition: attachment; filename=pd.pdf\r\nContent-Transfer-Encoding: base64\r\n\r\nJVBERi0xLjQK\r\n--pdb--\r\n", "content_type": "message/rfc822"}
+      - {"op": "call", "calls": [["Email/import", {"accountId": "{acct}", "emails": {"e": {"blobId": "{blob:m}", "mailboxIds": {"{id:box}": true}}}}, "ei"]]}
+      - {"op": "call", "calls": [["Email/get", {"accountId": "{acct}", "ids": ["{id:e}"], "properties": ["hasAttachment", "attachments"]}, "eg"]], "extract": {"x1": "eq:r0/list/0/hasAttachment=true", "x2": "len:r0/list/0/attachments"}}
+
+  census_email_search:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-1e8640e9", "keyword": "MUST", "axis": "x1", "step": 4, "allowed": [1]}
+      - {"req_id": "JMAP-527e1495", "keyword": "SHOULD", "axis": "x1", "step": 5, "allowed": [1]}
+      - {"req_id": "JMAP-521f77eb", "keyword": "SHOULD", "axis": "x1", "step": 6, "allowed": [1]}
+      - {"req_id": "JMAP-1de320d0", "keyword": "SHOULD", "axis": "x1", "step": 7, "allowed": [0]}
+      - {"req_id": "JMAP-b78dae5b", "keyword": "SHOULD", "axis": "x1", "step": 8, "allowed": [1]}
+      - {"req_id": "JMAP-aae4be78", "keyword": "SHOULD", "axis": "x1", "step": 9, "allowed": [1]}
+      - {"req_id": "JMAP-e5a38efb", "keyword": "MUST", "axis": "x1", "step": 10, "allowed": [1]}
+      - {"req_id": "JMAP-5f08c359", "keyword": "MUST", "axis": "x1", "step": 11, "note": "escaped quote inside a phrase; comparison only"}
+      - {"req_id": "JMAP-967a95b0", "keyword": "MUST", "axis": "x1", "step": 12, "allowed": [1]}
+      - {"req_id": "JMAP-8037797e", "keyword": "MAY", "axis": "x1", "step": 4, "note": "comparison only"}
+      - {"req_id": "JMAP-9435a2aa", "keyword": "MAY", "axis": "x1", "step": 4, "note": "comparison only"}
+      - {"req_id": "JMAP-1af64337", "keyword": "MAY", "axis": "x1", "step": 4, "note": "comparison only"}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"box": {"name": "pd{U}box"}}}, "mc"]]}
+      - {"op": "upload", "key": "m", "data": "From: Alice <alice@example.invalid>\r\nTo: user@lab.test\r\nSubject: =?UTF-8?Q?Gr=C3=BC=C3=9Fe?= pdcase pd phrase here\r\nMessage-ID: <pd-search-{U}@example.invalid>\r\nDate: Thu, 12 Nov 2026 10:00:00 +0000\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<p title=\"pdtitle\"><a href=\"https://pdhref.example\">x</a><img alt=\"pdalt\"> pdtokena middle pdtokenb</p>\r\n", "content_type": "message/rfc822"}
+      - {"op": "call", "calls": [["Email/import", {"accountId": "{acct}", "emails": {"e": {"blobId": "{blob:m}", "mailboxIds": {"{id:box}": true}}}}, "ei"]]}
+      - {"op": "call", "calls": [["Email/query", {"accountId": "{acct}", "filter": {"operator": "AND", "conditions": [{"inMailbox": "{id:box}"}, {"from": "alice"}]}}, "c0"]], "extract": {"x1": "len:r0/ids"}}
+      - {"op": "call", "calls": [["Email/query", {"accountId": "{acct}", "filter": {"operator": "AND", "conditions": [{"inMailbox": "{id:box}"}, {"subject": "Grüße"}]}}, "c0"]], "extract": {"x1": "len:r0/ids"}}
+      - {"op": "call", "calls": [["Email/query", {"accountId": "{acct}", "filter": {"operator": "AND", "conditions": [{"inMailbox": "{id:box}"}, {"subject": "PDCASE"}]}}, "c0"]], "extract": {"x1": "len:r0/ids"}}
+      - {"op": "call", "calls": [["Email/query", {"accountId": "{acct}", "filter": {"operator": "AND", "conditions": [{"inMailbox": "{id:box}"}, {"body": "pdhref"}]}}, "c0"]], "extract": {"x1": "len:r0/ids"}}
+      - {"op": "call", "calls": [["Email/query", {"accountId": "{acct}", "filter": {"operator": "AND", "conditions": [{"inMailbox": "{id:box}"}, {"body": "pdalt"}]}}, "c0"]], "extract": {"x1": "len:r0/ids"}}
+      - {"op": "call", "calls": [["Email/query", {"accountId": "{acct}", "filter": {"operator": "AND", "conditions": [{"inMailbox": "{id:box}"}, {"text": "\"pd phrase here\""}]}}, "c0"]], "extract": {"x1": "len:r0/ids"}}
+      - {"op": "call", "calls": [["Email/query", {"accountId": "{acct}", "filter": {"operator": "AND", "conditions": [{"inMailbox": "{id:box}"}, {"text": "pdtokena pdtokenb"}]}}, "c0"]], "extract": {"x1": "len:r0/ids"}}
+      - {"op": "call", "calls": [["Email/query", {"accountId": "{acct}", "filter": {"inMailbox": "{id:box}", "text": "pd\\\"x"}}, "c0"]], "extract": {"x1": "m0"}}
+      - {"op": "call", "calls": [["Email/query", {"accountId": "{acct}", "filter": {"operator": "AND", "conditions": [{"inMailbox": "{id:box}"}, {}]}}, "c0"]], "extract": {"x1": "len:r0/ids"}}
+
+  census_email_sort:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-968df173", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [false]}
+      - {"req_id": "JMAP-1e9a7232", "keyword": "SHOULD", "axis": "x2", "step": 3, "allowed": [false]}
+      - {"req_id": "JMAP-9119a625", "keyword": "MUST", "axis": "x3", "step": 4, "note": "hasKeyword ordering; comparison only"}
+      - {"req_id": "JMAP-b01c6674", "keyword": "MUST", "axis": "x3", "step": 5, "note": "comparison only"}
+      - {"req_id": "JMAP-d46d8627", "keyword": "MUST", "axis": "x3", "step": 6, "note": "comparison only"}
+      - {"req_id": "JMAP-b63904af", "keyword": "MAY", "axis": "x3", "step": 4, "note": "comparison only"}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"box": {"name": "pd{U}box"}}}, "mc"]]}
+      - {"op": "call", "calls": [["Email/query", {"accountId": "{acct}", "sort": [{"property": "receivedAt", "isAscending": false}]}, "c0"]], "extract": {"x1": "eq:m0=error"}}
+      - {"op": "call", "calls": [["Email/query", {"accountId": "{acct}", "sort": [{"property": "size"}, {"property": "from"}, {"property": "to"}, {"property": "subject"}, {"property": "sentAt"}]}, "c0"]], "extract": {"x2": "eq:m0=error"}}
+      - {"op": "call", "calls": [["Email/query", {"accountId": "{acct}", "sort": [{"property": "hasKeyword", "keyword": "$flagged"}]}, "c0"]], "extract": {"x3": "m0"}}
+      - {"op": "call", "calls": [["Email/query", {"accountId": "{acct}", "sort": [{"property": "allInThreadHaveKeyword", "keyword": "$seen"}]}, "c0"]], "extract": {"x3": "m0"}}
+      - {"op": "call", "calls": [["Email/query", {"accountId": "{acct}", "sort": [{"property": "someInThreadHaveKeyword", "keyword": "$seen"}]}, "c0"]], "extract": {"x3": "m0"}}
+
+  census_email_create:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-f243d240", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [1]}
+      - {"req_id": "JMAP-f243d240", "keyword": "MUST", "axis": "x2", "step": 3, "allowed": [true]}
+      - {"req_id": "JMAP-c10e7ec2", "keyword": "SHOULD", "axis": "x3", "step": 4, "allowed": [true]}
+      - {"req_id": "JMAP-dffb0b1c", "keyword": "MAY", "axis": "x4", "step": 3, "note": "comparison only"}
+      - {"req_id": "JMAP-69eae311", "keyword": "MUST", "axis": "x5", "step": 5, "allowed": [true]}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"box": {"name": "pd{U}box"}}}, "mc"]]}
+      - {"op": "call", "calls": [["Email/set", {"accountId": "{acct}", "create": {"d": {"mailboxIds": {"{id:box}": true}, "subject": "pd draft", "from": [{"email": "user@lab.test"}], "bodyStructure": {"type": "text/plain", "partId": "1"}, "bodyValues": {"1": {"value": "x"}}}}}, "a"]]}
+      - {"op": "call", "calls": [["Email/get", {"accountId": "{acct}", "ids": ["{id:d}"], "properties": ["messageId", "sentAt", "headers"]}, "eg"]], "extract": {"x1": "len:r0/list/0/messageId", "x2": "has:r0/list/0/sentAt", "x4": "len:r0/list/0/headers"}}
+      - {"op": "call", "calls": [["Email/set", {"accountId": "{acct}", "create": {"bad": {"mailboxIds": {"{id:box}": true}, "headers": [{"name": "Subject", "value": "dup"}], "subject": "pd conflict"}}}, "c0"]], "extract": {"x3": "has:r0/notCreated/bad"}}
+      - {"op": "call", "calls": [["Email/set", {"accountId": "{acct}", "create": {"nb": {"mailboxIds": {"{id:box}": true}, "bodyStructure": {"type": "application/octet-stream", "blobId": "pd-missing-blob"}}}}, "c0"]], "extract": {"x5": "hasall:r0/notCreated/nb/notFound=[\"pd-missing-blob\"]"}}
+
+  census_email_import_rules:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-ade7f490", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [true]}
+      - {"req_id": "JMAP-789409cf", "keyword": "MUST", "axis": "x7", "step": 4, "allowed": ["null", "alreadyExists"]}
+      - {"req_id": "JMAP-fa943453", "keyword": "MUST", "axis": "x3", "step": 4, "allowed": ["null", ["existingId", "type"], ["description", "existingId", "type"]]}
+      - {"req_id": "JMAP-ed73c459", "keyword": "MUST", "axis": "x2", "step": 4, "allowed": [true]}
+      - {"req_id": "JMAP-39a13b2d", "keyword": "MAY", "axis": "x2", "step": 4, "note": "comparison only"}
+      - {"req_id": "JMAP-16caa28f", "keyword": "MUST", "axis": "x4", "step": 5, "allowed": [true]}
+      - {"req_id": "JMAP-7d800faa", "keyword": "MAY", "axis": "x5", "step": 7, "note": "comparison only"}
+      - {"req_id": "JMAP-a255fedd", "keyword": "MUST", "axis": "x6", "step": 7, "note": "a new blobId only if the server modified the message; comparison only"}
+      - {"req_id": "JMAP-c8928377", "keyword": "MAY", "axis": "x5", "step": 7, "note": "comparison only"}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"box": {"name": "pd{U}box"}}}, "mc"]]}
+      - {"op": "upload", "key": "eai", "data": "From: Jürgen <jürgen@bücher.example>\r\nTo: user@lab.test\r\nSubject: EAI ü\r\nMessage-ID: <pd-eai-{U}@example.invalid>\r\nDate: Thu, 12 Nov 2026 10:00:00 +0000\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nEAI body\r\n", "content_type": "message/rfc822"}
+      - {"op": "call", "calls": [["Email/import", {"accountId": "{acct}", "emails": {"e": {"blobId": "{blob:eai}", "mailboxIds": {"{id:box}": true}}}}, "ei"]], "extract": {"x1": "has:r0/created/e"}}
+      - {"op": "call", "calls": [["Email/import", {"accountId": "{acct}", "emails": {"e2": {"blobId": "{blob:eai}", "mailboxIds": {"{id:box}": true}}}}, "ei"]], "extract": {"x2": "ne:r0/created/e2/id={id:e}", "x3": "keys:r0/notCreated/e2", "x7": "r0/notCreated/e2/type"}}
+      - {"op": "call", "calls": [["Email/import", {"accountId": "{acct}", "emails": {"bad": {"blobId": "{blob:eai}", "mailboxIds": {}}}}, "c0"]], "extract": {"x4": "eq:r0/notCreated/bad/type=\"invalidProperties\""}}
+      - {"op": "upload", "key": "nul", "data": "From: Alice <alice@example.invalid>\r\nTo: user@lab.test\r\nSubject: pd census\r\nDate: Thu, 12 Nov 2026 10:00:00 +0000\r\nMessage-ID: <pd-nul-{U}@example.invalid>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nnul\u0000here\r\n", "content_type": "message/rfc822"}
+      - {"op": "call", "calls": [["Email/import", {"accountId": "{acct}", "emails": {"en": {"blobId": "{blob:nul}", "mailboxIds": {"{id:box}": true}}}}, "ei"]], "extract": {"x5": "keys:r0", "x6": "ne:r0/created/en/blobId={blob:nul}"}}
+
+  census_email_parse:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-60e031af", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [true]}
+      - {"req_id": "JMAP-4fd3713d", "keyword": "MAY", "axis": "x2", "step": 2, "note": "comparison only"}
+    steps:
+      - {"op": "upload", "key": "eai", "data": "From: Jürgen <jürgen@bücher.example>\r\nTo: user@lab.test\r\nSubject: EAI parse\r\nMessage-ID: <pd-parse-{U}@example.invalid>\r\nDate: Thu, 12 Nov 2026 10:00:00 +0000\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nx\r\n", "content_type": "message/rfc822"}
+      - {"op": "call", "calls": [["Email/parse", {"accountId": "{acct}", "blobIds": ["{blob:eai}"], "properties": ["from", "threadId"]}, "c0"]], "extract": {"x1": "has:r0/parsed/{blob:eai}", "x2": "has:r0/parsed/{blob:eai}/threadId"}}
+
+  census_date_formats:
+    kind: control
+    spec_refs:
+      - {"req_id": "JMAP-9f2509fd", "keyword": "MUST", "axis": "x1", "step": 4, "allowed": [true]}
+      - {"req_id": "JMAP-9f2509fd", "keyword": "MUST", "axis": "x2", "step": 4, "allowed": [true]}
+      - {"req_id": "JMAP-ce30d1b0", "keyword": "MUST", "axis": "x1", "step": 4, "allowed": [true], "note": "receivedAt is a UTCDate"}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"box": {"name": "pd{U}box"}}}, "mc"]]}
+      - {"op": "upload", "key": "m", "data": "From: a@example.invalid\r\nTo: user@lab.test\r\nSubject: date\r\nDate: Thu, 12 Nov 2026 10:00:00 +0200\r\nMessage-ID: <pd-date-{U}@example.invalid>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain\r\n\r\nx\r\n", "content_type": "message/rfc822"}
+      - {"op": "call", "calls": [["Email/import", {"accountId": "{acct}", "emails": {"e": {"blobId": "{blob:m}", "mailboxIds": {"{id:box}": true}}}}, "ei"]]}
+      - {"op": "call", "calls": [["Email/get", {"accountId": "{acct}", "ids": ["{id:e}"], "properties": ["receivedAt", "sentAt"]}, "g"]], "extract": {"x1": "re:r0/list/0/receivedAt=\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d(\\.\\d*[1-9])?Z", "x2": "re:r0/list/0/sentAt=\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d(\\.\\d*[1-9])?[+-]\\d\\d:\\d\\d|.*Z"}}
+

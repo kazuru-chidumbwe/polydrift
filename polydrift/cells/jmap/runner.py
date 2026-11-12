@@ -12,6 +12,7 @@ Usage (Testbed B, detached):
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import socket
@@ -120,7 +121,7 @@ def main() -> int:
                 batch = []
                 for fid, f in fx.items():
                     try:
-                        obs = driver.run_script(base, user, pw, sess, f["steps"], f"pd{fid[:20]}r{r}") if ok_start else []
+                        obs = driver.run_script(base, user, pw, sess, f["steps"], "pd" + hashlib.sha1(fid.encode()).hexdigest()[:10]) if ok_start else []
                     except Exception as e:  # noqa: BLE001
                         obs = [{"step": 1, "op": "?", "error": f"driver: {e!r}"}]
                     batch.append((fid, obs))

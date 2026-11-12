@@ -96,7 +96,12 @@ def _local(url: str, host: urllib.parse.SplitResult) -> str:
 
 def _walk(root: Any, parts: list[str]) -> Any:
     cur = root
-    for p in parts:
+    for n, p in enumerate(parts):
+        if p == "*":
+            # wildcard: the rest of the path over every element (list) or value (object), missing ones dropped
+            items = cur if isinstance(cur, list) else (list(cur.values()) if isinstance(cur, dict) else [])
+            vals = [_walk(x, parts[n + 1:]) for x in items]
+            return [v for v in vals if v is not _MISSING]
         if isinstance(cur, list):
             try:
                 cur = cur[int(p)]
@@ -134,7 +139,7 @@ def _path(ctx: dict[str, Any], path: str) -> Any:
     return _MISSING
 
 
-FN = r"^(len|keys|type|has|eq|ne|in|re|allre|sorted|lower|ge):"
+FN = r"^(len|keys|type|has|eq|ne|in|re|allre|allin|sorted|lower|ge|hasall|nullorge|lensum|sortedby|allvals|count):"
 
 
 def evaluate(expr: str, ctx: dict[str, Any]) -> Any:
@@ -143,6 +148,13 @@ def evaluate(expr: str, ctx: dict[str, Any]) -> Any:
         v = _path(ctx, expr)
         return None if v is _MISSING else v
     path, _, lit = body.partition("=")
+    if fn == "lensum":
+        # lensum:p1,p2,p3: total length of the lists at the given paths (missing counts 0)
+        tot = 0
+        for pth in path.split(","):
+            x = _path(ctx, pth)
+            tot += len(x) if isinstance(x, (list, dict)) else 0
+        return tot
     v = _path(ctx, path)
     missing = v is _MISSING
     v = None if missing else v
@@ -169,6 +181,26 @@ def evaluate(expr: str, ctx: dict[str, Any]) -> Any:
         return sorted(v) if isinstance(v, list) else None
     if fn == "lower":
         return v.lower() if isinstance(v, str) else None
+    if fn == "hasall":
+        # every element of the JSON list literal is a key (object) or an element (list); null when missing
+        if missing:
+            return None
+        pool = set(v) if isinstance(v, (dict, list)) else set()
+        return all(x in pool for x in _lit(lit))
+    if fn == "allin":
+        # every non-null element is in the JSON list literal
+        return isinstance(v, list) and all(x is None or x in _lit(lit) for x in v)
+    if fn == "nullorge":
+        return v is None or (isinstance(v, (int, float)) and not isinstance(v, bool) and v >= float(lit))
+    if fn == "sortedby":
+        if not isinstance(v, list):
+            return None
+        keys = [x.get(lit) for x in v if isinstance(x, dict)]
+        return keys == sorted(keys)
+    if fn == "allvals":
+        return isinstance(v, dict) and all(x == _lit(lit) for x in v.values())
+    if fn == "count":
+        return v.count(_lit(lit)) if isinstance(v, list) else None
     if fn == "ge":
         return isinstance(v, (int, float)) and not isinstance(v, bool) and v >= float(lit)
     return None
@@ -236,6 +268,17 @@ def _eventsource(url: str, auth: str, seconds: float, during, out: dict) -> None
         out["error_es"] = f"{type(e).__name__}"
     out["es_status"] = status
     out["events"] = events
+
+
+def _unu(v: Any, unique: str) -> Any:
+    """Map the fixture's unique name back to "{U}" so extracted values compare across repeats and servers."""
+    if isinstance(v, str):
+        return v.replace(unique, "{U}")
+    if isinstance(v, list):
+        return [_unu(x, unique) for x in v]
+    if isinstance(v, dict):
+        return {_unu(k, unique): _unu(x, unique) for k, x in v.items()}
+    return v
 
 
 def run_script(base: str, user: str, password: str, session: dict[str, Any], steps: list[dict[str, Any]],
@@ -316,7 +359,7 @@ def run_script(base: str, user: str, password: str, session: dict[str, Any], ste
             if st.get("extract"):
                 ctx = {"body": j, "session": session, "http": code, "ctype": obs["content_type"], "hdr": headers,
                        "events": obs.get("events")}
-                obs["extract"] = {k: evaluate(e, ctx) for k, e in st["extract"].items()}
+                obs["extract"] = {k: _unu(evaluate(e, ctx), unique) for k, e in st["extract"].items()}
         except (OSError, ValueError) as e:
             obs["error"] = f"{type(e).__name__}: {e}"
         out.append(obs)

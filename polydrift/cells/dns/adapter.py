@@ -105,10 +105,45 @@ def decision(rcode: str | None, answers: Any, tc: bool = False) -> str | None:
     return RCODE_CLASS.get(rcode or "")
 
 
+def _upstream_fields(obs: dict[str, Any]) -> dict[str, Any]:
+    """What the resolver sent to the lab authorities for the fixture's names (driver `upstream` step)."""
+    qs = obs.get("queries") or []
+    count: dict[str, int] = {}
+    for q in qs:
+        k = f"{q['qname'].lower()} {q['qtype']}"
+        count[k] = count.get(k, 0) + 1
+    return {
+        "upstream_count": tuple(sorted(count.items())),
+        "upstream_rd": sorted({bool(q["rd"]) for q in qs}),
+        "upstream_opt_codes": sorted({c for q in qs for c in q.get("opts") or []}),
+        "upstream_edns": sorted({int(q["edns"]) for q in qs}),
+        # advertised UDP sizes in the order first used (fallback clauses, RFC 6891 6.2.5)
+        "upstream_payloads": list(dict.fromkeys(q["payload"] for q in qs if q.get("payload") is not None)),
+        "upstream_transports": sorted({q["transport"] for q in qs}),
+        "upstream_servers": list(dict.fromkeys(q["server"] for q in qs)),
+        # an option from the local/experimental range (65001-65534) can only be the client's own: forwarded
+        "upstream_local_opts": any(c >= 65001 for q in qs for c in q.get("opts") or []),
+    }
+
+
 def step_record(obs: dict[str, Any], spec: CellSpec) -> StepRecord:
-    """One driver observation (lab/driver.py) as a step: the StackDiff fields plus tc, ad, authority_soa, edns."""
+    """One driver observation (lab/driver.py) as a step: the StackDiff fields plus tc, ad, authority_soa, edns, and
+    for the upstream, parallel and tcp_session steps their own fields."""
     status = classify_status(obs)
     fields: dict[str, Field] = {}
+    op = obs.get("op", "query")
+    if status == Status.RESPONDED and op in ("upstream", "parallel", "tcp_session"):
+        if op == "upstream":
+            values = _upstream_fields(obs)
+        elif op == "parallel":
+            values = {"parallel_order": obs.get("order"),
+                      "parallel_latency": tuple(sorted((obs.get("latency") or {}).items())),
+                      "parallel_rcodes": tuple(sorted((obs.get("rcodes") or {}).items()))}
+        else:
+            values = {"tcp_rcodes": obs.get("rcodes"), "tcp_open_after": obs.get("open_after")}
+        for name, raw in values.items():
+            fields[name] = spec.axis(name).field(raw)
+        return StepRecord(status=status, fields=fields, detail="")
     if status == Status.RESPONDED:
         rcode, answers, tc = obs.get("rcode"), obs.get("answers") or [], bool(obs.get("tc"))
         values = {
@@ -124,6 +159,14 @@ def step_record(obs: dict[str, Any], spec: CellSpec) -> StepRecord:
             "authority_soa": obs.get("authority_soa"),
             "edns": obs.get("edns"),
         }
+        if "z" in obs:
+            values.update({
+                "z_bit": obs.get("z"),
+                "rd": obs.get("rd"),
+                "qname_case": obs.get("qname_case"),
+                "answer_ttls": obs.get("ttls"),
+                "additional_soa": obs.get("additional_soa"),
+            })
         for name, raw in values.items():
             fields[name] = spec.axis(name).field(raw)
     return StepRecord(status=status, fields=fields, detail=str(obs.get("error") or ""))

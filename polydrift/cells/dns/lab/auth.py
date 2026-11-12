@@ -34,6 +34,34 @@ import yaml
 
 STATE: dict[str, float] = {}
 LOCK = threading.Lock()
+# Every query this authority receives, for the driver's `upstream` step (control port 5300, "DUMP" returns the log
+# as JSON and clears it): what the resolver under test sent upstream (RD, EDNS, options, transport, timing).
+QLOG: list[dict] = []
+SERVER_NAME = ""
+
+
+def log_query(q: dns.message.Message, src: str, transport: str) -> None:
+    if not q.question:
+        return
+    with LOCK:
+        QLOG.append({"server": SERVER_NAME, "src": src, "qname": q.question[0].name.to_text(omit_final_dot=True),
+                     "qtype": dns.rdatatype.to_text(q.question[0].rdtype), "rd": bool(q.flags & dns.flags.RD),
+                     "edns": q.edns, "payload": q.payload if q.edns >= 0 else None,
+                     "opts": sorted(int(o.otype) for o in q.options) if q.edns >= 0 else [],
+                     "do": bool(q.ednsflags & dns.flags.DO) if q.edns >= 0 else False,
+                     "transport": transport, "t": round(time.monotonic(), 3)})
+
+
+def raw_answer(q: dns.message.Message, rrs: list[tuple[str, int, str, str]], aa: bool = True) -> bytes:
+    """A response built by hand, for RRsets dnspython would normalise (two TTLs in one RRset, duplicate RRs)."""
+    hdr = struct.pack("!HHHHHH", q.id, 0x8000 | (0x0400 if aa else 0) | (q.flags & 0x0100), 1, len(rrs), 0, 0)
+    qn = q.question[0]
+    body = qn.name.to_wire() + struct.pack("!HH", qn.rdtype, qn.rdclass)
+    for name, ttl, rtype, text in rrs:
+        rd = dns.rdata.from_text(dns.rdataclass.IN, dns.rdatatype.from_text(rtype), text)
+        rdw = rd.to_digestable()
+        body += dns.name.from_text(name).to_wire() + struct.pack("!HHIH", rd.rdtype, 1, ttl, len(rdw)) + rdw
+    return hdr + body
 
 
 def mkrr(name: dns.name.Name, ttl: int, rtype: str, text: str, origin: dns.name.Name) -> dns.rrset.RRset:
@@ -157,7 +185,7 @@ def lookup(zone: Zone, qname: dns.name.Name, qtype: int, resp: dns.message.Messa
         return
 
 
-def respond(zone: Zone, wire: bytes, transport: str) -> bytes | None:
+def respond(zone: Zone, wire: bytes, transport: str, src: str | None = None) -> bytes | None:
     try:
         q = dns.message.from_wire(wire)
     except Exception:  # noqa: BLE001
@@ -169,6 +197,8 @@ def respond(zone: Zone, wire: bytes, transport: str) -> bytes | None:
         return None
     resp = dns.message.make_response(q)
     resp.flags &= ~dns.flags.RA
+    if src is not None:
+        log_query(q, src, transport)
     if not q.question:
         resp.set_rcode(dns.rcode.FORMERR)
         return resp.to_wire()
@@ -190,6 +220,17 @@ def respond(zone: Zone, wire: bytes, transport: str) -> bytes | None:
         kind = beh["kind"]
         if kind == "silent":
             return None
+        if kind == "delay":
+            # answers like the zone after `ms` (concurrency clauses: a slow upstream must not block other clients)
+            time.sleep(float(beh.get("ms", 3000)) / 1000)
+        if kind == "raw_answer":
+            # an answer dnspython would normalise: RRs given as [name, ttl, type, rdata] (split TTLs, duplicates)
+            return raw_answer(q, [tuple(x) for x in beh["rrs"]], aa=beh.get("aa", True))
+        if kind == "referral_up":
+            # a referral that is not closer to the answer: NS for the root (RFC 1034 5.3.3)
+            resp.authority.append(dns.rrset.from_text(".", 3600, "IN", "NS", "a.root.pdlab."))
+            resp.additional.append(dns.rrset.from_text("a.root.pdlab.", 3600, "IN", "A", "172.31.53.10"))
+            return resp.to_wire()
         if kind == "rcode":
             resp.set_rcode(dns.rcode.from_text(beh["rcode"]))
             if beh.get("aa", True):
@@ -212,7 +253,8 @@ def respond(zone: Zone, wire: bytes, transport: str) -> bytes | None:
             if now - first < float(beh.get("negative_seconds", 0.5)):
                 resp.flags |= dns.flags.AA
                 resp.set_rcode(dns.rcode.NXDOMAIN)
-                resp.authority.append(zone.negative_soa())
+                if not beh.get("no_soa"):
+                    resp.authority.append(zone.negative_soa())
                 return resp.to_wire()
         if kind == "synth_a":
             resp.flags |= dns.flags.AA
@@ -260,7 +302,7 @@ def _finish(resp: dns.message.Message, beh: dict, limit: int) -> bytes:
 class UDP(socketserver.BaseRequestHandler):
     def handle(self):
         data, sock = self.request
-        out = respond(self.server.zone, data, "udp")
+        out = respond(self.server.zone, data, "udp", self.client_address[0])
         if out is not None:
             sock.sendto(out, self.client_address)
 
@@ -278,9 +320,20 @@ class TCP(socketserver.BaseRequestHandler):
                 if not chunk:
                     return
                 data += chunk
-            out = respond(self.server.zone, data, "tcp")
+            out = respond(self.server.zone, data, "tcp", self.client_address[0])
             if out is not None:
                 self.request.sendall(struct.pack("!H", len(out)) + out)
+
+
+class Control(socketserver.StreamRequestHandler):
+    """Port 5300: "DUMP" returns the query log as one JSON line and clears it."""
+
+    def handle(self):
+        if self.rfile.readline().strip() == b"DUMP":
+            import json
+            with LOCK:
+                data, QLOG[:] = list(QLOG), []
+            self.wfile.write(json.dumps(data).encode() + b"\n")
 
 
 class TUDP(socketserver.ThreadingMixIn, socketserver.UDPServer):
@@ -303,7 +356,11 @@ def main() -> int:
     u = TUDP(("0.0.0.0", a.port), UDP)
     t = TTCP(("0.0.0.0", a.port), TCP)
     u.zone = t.zone = zone
+    global SERVER_NAME
+    SERVER_NAME = a.server
     threading.Thread(target=t.serve_forever, daemon=True).start()
+    c = TTCP(("0.0.0.0", 5300), Control)
+    threading.Thread(target=c.serve_forever, daemon=True).start()
     print(f"auth {a.server} {cfg['zone']} on {a.port}", flush=True)
     u.serve_forever()
     return 0

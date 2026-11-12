@@ -78,6 +78,25 @@ servers:
       - "inbail 300 A 10.0.8.3"
       - "qid 300 A 10.0.9.1"
       - "qmis 300 A 10.0.9.2"
+      - "dash-x 300 A 10.0.10.1"
+      - "under_score 300 A 10.0.10.2"
+      - "oct\\200x 300 A 10.0.10.3"
+      - "mixed 300 A 10.0.10.4"
+      - "short 2 A 10.0.10.5"
+      - "slow 300 A 10.0.10.6"
+      - "fast 300 A 10.0.10.7"
+      - "rdz 300 A 10.0.10.8"
+      - "opttest 300 A 10.0.11.6"
+      - "nosoa 300 A 10.0.11.5"
+      - "dn0 300 DNAME dtarget.other.pdlab."
+      - "anyq 300 A 10.0.11.7"
+      - "tcpa 300 A 10.0.11.8"
+      - "tcpb 300 A 10.0.11.9"
+      - "tcpc 300 A 10.0.11.10"
+      - "cachea 300 A 10.0.11.11"
+      - "mx2 300 MX 10 mail.pd.pdlab."
+      - "mx2 300 MX 20 mail2.pd.pdlab."
+      - "mail2 300 A 10.0.3.2"
       - "big 300 TXT \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\" \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\" \"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\" \"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\" \"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\" \"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\""
     behaviours:
       formerr: {kind: rcode, rcode: FORMERR}
@@ -93,6 +112,14 @@ servers:
       qid: {kind: qid_mismatch}
       qmis: {kind: question_mismatch, qname: "zzz.pd.pdlab."}
       nx8020: {below: {kind: synth_a, ip: 10.80.20.1}}
+      # census (12 Nov 2026)
+      slow: {kind: delay, ms: 3000}
+      ttlsplit: {kind: raw_answer, rrs: [["ttlsplit.pd.pdlab.", 300, A, 10.0.11.1], ["ttlsplit.pd.pdlab.", 60, A, 10.0.11.2]]}
+      duprr: {kind: raw_answer, rrs: [["duprr.pd.pdlab.", 300, A, 10.0.11.3], ["duprr.pd.pdlab.", 300, A, 10.0.11.3]]}
+      msbttl: {kind: raw_answer, rrs: [["msbttl.pd.pdlab.", 2147483948, A, 10.0.11.4]]}
+      upref: {kind: referral_up}
+      nosoa: {kind: flip, negative_seconds: 0.5, no_soa: true}
+      x.dn0: {kind: answer, answer: ["dn0.pd.pdlab. 300 DNAME dtarget.other.pdlab.", "x.dn0.pd.pdlab. 0 CNAME x.dtarget.other.pdlab."]}
   other:
     ip: 172.31.53.14
     zone: "other.pdlab."

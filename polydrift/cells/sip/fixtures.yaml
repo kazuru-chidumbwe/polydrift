@@ -264,3 +264,203 @@ fixtures:
   response_603_decline:
     cell: sip
     # probe: no keyword sentence in scope binds this case
+
+  # ---------------- census: any-receiver message rows (12 Nov 2026) ----------------
+  r_no_empty_line:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-28b63c23", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["fix-request"]}
+
+  r_ruri_space:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-a282bd82", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["fix-request"]}
+      - {"req_id": "SIP-9cbf8569", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["fix-request"]}
+      - {"req_id": "SIP-9e3aeb02", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["fix-request"]}
+      - {"req_id": "SIP-2a3da370", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "comparison only"}
+
+  r_ruri_angle:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-a282bd82", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["fix-request"]}
+
+  r_ruri_tel:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-6fe43eca", "keyword": "MAY", "axis": "decision_class", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-af0dc035", "keyword": "MAY", "axis": "decision_class", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-a03efa30", "keyword": "MAY", "axis": "decision_class", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-bde58b4d", "keyword": "MAY", "axis": "decision_class", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-323dcbbf", "keyword": "MAY", "axis": "decision_class", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-c8ce2fc3", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "comparison only"}
+
+  r_via_rows_and_commas:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-e5eaa312", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
+      - {"req_id": "SIP-8bb86f1d", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
+      - {"req_id": "SIP-3650ce9b", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
+      - {"req_id": "SIP-201cb2a0", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
+      - {"req_id": "SIP-7aa019b5", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
+      - {"req_id": "SIP-7544076e", "keyword": "SHOULD", "axis": "decision_class", "step": 1, "note": "comparison only"}
+
+  r_dup_header_param:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-4ba9913c", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "comparison only"}
+
+  r_auth_rows:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-3df1bb30", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
+      - {"req_id": "SIP-89be2c8c", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
+      - {"req_id": "SIP-7db5b393", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
+
+  r_request_header_in_response:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-c7ff409d", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
+
+  r_request_body_multipart:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-1667ba02", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
+      - {"req_id": "SIP-aa1ef9a7", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
+      - {"req_id": "SIP-862862ed", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
+
+  r_response_body:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-ff4d3088", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
+
+  r_provisional_body:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-090ac843", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
+
+  r_content_encoding:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-5e354a68", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-2978836a", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-43a6dc06", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "comparison only"}
+
+  r_chunked:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-37522234", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "comparison only"}
+
+  r_leading_crlf:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-b5ee8da5", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
+
+  r_sip_scheme:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-2b805b8f", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
+      - {"req_id": "SIP-87dba552", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
+
+  r_cseq_method_mismatch:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-9981a02a", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["fix-request"]}
+
+  r_cseq_too_big:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-a0cf8f0e", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["fix-request"]}
+      - {"req_id": "SIP-61f8ae48", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["fix-request"]}
+
+  r_cseq_over_2_31:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-61f8ae48", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "sender rule; receiver reaction comparison only"}
+
+  r_via_bad_protocol:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-96acd30a", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["fix-request"]}
+
+  r_via_no_branch:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-30eb0bf6", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "RFC 2543 peers send no branch; comparison only"}
+      - {"req_id": "SIP-b5a380b9", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-c4007db7", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-4bd625c5", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "comparison only"}
+
+  r_option_tags_nonstandard:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-5f25e9f2", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-94550276", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "comparison only"}
+
+  r_missing_mandatory_from:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-eeb30cf0", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["fix-request"]}
+      - {"req_id": "SIP-5a1a87da", "keyword": "SHOULD", "axis": "decision_class", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-5c7304f8", "keyword": "SHOULD", "axis": "decision_class", "step": 1, "note": "comparison only"}
+
+  r_not_applicable_header:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-5c14c746", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "sender rule; comparison only"}
+
+  r_from_addrspec_comma:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-7173f66c", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-c1920c5e", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-8d704baa", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-7e9b79f3", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "comparison only"}
+
+  r_body_without_type:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-36719d70", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "sender rule; comparison only"}
+      - {"req_id": "SIP-14121579", "keyword": "SHOULD", "axis": "decision_class", "step": 1, "note": "comparison only"}
+
+  r_no_body_clen_zero:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-dee73454", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
+
+  r_user_empty:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-d723b2ed", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["fix-request"]}
+
+  r_no_userinfo:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-f734921d", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
+
+  r_user_password:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-362fc008", "keyword": "MAY", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
+
+  r_unknown_uri_param:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-490ec3c0", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
+      - {"req_id": "SIP-bbdd8379", "keyword": "SHOULD", "axis": "decision_class", "step": 1, "note": "comparison only"}
+
+  r_dup_uri_param:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-35308ee9", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "comparison only"}
+
+  r_escaped_host:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-23943457", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-95a307db", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "comparison only"}
+
+  r_unusual_reason:
+    cell: sip
+    spec_refs:
+      - {"req_id": "SIP-9040e7cb", "keyword": "SHOULD", "axis": "decision_class", "step": 1, "note": "comparison only"}
+

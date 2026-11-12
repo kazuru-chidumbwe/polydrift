@@ -1483,3 +1483,60 @@ fixtures:
       - {"op": "reply", "from": "dave", "code": 200, "reason": "OK", "window_ms": 6000, "headers": {"Expires": "3"}, "extract": {"x1": "hasall:hist/dave/0/hdr=[\"to\", \"from\", \"call-id\", \"cseq\", \"via\", \"max-forwards\"]", "x2": "re:hist/dave/0/ruri=sips?:[^@]*", "x3": "re:hist/dave/0/hdr/to/0=.*<?sips?:.*", "x7": "re:hist/dave/0/hdr/contact/0=.*action=.*"}}
       - {"op": "reply", "from": "dave", "code": 200, "reason": "OK", "window_ms": 1000, "headers": {"Expires": "300"}, "extract": {"x4": "same:hist/dave/0/hdr/cseq,hist/dave/1/hdr/cseq", "x5": "same:hist/dave/0/hdr/call-id,hist/dave/1/hdr/call-id", "x6": "methods:dave"}}
 
+
+  # ---------------- census: any-element transport and route-set rows (12 Nov 2026) ----------------
+  r_received_param_proxy:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-6971b334", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [true]}
+      - {"req_id": "SIP-e4b4b530", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [true]}
+      - {"req_id": "SIP-232de44a", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [true]}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 800, "msg": "OPTIONS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP pd-alice.example:{port:alice};branch={branch}\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContent-Length: {clen}\n\n", "extract": {"x1": "re:bob/0/hdr/via/1=.*received={lab}.*"}}
+
+  r_tcp_same_port:
+    kind: probe
+    roles: ["proxy", "uas"]
+    spec_refs:
+      - {"req_id": "SIP-51757879", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-4e71a90d", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "SIP-99635e62", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-be1eb690", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-28094a31", "keyword": "SHOULD", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-f81fd16f", "keyword": "SHOULD", "axis": "x2", "step": 2, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "alice", "transport": "tcp", "window_ms": 1200, "msg": "OPTIONS sip:{domain} SIP/2.0\nVia: SIP/2.0/TCP {lab}:{port:alice};branch={branch}\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContent-Length: {clen}\n\n", "extract": {"x1": "has:alice/0/code"}}
+      - {"op": "send", "from": "alice", "transport": "tcp", "window_ms": 1200, "msg": "OPTIONS sip:{domain} SIP/2.0\nVia: SIP/2.0/TCP {lab}:{port:alice};branch={branch}\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:{domain}>\nCall-ID: {callid}\nCSeq: 2 OPTIONS\nContent-Length: {clen}\n\n", "extract": {"x2": "codes:alice"}}
+
+  r_tcp_without_content_length:
+    kind: probe
+    roles: ["proxy", "uas"]
+    spec_refs:
+      - {"req_id": "SIP-c9abcb71", "keyword": "MUST", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-97eefadb", "keyword": "MUST", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-5f32167b", "keyword": "MUST", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-b175e6eb", "keyword": "MUST", "axis": "x1", "step": 1, "note": "comparison only"}
+    steps:
+      - {"op": "send", "from": "alice", "transport": "tcp", "window_ms": 1500, "msg": "OPTIONS sip:{domain} SIP/2.0\nVia: SIP/2.0/TCP {lab}:{port:alice};branch={branch}\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\n\n", "extract": {"x1": "codes:alice"}}
+
+  r_tag_randomness:
+    kind: probe
+    roles: ["uas"]
+    spec_refs:
+      - {"req_id": "SIP-afb924ba", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true], "note": "at least 32 random bits: a tag of 8 or more characters, checked on its length only"}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 1000, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContent-Length: {clen}\n\n", "extract": {"x1": "re:alice/0/hdr/to/0=.*;tag=[^;]{8,}.*"}}
+
+  r_uac_no_record_route:
+    kind: probe
+    roles: ["uac"]
+    spec_refs:
+      - {"req_id": "SIP-d28b4cd3", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [false]}
+    steps:
+      - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 600}
+      - {"op": "reply", "from": "bob", "code": 200, "window_ms": 1500, "headers": {"Content-Type": "application/sdp"}, "body": "v=0\no=bob 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40002 RTP/AVP 0\n", "extract": {"x1": "has:bob/0/hdr/route"}}
+      - {"op": "uac", "action": "hangup", "window_ms": 1500}
+      - {"op": "reply", "from": "bob", "code": 200, "window_ms": 500}
+

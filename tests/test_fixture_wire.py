@@ -4,7 +4,8 @@ import re
 from pathlib import Path
 
 FIX = Path(__file__).resolve().parents[1] / "fixtures"
-LENGTH_FAULTS = {"torture_bad_clen.sip", "torture_multi_clen.sip", "junk_after_message.sip", "message_min.sip"}
+LENGTH_FAULTS = {"torture_bad_clen.sip", "torture_multi_clen.sip", "junk_after_message.sip", "message_min.sip",
+                 "r_no_empty_line.sip", "r_leading_crlf.sip"}
 
 
 def test_fixtures_are_crlf():

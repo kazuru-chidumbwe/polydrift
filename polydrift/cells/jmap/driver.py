@@ -342,7 +342,9 @@ def run_script(base: str, user: str, password: str, session: dict[str, Any], ste
             j = obs.get("json")
             for resp in j.get("methodResponses", []) if isinstance(j, dict) else []:
                 if isinstance(resp, list) and len(resp) == 3 and isinstance(resp[1], dict):
-                    for k, v in (resp[1].get("created") or {}).items():
+                    created = resp[1].get("created")
+                    # /set and /import map creation ids to objects; /changes lists created ids
+                    for k, v in (created.items() if isinstance(created, dict) else []):
                         if isinstance(v, dict) and "id" in v:
                             env[f"id:{k}"] = v["id"]
                         if isinstance(v, dict) and "blobId" in v:

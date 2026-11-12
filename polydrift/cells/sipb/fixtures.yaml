@@ -678,3 +678,28 @@ fixtures:
       - {"op": "send", "from": "alice", "window_ms": 400, "msg": "OPTIONS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
       - {"op": "send", "from": "alice", "window_ms": 400, "msg": "OPTIONS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContent-Length: {clen}\n\n", "extract": {"x2": "bob/0/hdr/max-forwards/0"}}
 
+
+  # ---------------- user agents: starter fixtures (12 Nov 2026) ----------------
+  ua_options_direct:
+    kind: control
+    roles: ["uas"]
+    steps:
+      - {"op": "send", "window_ms": 1000, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nAccept: application/sdp\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice", "x2": "has:alice/0/hdr/allow", "x3": "has:alice/0/hdr/accept"}}
+
+  ua_invite_auto_answer:
+    kind: control
+    roles: ["uas"]
+    steps:
+      - {"op": "send", "window_ms": 3000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:inv};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "codes:alice", "x2": "re:alice/-1/hdr/to/0=.*;tag=.*", "x3": "has:alice/-1/hdr/contact"}}
+      - {"op": "ack", "from": "alice", "window_ms": 800}
+      - {"op": "send", "window_ms": 1500, "msg": "BYE {lasturi:alice:Contact} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: {last:alice:To}\nCall-ID: {callid}\nCSeq: 2 BYE\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
+
+  ua_uac_call:
+    kind: control
+    roles: ["uac"]
+    steps:
+      - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 2500, "extract": {"x1": "methods:bob", "x2": "bob/0/hdr/max-forwards/0", "x3": "re:bob/0/hdr/via/0=SIP/2.0/(UDP|TCP) .*;branch=z9hG4bK.*"}}
+      - {"op": "reply", "from": "bob", "code": 200, "headers": {"Content-Type": "application/sdp"}, "body": "v=0\no=bob 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "window_ms": 2000, "extract": {"x1": "methods:bob"}}
+      - {"op": "uac", "action": "hangup", "window_ms": 2500, "extract": {"x1": "methods:bob"}}
+      - {"op": "reply", "from": "bob", "code": 200, "window_ms": 800}
+

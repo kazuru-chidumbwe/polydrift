@@ -148,6 +148,7 @@ class Lab:
         self.last_invite: dict[str, str] = {}
         self.last_raw: dict[str, str] = {}
         self.creds: dict[str, str] = req.get("creds") or {}
+        self.ctl: dict = req.get("ctl") or {}
 
     # ---------- templates ----------
     def fill(self, text: str, party: str) -> str:
@@ -172,6 +173,13 @@ class Lab:
                                                   else f"{random.getrandbits(40):x}"))
             if k.startswith("port:"):
                 return str(PARTIES[k[5:]])
+            if k.startswith("lasturi:"):
+                # the URI inside a header of the last message the party received (Contact for in-dialog requests)
+                _, who, hname = k.split(":", 2)
+                lr = self.parties[who].last_resp or self.parties[who].last_req or {"hdr": {}}
+                val = (lr["hdr"].get(hname.lower()) or [""])[0]
+                mm = re.search(r"<([^>]+)>", val)
+                return mm.group(1) if mm else val.split(";")[0].strip()
             if k.startswith("last:"):
                 _, who, hname = k.split(":", 2)
                 lr = self.parties[who].last_req or self.parties[who].last_resp or {"hdr": {}}
@@ -271,6 +279,35 @@ class Lab:
         data = self.finish("\n".join(lines) + "\n\n" + body)
         kind, src, conn = p.last_req_src
         return self.send_bytes(p.name, data, kind, src if kind == "udp" else None, via_conn=conn)
+
+    def step_uac(self, st: dict) -> str | None:
+        """Make the user agent under test act (UAC role) through its control interface: action call (to a URI),
+        hangup, or raw (a command string for the interface). The target's `ctl` gives kind and port."""
+        ctl = self.ctl or {}
+        kind, port = ctl.get("kind"), int(ctl.get("port", 0))
+        action, uri = st.get("action", "call"), self.fill(st.get("uri", ""), "alice")
+        if kind == "pjsua":
+            line = {"call": f"call new {uri}", "hangup": "call hangup", "hangup_all": "call hangup_all"}.get(
+                action, st.get("raw", ""))
+            data = (line + "\r\n").encode()
+        elif kind == "baresip":
+            cmd, params = {"call": ("dial", uri), "hangup": ("hangup", ""), "hangup_all": ("hangupall", "")}.get(
+                action, (st.get("raw", ""), ""))
+            body = json.dumps({"command": cmd, "params": params, "token": "pd"}).encode()
+            data = str(len(body)).encode() + b":" + body + b","
+        elif kind == "linphone":
+            line = {"call": f"call {uri}", "hangup": "terminate", "hangup_all": "terminate all"}.get(
+                action, st.get("raw", ""))
+            data = (line + "\n").encode()
+        else:
+            return f"uac: target has no control interface ({kind})"
+        try:
+            with socket.create_connection((self.eut, port), timeout=3) as c:
+                c.sendall(data)
+                time.sleep(0.2)
+        except OSError as e:
+            return f"uac: {type(e).__name__}"
+        return None
 
     def step_ack(self, st: dict) -> str | None:
         party = st.get("from", "alice")
@@ -452,7 +489,7 @@ def run(req: dict) -> list[dict]:
         start = {n: len(p.inbox) for n, p in lab.parties.items()}
         t0 = time.time()
         try:
-            err = {"send": lab.step_send, "reply": lab.step_reply, "ack": lab.step_ack}[op](st)
+            err = {"send": lab.step_send, "reply": lab.step_reply, "ack": lab.step_ack, "uac": lab.step_uac}[op](st)
         except Exception as e:  # noqa: BLE001
             err = f"driver: {e!r}"[:200]
         lab.listen(int(st.get("window_ms", 1500)))

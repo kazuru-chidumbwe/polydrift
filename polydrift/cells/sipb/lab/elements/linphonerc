@@ -1,0 +1,18 @@
+# polydrift sipb: linphonec as a plain user agent on 172.31.60.10, no registration, no media device.
+[sip]
+sip_port=5060
+sip_tcp_port=5060
+sip_tls_port=0
+default_proxy=-1
+register_only_when_network_is_up=0
+use_ipv6=0
+[sound]
+playback_dev_id=null
+ringer_dev_id=null
+capture_dev_id=null
+[video]
+enabled=0
+capture=0
+display=0
+[misc]
+auto_answer=1

@@ -50,11 +50,12 @@ def sh(args: list[str], timeout: int = 300, stdin: str | None = None) -> subproc
     return subprocess.run(args, capture_output=True, text=True, timeout=timeout, input=stdin)
 
 
-def drive(steps: list[dict], unique: str, domain: str, creds: dict | None = None) -> list[dict]:
+def drive(steps: list[dict], unique: str, domain: str, creds: dict | None = None,
+          ctl: dict | None = None) -> list[dict]:
     budget = 30 + sum(st.get("window_ms", 1500) / 1000 + st.get("ms", 0) / 1000 for st in steps)
     r = sh(["docker", "exec", "-i", "psipb-client", "python3", "/lab/driver.py"], timeout=int(budget),
            stdin=json.dumps({"eut": EUT_IP, "eut_port": 5060, "lab": CLIENT_IP, "domain": domain, "unique": unique,
-                             "creds": creds or {}, "steps": steps}))
+                             "creds": creds or {}, "ctl": ctl or {}, "steps": steps}))
     if r.returncode != 0:
         raise RuntimeError(f"driver exit {r.returncode}: {r.stderr.strip()[-300:]}")
     return json.loads(r.stdout)
@@ -141,11 +142,12 @@ def main() -> int:
                 image_id = sh(["docker", "image", "inspect", "-f", "{{.Id}}", t["image"]]).stdout.strip()
                 batch = []
                 for fid, fx in fixtures.items():
-                    if fx.get("roles") and t.get("role") not in fx["roles"]:
+                    roles = set(t.get("roles") or [t.get("role")])
+                    if fx.get("roles") and not roles & set(fx["roles"]):
                         continue
                     unique = "pd" + hashlib.sha1(fid.encode()).hexdigest()[:10]
                     try:
-                        obs = drive(fx["steps"], unique, domain, t.get("creds")) if ok_start else []
+                        obs = drive(fx["steps"], unique, domain, t.get("creds"), t.get("ctl")) if ok_start else []
                     except Exception as e:  # noqa: BLE001
                         obs = [{"step": 1, "op": "?", "error": f"driver: {e!r}"[:300]}]
                     batch.append((fid, obs))

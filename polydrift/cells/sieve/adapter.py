@@ -59,6 +59,11 @@ def effect_step(res: dict[str, Any], spec: CellSpec) -> StepRecord | None:
     if "flags" in eff:
         # IMAP flags of the stored messages per folder (RFC 5232)
         vals["stored_flags"] = tuple(sorted((k, tuple(v)) for k, v in (eff.get("flags") or {}).items()))
+    if eff.get("lmtp"):
+        # the reply to DATA the sending MTA acts on (RFC 5429 2.1; RFC 5321 4.2 and 4.5.3.1.5)
+        r = eff["lmtp"]
+        vals["lmtp_reply"] = (r.get("class"), r.get("enhanced"), r.get("lines"), (r.get("max_line") or 0) <= 512,
+                              bool(r.get("marker")))
     if any("facts" in e for e in eff.get("emitted") or []):
         # header facts of each sent message, by kind (RFC 5228 4.2, RFC 5230 5, RFC 5429 2.1 and 2.2)
         vals["emitted_headers"] = tuple(sorted((e.get("kind"), tuple(sorted((e.get("facts") or {}).items())))

@@ -15,7 +15,8 @@ It prints one JSON object with three layers, using only the engine's own tools:
            (redirect | reject | vacation | dsn | other), with its recipients
 
 Engines: pigeonhole (sieve-test), mailutils (sieve), exim (exim -bf, intent only), sieve-rs (pd-sieve-rs runner,
-intent only), jsieve (pd-jsieve runner, intent only), cyrus (sievec compile; effect over LMTP, phase 2).
+intent only), jsieve (pd-jsieve runner, intent only), pigeonhole-lmtp (phase 2: compile and intent as
+pigeonhole, effect from a real delivery through Dovecot's LMTP server, with the reply to DATA).
 """
 
 from __future__ import annotations
@@ -376,6 +377,173 @@ def exim(fx: Path, meta: dict) -> dict:
     return res
 
 
+
+# ---------------------------------------------------------------- Pigeonhole over Dovecot LMTP (phase 2)
+def lmtp_reply_facts(code: int, text: str) -> dict:
+    """The final reply to DATA as the sending MTA sees it: code class, enhanced status code, line count and
+    whether every line fits the RFC 5321 4.5.3.1.5 limit (512 octets with CRLF)."""
+    lines = (text or "").split("\n") if text else [""]
+    enh = re.match(r"\s*([245]\.\d{1,3}\.\d{1,3})\b", lines[0])
+    return {"code": code, "class": str(code)[0] if code else None, "enhanced": enh.group(1) if enh else None,
+            "lines": len(lines), "max_line": max(len(f"{code} {ln}") + 2 for ln in lines),
+            "marker": "PD-MARKER" in (text or ""), "text": (text or "")[:600]}
+
+
+def lmtp_conf(ver: str, maildir: Path, script: Path) -> Path:
+    run = Path("/tmp/pd-run")
+    run.mkdir(exist_ok=True)
+    base = f"""base_dir = {run}
+state_dir = /tmp/pd-state
+protocols = lmtp
+ssl = no
+log_path = /tmp/pd-dovecot.log
+default_internal_user = pd
+default_internal_group = pd
+default_login_user = pd
+postmaster_address = postmaster@lab.test
+hostname = pd-dovecot.lab.test
+sendmail_path = /lab/capture.sh
+service lmtp {{
+  unix_listener lmtp {{
+    mode = 0666
+  }}
+}}
+"""
+    c = Path("/tmp/pd-lmtp.conf")
+    if ver.startswith("2.4"):
+        c.write_text(f"""dovecot_config_version = 2.4.0
+dovecot_storage_version = 2.4.0
+{base}mail_driver = maildir
+mail_path = {maildir}
+mail_inbox_path = {maildir}
+mail_home = /tmp/pd-home
+namespace inbox {{
+  inbox = yes
+  prefix = INBOX.
+  separator = .
+}}
+userdb static {{
+  fields {{
+    uid = 1000
+    gid = 1000
+    home = /tmp/pd-home
+  }}
+}}
+passdb static {{
+  password = pd
+}}
+protocol lmtp {{
+  mail_plugins {{
+    sieve = yes
+  }}
+}}
+sieve_script personal {{
+  type = personal
+  driver = file
+  path = /tmp/pd-sieve
+  active_path = {script}
+}}
+""")
+    else:
+        c.write_text(f"""{base}mail_location = maildir:{maildir}
+mail_home = /tmp/pd-home
+namespace inbox {{
+  inbox = yes
+  prefix = INBOX.
+  separator = .
+}}
+userdb {{
+  driver = static
+  args = uid=1000 gid=1000 home=/tmp/pd-home
+}}
+passdb {{
+  driver = static
+  args = password=pd
+}}
+protocol lmtp {{
+  mail_plugins = $mail_plugins sieve
+}}
+plugin {{
+  sieve = file:/tmp/pd-sieve;active={script}
+}}
+""")
+    return c
+
+
+def pigeonhole_lmtp(fx: Path, meta: dict) -> dict:
+    """The script runs at delivery time inside Dovecot's LMTP server; the reply to DATA is what the sending MTA
+    acts on (RFC 5429 2.1: ereject refuses at protocol level, reject sends an MDN after accepting)."""
+    import smtplib
+    import time
+    # compile and intent from the same engine's test tool (as the pigeonhole engine), then a clean lab for the
+    # LMTP delivery
+    res = pigeonhole(fx, meta)
+    res["engine_version"] = res.get("engine_version", "") + " lmtp"
+    res.pop("effect", None)
+    if res.get("compile") != "ok":
+        return res
+    shutil.rmtree("/tmp/Maildir", ignore_errors=True)
+    shutil.rmtree(OUT, ignore_errors=True)
+    ver = sh(["dovecot", "--version"])[1].split()[0]
+    s = Path("/tmp/pd-home/.dovecot.sieve")
+    for d in ("/tmp/pd-home", "/tmp/pd-sieve", "/tmp/pd-state"):
+        Path(d).mkdir(parents=True, exist_ok=True)
+    shutil.copy(fx / "script.sieve", s)
+    maildir = Path("/tmp/Maildir")
+    make_maildir(maildir, meta.get("folders", ["INBOX"]))
+    for p in (maildir, Path("/tmp/pd-home"), Path("/tmp/pd-sieve")):
+        sh(["chown", "-R", "1000:1000", str(p)])
+    conf = lmtp_conf(ver, maildir, s)
+    sh(["chown", "-R", "1000:1000", "/tmp/pd-home"])
+    # the master daemonises; its children must not inherit the wrapper's pipes, or the wrapper waits on them
+    with open("/tmp/pd-dovecot.start", "wb") as so:
+        rc = subprocess.run(["dovecot", "-c", str(conf)], stdout=so, stderr=subprocess.STDOUT,
+                            stdin=subprocess.DEVNULL, timeout=30).returncode
+    txt = Path("/tmp/pd-dovecot.start").read_text(errors="replace")
+    sock = "/tmp/pd-run/lmtp"
+    for _ in range(100):
+        if Path(sock).exists():
+            break
+        time.sleep(0.1)
+    else:
+        log = Path("/tmp/pd-dovecot.log").read_text(errors="replace")[-300:] if Path("/tmp/pd-dovecot.log").exists() else ""
+        return {**res, "harness_error": f"lmtp socket missing: {txt.strip()[-150:]} {log}"}
+    try:
+        c = smtplib.LMTP(sock, timeout=30)
+        c.ehlo_or_helo_if_needed()
+        c.mail(meta.get("from", "sender@example.invalid"))
+        code, msg = c.rcpt(meta.get("to", "user@lab.test"))
+        rcpt = {"code": code, "text": msg.decode("utf-8", "replace")[:300]}
+        if code >= 400:
+            final = (code, msg)
+        else:
+            c.putcmd("data")
+            code, msg = c.getreply()
+            if code != 354:
+                final = (code, msg)
+            else:
+                data = (fx / "msg.eml").read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n")
+                c.send(smtplib._quote_periods(data) + (b"" if data.endswith(b"\r\n") else b"\r\n") + b".\r\n")
+                final = c.getreply()
+        try:
+            c.quit()
+        except Exception:  # noqa: BLE001
+            pass
+    except Exception as e:  # noqa: BLE001
+        return {**res, "harness_error": f"lmtp session: {e!r}"[:300]}
+    finally:
+        subprocess.run(["doveadm", "-c", str(conf), "stop"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                       stdin=subprocess.DEVNULL, timeout=30)
+    time.sleep(0.3)
+    rep = lmtp_reply_facts(final[0], final[1].decode("utf-8", "replace"))
+    res["effect"] = {"stored": maildir_counts(maildir), "flags": maildir_flags(maildir), "emitted": emitted(),
+                     "lmtp": rep, "lmtp_rcpt": rcpt}
+    log = Path("/tmp/pd-dovecot.log")
+    if log.exists():
+        res["log_tail"] = log.read_text(errors="replace")[-400:]
+    return res
+
+
 # ---------------------------------------------------------------- library runners (JSON already)
 def runner(cmd: str):
     def f(fx: Path, meta: dict) -> dict:
@@ -392,7 +560,7 @@ def runner(cmd: str):
     return f
 
 
-ENGINES = {"pigeonhole": pigeonhole, "mailutils": mailutils, "exim": exim,
+ENGINES = {"pigeonhole": pigeonhole, "pigeonhole-lmtp": pigeonhole_lmtp, "mailutils": mailutils, "exim": exim,
            "sieve-rs": runner("pd-sieve-rs"), "jsieve": runner("pd-jsieve")}
 
 

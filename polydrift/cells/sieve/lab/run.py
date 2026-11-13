@@ -591,6 +591,37 @@ EVENTS {{
     return imapd, master
 
 
+def mutf7_encode(s: str) -> str:
+    """IMAP modified UTF-7 (RFC 3501 5.1.3): how a non-ASCII mailbox name goes over IMAP and how Cyrus stores it."""
+    import base64
+    out, run = [], []
+
+    def flush() -> None:
+        if run:
+            b = base64.b64encode("".join(run).encode("utf-16-be")).decode().rstrip("=").replace("/", ",")
+            out.append("&" + b + "-")
+            run.clear()
+    for ch in s:
+        if 0x20 <= ord(ch) <= 0x7E:
+            flush()
+            out.append("&-" if ch == "&" else ch)
+        else:
+            run.append(ch)
+    flush()
+    return "".join(out)
+
+
+def mutf7_decode(s: str) -> str:
+    import base64
+    def dec(m: re.Match) -> str:
+        b = m.group(1)
+        if not b:
+            return "&"
+        b = b.replace(",", "/")
+        return base64.b64decode(b + "=" * (-len(b) % 4)).decode("utf-16-be")
+    return re.sub(r"&([A-Za-z0-9+,]*)-", dec, s)
+
+
 def cyrus_store(user: str) -> tuple[dict[str, int], dict[str, list[str]]]:
     """Messages per folder from the legacy spool layout (N. files per folder directory)."""
     # hashimapspool is off in this config: spool/user/<name>; hashed layout spool/<h>/user/<name> as fallback
@@ -601,7 +632,7 @@ def cyrus_store(user: str) -> tuple[dict[str, int], dict[str, list[str]]]:
     if not root.exists():
         return {"INBOX": 0}, {}
     for d in [root] + sorted(p for p in root.rglob("*") if p.is_dir()):
-        name = "INBOX" if d == root else "INBOX." + ".".join(d.relative_to(root).parts)
+        name = "INBOX" if d == root else "INBOX." + ".".join(mutf7_decode(p) for p in d.relative_to(root).parts)
         counts[name] = sum(1 for f in d.iterdir() if f.is_file() and re.fullmatch(r"\d+\.", f.name))
     return counts, {}
 
@@ -652,7 +683,7 @@ def cyrus(fx: Path, meta: dict) -> dict:
                 time.sleep(0.1)
         im.login("cyrus", "pd")
         for f in folders:
-            name = "user." + user + ("" if f == "INBOX" else "." + f.split(".", 1)[1])
+            name = "user." + user + ("" if f == "INBOX" else "." + mutf7_encode(f.split(".", 1)[1]))
             typ, data = im.create(name)
             if typ != "OK":
                 raise RuntimeError(f"create {name}: {data}")

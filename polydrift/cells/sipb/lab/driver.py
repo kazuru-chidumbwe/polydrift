@@ -149,6 +149,7 @@ class Lab:
         self.last_raw: dict[str, str] = {}
         self.creds: dict[str, str] = req.get("creds") or {}
         self.ctl: dict = req.get("ctl") or {}
+        self.own_callids: set[str] = set()  # every Call-ID the lab sent in this fixture (see is_probe)
 
     # ---------- templates ----------
     def fill(self, text: str, party: str) -> str:
@@ -204,6 +205,9 @@ class Lab:
                    via_conn: socket.socket | None = None) -> str | None:
         p = self.parties[party]
         dest = dest or (self.eut, self.eut_port)
+        cid = re.search(rb"(?im)^(?:call-id|i)\s*:\s*(\S+)", data)
+        if cid:
+            self.own_callids.add(cid.group(1).decode("utf-8", "replace"))
         try:
             if transport == "udp":
                 p.udp.sendto(data, dest)
@@ -512,22 +516,51 @@ def run(req: dict) -> list[dict]:
                 err = None
             else:
                 lab.listen(int(st.get("window_ms", 1500)))
-        got = {n: p.inbox[start[n]:] for n, p in lab.parties.items()}
+        raw = {n: p.inbox[start[n]:] for n, p in lab.parties.items()}
+        got = {n: [m for m in msgs if not is_probe(m, lab.own_callids)] for n, msgs in raw.items()}
         obs = {"step": i, "op": op, "actor": st.get("from", "alice" if op != "reply" else "bob"), "error": err,
                "got": got, "ms": int((time.time() - t0) * 1000)}
+        probes = {n: len(raw[n]) - len(got[n]) for n in raw if len(raw[n]) != len(got[n])}
+        if probes:
+            obs["probes"] = probes
         if st.get("extract"):
             # step messages per party, the last request each party sent, and every message each party received so
             # far in the fixture ("hist", for clauses that compare a retransmission with the first transmission)
-            ctx = {**got, "sent": lab.sent, "hist": {n: list(p.inbox) for n, p in lab.parties.items()}}
+            ctx = {**got, "sent": lab.sent,
+                   "hist": {n: [m for m in p.inbox if not is_probe(m, lab.own_callids)] for n, p in lab.parties.items()}}
             obs["extract"] = {k: _unu(evaluate(lab.fill(e, obs["actor"]), ctx), lab) for k, e in st["extract"].items()}
         out.append(obs)
     return out
 
 
+def is_probe(m: dict, own_callids: set[str]) -> bool:
+    """An OPTIONS request on a Call-ID the lab never sent in this fixture: the element's own keep-alive or
+    dispatcher probing (or a UA's), which lands in whichever step window is open when its timer fires. It is not
+    the fixture's behaviour, so it is kept out of the step (counted in the observation's `probes`)."""
+    if m.get("kind") != "req" or m.get("method") != "OPTIONS":
+        return False
+    cid = (m.get("hdr", {}).get("call-id") or [""])[0]
+    return cid not in own_callids
+
+
+def _ceil10(m: re.Match) -> str:
+    return f"{m.group(1)}{-(-int(m.group(2)) // 10) * 10}"
+
+
+def mask_random(s: str) -> str:
+    """Per-run random tokens mapped to placeholders, so a value compares across repeats: Via branches (the RFC 3261
+    magic cookie kept), tag and ftag values, and remaining registration time in an expires parameter (rounded up to
+    ten seconds: the registrar counts down from the time of the REGISTER, which moves with step timing)."""
+    s = re.sub(r"(branch=z9hG4bK)[^;>,\s\"]+", r"\1{r}", s)
+    s = re.sub(r"([;?&](?:f?tag|branch))=(?!z9hG4bK)[^;>,\s\"]+", r"\1={r}", s)
+    return re.sub(r"(expires=)(\d+)", _ceil10, s)
+
+
 def _unu(v, lab: Lab):
-    """Lab-specific values (unique name, lab and EUT addresses) mapped to placeholders, so values compare."""
+    """Lab-specific values (unique name, lab and EUT addresses) mapped to placeholders, and per-run random tokens
+    masked (mask_random), so values compare."""
     if isinstance(v, str):
-        return v.replace(lab.unique, "{U}").replace(lab.host, "{lab}").replace(lab.eut, "{eut}")
+        return mask_random(v.replace(lab.unique, "{U}").replace(lab.host, "{lab}").replace(lab.eut, "{eut}"))
     if isinstance(v, list):
         return [_unu(x, lab) for x in v]
     if isinstance(v, dict):

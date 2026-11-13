@@ -1,10 +1,11 @@
 # reSIProcate repro (C++, the reSIProcate stack), built from the project's release tarball with CMake (1.14 dropped
-# the autotools build), as SIP proxy and registrar; only repro and its libraries are built.
+# the autotools build; 1.13 too), as SIP proxy and registrar; only repro and its libraries are built. Trixie's libdb++-dev
+# no longer ships db_cxx.h, so the Berkeley DB 5.3 packages are named directly.
 # Build: docker build -f repro.Dockerfile --build-arg VER=1.14.0 -t pd-sipb-repro:1.14.0 .
 FROM debian:trixie-slim AS build
 ARG VER
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl build-essential cmake \
-      pkg-config libssl-dev libdb++-dev libpopt-dev libc-ares-dev libasio-dev libboost-system-dev libpcre2-dev \
+      pkg-config libssl-dev libdb5.3++-dev libdb5.3-dev libpopt-dev libc-ares-dev libasio-dev libboost-system-dev libpcre2-dev \
       python3 \
  && curl -fsSL -o r.tar.gz https://github.com/resiprocate/resiprocate/archive/refs/tags/resiprocate-${VER}.tar.gz \
  && echo "TARBALL-SHA256 $(sha256sum r.tar.gz)" \
@@ -14,7 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
       -DBUILD_TESTING=OFF -DUSE_MAXMIND_GEOIP=OFF -DUSE_SIGCOMP=OFF -DWITH_SSL=ON -DUSE_POPT=ON \
  && cmake --build build -j4 && cmake --install build
 FROM debian:trixie-slim
-RUN apt-get update && apt-get install -y --no-install-recommends libssl3t64 libdb5.3++ libpopt0 libc-ares2 \
+RUN apt-get update && apt-get install -y --no-install-recommends libssl3t64 libdb5.3++t64 libdb5.3t64 libpopt0 libc-ares2 \
       libpcre2-8-0 \
  && rm -rf /var/lib/apt/lists/*
 COPY --from=build /usr/local /usr/local

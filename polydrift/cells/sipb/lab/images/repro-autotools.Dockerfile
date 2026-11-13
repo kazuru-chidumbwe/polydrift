@@ -1,7 +1,10 @@
-# reSIProcate repro releases before 1.14 (autotools build), from the release tarball, for the versioned runs.
-# Build: docker build -f repro-autotools.Dockerfile --build-arg VER=1.13.2 -t pd-sipb-repro:1.13.2 .
-FROM debian:bookworm-slim AS build
+# reSIProcate repro 1.12 (autotools build), from the release tarball, for the versioned runs. 1.13 ships CMake only
+# and uses repro.Dockerfile. 1.12 needs OpenSSL 1.1 (it calls CRYPTO_set_mem_debug, gone in OpenSSL 3), so the
+# build runs on Ubuntu 20.04 (Debian bullseye's archive no longer serves it reliably).
+# Build: docker build -f repro-autotools.Dockerfile --build-arg VER=1.12.0 -t pd-sipb-repro:1.12.0 .
+FROM ubuntu:20.04 AS build
 ARG VER
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl build-essential autoconf \
       automake libtool pkg-config libssl-dev libdb++-dev libpopt-dev libc-ares-dev libasio-dev libboost-system-dev \
       libpcre3-dev python3 \
@@ -11,8 +14,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
  && autoreconf --install \
  && ./configure --prefix=/usr/local --with-repro --with-ssl --with-c-ares \
  && make -j8 && make install
-FROM debian:bookworm-slim
-RUN apt-get update && apt-get install -y --no-install-recommends libssl3 libdb5.3++ libpopt0 libc-ares2 libpcre3 \
+FROM ubuntu:20.04
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends libssl1.1 libdb5.3++ libpopt0 libc-ares2 libpcre3 \
  && rm -rf /var/lib/apt/lists/*
 COPY --from=build /usr/local /usr/local
 RUN ldconfig && mkdir -p /var/lib/repro

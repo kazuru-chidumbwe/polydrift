@@ -88,7 +88,10 @@ def effect_step(res: dict[str, Any], spec: CellSpec) -> StepRecord | None:
 def to_records(res: dict[str, Any], impl: str, fixture: str, *, spec: CellSpec, repeat: int = 1,
                impl_version: str = "", harness_commit: str = "") -> list[ObservationRecord]:
     base = dict(cell="sieve", impl=impl, impl_version=impl_version, repeat=repeat, harness_commit=harness_commit)
-    out = [ObservationRecord(fixture=fixture, steps=(intent_step(res, spec),), **base)]
+    out = []
+    # an engine without a dry run (effect_only) has no intent layer: it gives the compile record only on refusal
+    if not res.get("effect_only") or outcome(res) == "refused" or res.get("harness_error"):
+        out.append(ObservationRecord(fixture=fixture, steps=(intent_step(res, spec),), **base))
     eff = effect_step(res, spec)
     if eff is not None:
         out.append(ObservationRecord(fixture=fixture + EFFECT, steps=(eff,), **base))

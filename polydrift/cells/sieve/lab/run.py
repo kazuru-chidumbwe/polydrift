@@ -16,7 +16,8 @@ It prints one JSON object with three layers, using only the engine's own tools:
 
 Engines: pigeonhole (sieve-test), mailutils (sieve), exim (exim -bf, intent only), sieve-rs (pd-sieve-rs runner,
 intent only), jsieve (pd-jsieve runner, intent only), pigeonhole-lmtp (phase 2: compile and intent as
-pigeonhole, effect from a real delivery through Dovecot's LMTP server, with the reply to DATA).
+pigeonhole, effect from a real delivery through Dovecot's LMTP server, with the reply to DATA), cyrus (phase 2:
+sievec compile, then a real delivery through Cyrus lmtpd; effect records only, Cyrus has no dry run).
 """
 
 from __future__ import annotations
@@ -383,7 +384,7 @@ def lmtp_reply_facts(code: int, text: str) -> dict:
     """The final reply to DATA as the sending MTA sees it: code class, enhanced status code, line count and
     whether every line fits the RFC 5321 4.5.3.1.5 limit (512 octets with CRLF)."""
     lines = (text or "").split("\n") if text else [""]
-    enh = re.match(r"\s*([245]\.\d{1,3}\.\d{1,3})\b", lines[0])
+    enh = next((m for m in (re.match(r"\s*([245]\.\d{1,3}\.\d{1,3})\b", ln) for ln in lines) if m), None)
     return {"code": code, "class": str(code)[0] if code else None, "enhanced": enh.group(1) if enh else None,
             "lines": len(lines), "max_line": max(len(f"{code} {ln}") + 2 for ln in lines),
             "marker": "PD-MARKER" in (text or ""), "text": (text or "")[:600]}
@@ -544,6 +545,160 @@ def pigeonhole_lmtp(fx: Path, meta: dict) -> dict:
     return res
 
 
+
+# ---------------------------------------------------------------- Cyrus IMAP over LMTP (phase 2)
+CY = Path("/tmp/cy")
+
+
+def cyrus_conf(folders: list[str]) -> tuple[Path, Path]:
+    for d in ("conf", "spool", "sieve", "socket", "run"):
+        (CY / d).mkdir(parents=True, exist_ok=True)
+    # the services master starts read /etc/imapd.conf, not master -C (throwaway container, so write it there)
+    imapd = Path("/etc/imapd.conf")
+    imapd.write_text(f"""configdirectory: {CY}/conf
+partition-default: {CY}/spool
+sievedir: {CY}/sieve
+lmtpsocket: {CY}/socket/lmtp
+idlesocket: {CY}/socket/idle
+notifysocket: {CY}/socket/notify
+admins: cyrus
+servername: pd-cyrus.lab.test
+defaultdomain: lab.test
+virtdomains: off
+unixhierarchysep: no
+altnamespace: no
+mailbox_legacy_dirs: yes
+sasl_pwcheck_method: auxprop
+sasl_auxprop_plugin: sasldb
+sasl_mech_list: PLAIN
+allowplaintext: yes
+sendmail: /lab/capture.sh
+postmaster: postmaster
+lmtp_downcase_rcpt: yes
+syslog_prefix: pd-cyrus
+""")
+    master = Path("/etc/cyrus.conf")
+    master.write_text(f"""START {{
+  recover cmd="ctl_cyrusdb -r"
+}}
+SERVICES {{
+  lmtpunix cmd="lmtpd" listen="{CY}/socket/lmtp" prefork=0
+  imap cmd="imapd" listen="127.0.0.1:1143" prefork=0
+}}
+EVENTS {{
+}}
+""")
+    return imapd, master
+
+
+def cyrus_store(user: str) -> tuple[dict[str, int], dict[str, list[str]]]:
+    """Messages per folder from the legacy spool layout (N. files per folder directory)."""
+    # hashimapspool is off in this config: spool/user/<name>; hashed layout spool/<h>/user/<name> as fallback
+    root = CY / "spool" / "user" / user
+    if not root.exists():
+        root = CY / "spool" / user[0] / "user" / user
+    counts: dict[str, int] = {}
+    if not root.exists():
+        return {"INBOX": 0}, {}
+    for d in [root] + sorted(p for p in root.rglob("*") if p.is_dir()):
+        name = "INBOX" if d == root else "INBOX." + ".".join(d.relative_to(root).parts)
+        counts[name] = sum(1 for f in d.iterdir() if f.is_file() and re.fullmatch(r"\d+\.", f.name))
+    return counts, {}
+
+
+def cyrus(fx: Path, meta: dict) -> dict:
+    import smtplib
+    import time
+    bindir = "/usr/lib/cyrus/bin"
+    ver = sh(["dpkg-query", "-W", "-f", "${Version}", "cyrus-imapd"])[1].strip()
+    folders = meta.get("folders", ["INBOX"])
+    imapd, master = cyrus_conf(folders)
+    user = meta.get("to", "user@lab.test").split("@")[0].lower()
+    sdir = CY / "sieve" / user[0] / user
+    sdir.mkdir(parents=True, exist_ok=True)
+    shutil.copy(fx / "script.sieve", sdir / "pd.script")
+    rc, txt = sh([f"{bindir}/sievec", "-C", str(imapd), str(sdir / "pd.script"), str(sdir / "pd.bc")])
+    res = {"engine_version": f"cyrus-imapd {ver} lmtp", "effect_only": True,
+           "compile": "ok" if rc == 0 else "refused", "compile_class": None if rc == 0 else compile_class(txt),
+           "compile_text": txt.strip()[-300:]}
+    if rc != 0:
+        return res
+    os.symlink("pd.bc", sdir / "defaultbc")
+    # admin password for the mailbox setup, lab only (default sasldb of this throwaway container)
+    for realm in ("pd-cyrus.lab.test", os.uname().nodename):
+        sh(["saslpasswd2", "-p", "-c", "-u", realm, "cyrus"], stdin=b"pd")
+    sh(["chown", "cyrus:mail", "/etc/sasldb2"])
+    sh(["chown", "-R", "cyrus:mail", str(CY)])
+    log = open("/tmp/pd-cyrus.log", "wb")
+    proc = subprocess.Popen([f"{bindir}/master", "-C", str(imapd), "-M", str(master), "-p", str(CY / "run/master.pid")],
+                            stdout=log, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL)
+    sock = str(CY / "socket" / "lmtp")
+    for _ in range(150):
+        if Path(sock).exists():
+            break
+        time.sleep(0.1)
+    else:
+        proc.kill()
+        return {**res, "harness_error": "cyrus lmtp socket missing: " +
+                Path("/tmp/pd-cyrus.log").read_text(errors="replace")[-250:]}
+    # the lab mailbox and its folders, created by the Cyrus admin over IMAP (test-only password check)
+    import imaplib
+    try:
+        for _ in range(50):
+            try:
+                im = imaplib.IMAP4("127.0.0.1", 1143)
+                break
+            except OSError:
+                time.sleep(0.1)
+        im.login("cyrus", "pd")
+        for f in folders:
+            name = "user." + user + ("" if f == "INBOX" else "." + f.split(".", 1)[1])
+            typ, data = im.create(name)
+            if typ != "OK":
+                raise RuntimeError(f"create {name}: {data}")
+        im.logout()
+    except Exception as e:  # noqa: BLE001
+        proc.kill()
+        return {**res, "harness_error": f"cyrus mailbox setup: {e!r}"[:300]}
+    try:
+        c = smtplib.LMTP(sock, timeout=30)
+        c.ehlo_or_helo_if_needed()
+        c.mail(meta.get("from", "sender@example.invalid"))
+        code, msg = c.rcpt(meta.get("to", "user@lab.test"))
+        rcpt = {"code": code, "text": msg.decode("utf-8", "replace")[:300]}
+        if code >= 400:
+            final = (code, msg)
+        else:
+            c.putcmd("data")
+            code, msg = c.getreply()
+            if code != 354:
+                final = (code, msg)
+            else:
+                data = (fx / "msg.eml").read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n")
+                c.send(smtplib._quote_periods(data) + (b"" if data.endswith(b"\r\n") else b"\r\n") + b".\r\n")
+                final = c.getreply()
+        try:
+            c.quit()
+        except Exception:  # noqa: BLE001
+            pass
+    except Exception as e:  # noqa: BLE001
+        proc.kill()
+        return {**res, "harness_error": f"lmtp session: {e!r}"[:300]}
+    time.sleep(0.5)
+    proc.terminate()
+    try:
+        proc.wait(timeout=10)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+    stored, _ = cyrus_store(user)
+    for f in folders:
+        stored.setdefault(f, 0)
+    res["effect"] = {"stored": stored, "emitted": emitted(),
+                     "lmtp": lmtp_reply_facts(final[0], final[1].decode("utf-8", "replace")), "lmtp_rcpt": rcpt}
+    res["log_tail"] = Path("/tmp/pd-cyrus.log").read_text(errors="replace")[-400:]
+    return res
+
+
 # ---------------------------------------------------------------- library runners (JSON already)
 def runner(cmd: str):
     def f(fx: Path, meta: dict) -> dict:
@@ -560,7 +715,7 @@ def runner(cmd: str):
     return f
 
 
-ENGINES = {"pigeonhole": pigeonhole, "pigeonhole-lmtp": pigeonhole_lmtp, "mailutils": mailutils, "exim": exim,
+ENGINES = {"pigeonhole": pigeonhole, "pigeonhole-lmtp": pigeonhole_lmtp, "cyrus": cyrus, "mailutils": mailutils, "exim": exim,
            "sieve-rs": runner("pd-sieve-rs"), "jsieve": runner("pd-jsieve")}
 
 

@@ -70,8 +70,8 @@ axes:
     clause: "T3: question name as returned, case kept (RFC 1034 3.1, RFC 1035 2.3.3); 0x20 clients compare it"
   answer_ttls:
     tier: 3
-    kappa: identity
-    clause: "T3: distinct TTLs in the answer section (RFC 2181 5.2, 8; RFC 6672 3.1); how long the stub caches"
+    kappa: ttl_classes
+    clause: "T3: distinct TTLs in the answer section, each as the lab TTL it is ageing from (RFC 2181 5.2, 8; RFC 6672 3.1); how long the stub caches"
   additional_soa:
     tier: 3
     kappa: identity

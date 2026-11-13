@@ -59,7 +59,26 @@ def _additional(values: Any) -> Any:
     return tuple(sorted(out))
 
 
-KAPPA: dict[str, Callable[[Any], Any]] = {"identity": identity, "rrset": _rrset, "additional": _additional}
+# TTLs the lab authorities serve (zones.yaml and the raw-answer behaviours), plus common caps and the largest legal
+# TTL. A cached record's TTL counts down by the seconds since it was cached, so its raw value depends on when the
+# step ran; its class is the smallest anchor at or above it, the TTL it is ageing from (RFC 1035 3.2.1, RFC 2181 8).
+TTL_ANCHORS = (0, 2, 60, 300, 3600, 86400, 604800, 2**31 - 1)
+
+
+def ttl_anchor(t: int) -> int:
+    for a in TTL_ANCHORS:
+        if t <= a:
+            return a
+    return t
+
+
+def _ttl_classes(value: Any) -> Any:
+    if value is None:
+        return None
+    return tuple(sorted({ttl_anchor(int(t)) for t in value}))
+
+
+KAPPA: dict[str, Callable[[Any], Any]] = {"identity": identity, "rrset": _rrset, "additional": _additional, "ttl_classes": _ttl_classes}
 
 END_STATE_AXES: set[str] = set()
 

@@ -4,6 +4,8 @@
 # linphonec does not block on open() before the first command. AUTO=0 starts it without auto-answer (ringing UAS).
 # the runner mounts the config read-only and liblinphone opens it read-write, so it runs on a copy
 cp /etc/linphone/linphonerc /root/linphonerc
+# liblinphone keeps its database under ~/.local/share/linphone and does not create the directory
+mkdir -p /root/.local/share/linphone
 mkfifo /tmp/lin.in
 sleep infinity > /tmp/lin.in &
 socat -u TCP-LISTEN:4444,fork,reuseaddr OPEN:/tmp/lin.in,wronly,append &

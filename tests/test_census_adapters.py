@@ -10,6 +10,18 @@ from polydrift.cells.mqtt import adapter as mqtt_adapter
 from polydrift.cells.sieve import adapter as sieve_adapter
 
 
+def test_sieve_canary_effect_only_engine():
+    from polydrift.cells.sieve.runner import canary_ok
+    kept = {"compile": "ok", "effect_only": True, "effect": {
+        "stored": {"INBOX": 1}, "emitted": [], "lmtp": {"code": 250}}}
+    assert canary_ok(kept)
+    assert not canary_ok({**kept, "effect": {**kept["effect"], "stored": {"INBOX": 0}}})
+    assert not canary_ok({**kept, "effect": {**kept["effect"], "lmtp": {"code": 550}}})
+    assert not canary_ok({**kept, "harness_error": "cyrus mailbox setup"})
+    assert canary_ok({"compile": "ok", "intent": ["keep"]})
+    assert not canary_ok({"compile": "ok", "intent": ["discard"]})
+
+
 def test_sieve_effect_facts_and_flags():
     spec = sieve_adapter.load_spec()
     res = {"compile": "ok", "intent": ["vacation"], "effect": {

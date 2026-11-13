@@ -75,9 +75,20 @@ def run_one(t: dict[str, Any], lab: str, fx: dict[str, Any], defaults: dict) -> 
     return json.loads(line)
 
 
+def canary_ok(res: dict[str, Any]) -> bool:
+    """An explicit keep compiled and kept. Effect-only engines (Cyrus: no dry run, so no intent) pass on the effect:
+    the reply to DATA is 250, the message is in INBOX and nothing was sent."""
+    if res.get("compile") != "ok" or res.get("harness_error"):
+        return False
+    if res.get("effect_only"):
+        eff = res.get("effect") or {}
+        return ((eff.get("lmtp") or {}).get("code") == 250 and (eff.get("stored") or {}).get("INBOX") == 1
+                and not eff.get("emitted"))
+    return res.get("intent") == ["keep"]
+
+
 def canary(t: dict[str, Any], lab: str, defaults: dict) -> bool:
-    res = run_one(t, lab, CANARY, defaults)
-    return res.get("compile") == "ok" and res.get("intent") == ["keep"]
+    return canary_ok(run_one(t, lab, CANARY, defaults))
 
 
 def main() -> int:

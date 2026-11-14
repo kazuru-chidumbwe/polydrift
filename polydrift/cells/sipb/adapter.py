@@ -53,11 +53,13 @@ def _txn_key(m: dict[str, Any]) -> tuple:
     return (m.get("kind"), m.get("method") or m.get("code"), br, (hdr.get("cseq") or [""])[0].strip())
 
 
-def distinct(msgs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def distinct(msgs: list[dict[str, Any]], seen: set[tuple] | None = None) -> list[dict[str, Any]]:
     """Messages with retransmissions collapsed (first transmission kept, order kept). How many copies arrive in a
     window depends on the element's timers against the window edge, so the generic axes compare transactions;
-    fixtures that test retransmission itself count copies in their own extracts (ncodes, hist)."""
-    seen: set[tuple] = set()
+    fixtures that test retransmission itself count copies in their own extracts (ncodes, hist). `seen` carries the
+    transactions of earlier steps of the fixture: a copy of one of them in a later step's window (a final response
+    retransmitted until the ACK, depending on timer phase) is not a new transaction either."""
+    seen = set() if seen is None else seen
     out = []
     for m in msgs:
         k = _txn_key(m)
@@ -67,19 +69,20 @@ def distinct(msgs: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return out
 
 
-def step_record(obs: dict[str, Any], spec: CellSpec) -> StepRecord:
+def step_record(obs: dict[str, Any], spec: CellSpec, seen: dict[str, set] | None = None) -> StepRecord:
+    """`seen`: per party, the transactions received in earlier steps of the fixture (to_record keeps it)."""
     err = obs.get("error")
     if err and (str(err).startswith("driver") or str(err).startswith("send")):
         return StepRecord(status=Status.HARNESS_FAULT, detail=str(err)[:200])
     got = obs.get("got") or {}
+    seen = {} if seen is None else seen
+    new = {p: distinct(msgs, seen.setdefault(p, set())) for p, msgs in got.items()}
     actor = obs.get("actor", "alice")
-    finals = [m.get("code") for m in got.get(actor, []) if m.get("kind") == "resp" and (m.get("code") or 0) >= 200]
+    finals = [m.get("code") for m in new.get(actor, []) if m.get("kind") == "resp" and (m.get("code") or 0) >= 200]
     v: dict[str, Any] = {
         "decision_class": decision(finals[0] if finals else None),
-        "codes": {p: [m.get("code") for m in distinct(msgs) if m.get("kind") == "resp"]
-                  for p, msgs in got.items() if msgs},
-        "requests": {p: [m.get("method") for m in distinct(msgs) if m.get("kind") == "req"]
-                     for p, msgs in got.items() if msgs},
+        "codes": {p: [m.get("code") for m in msgs if m.get("kind") == "resp"] for p, msgs in new.items() if msgs},
+        "requests": {p: [m.get("method") for m in msgs if m.get("kind") == "req"] for p, msgs in new.items() if msgs},
     }
     fields = {k: spec.axis(k).field(x) for k, x in v.items()}
     for k, val in (obs.get("extract") or {}).items():
@@ -90,5 +93,6 @@ def step_record(obs: dict[str, Any], spec: CellSpec) -> StepRecord:
 
 def to_record(observations: list[dict[str, Any]], impl: str, fixture: str, *, spec: CellSpec, repeat: int = 1,
               impl_version: str = "", harness_commit: str = "") -> ObservationRecord:
+    seen: dict[str, set] = {}
     return ObservationRecord(cell="sipb", impl=impl, impl_version=impl_version, fixture=fixture, repeat=repeat,
-                             harness_commit=harness_commit, steps=tuple(step_record(o, spec) for o in observations))
+                             harness_commit=harness_commit, steps=tuple(step_record(o, spec, seen) for o in observations))

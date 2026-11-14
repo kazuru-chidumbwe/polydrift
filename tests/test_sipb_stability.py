@@ -84,6 +84,19 @@ def test_step_record_same_for_one_or_two_copies():
     assert adapter.step_record(one, spec) == adapter.step_record(two, spec)
 
 
+def test_retransmission_in_a_later_step_is_not_new():
+    spec = adapter.load_spec()
+    invite_404 = {"actor": "alice", "got": {"alice": [_resp(404)]}}
+    ack_quiet = {"actor": "alice", "op": "ack", "got": {"alice": []}}
+    ack_late_copy = {"actor": "alice", "op": "ack", "got": {"alice": [_resp(404)]}}
+    a = adapter.to_record([invite_404, ack_quiet], "x", "f", spec=spec)
+    b = adapter.to_record([invite_404, ack_late_copy], "x", "f", spec=spec)
+    assert a.steps == b.steps
+    other = {"actor": "alice", "got": {"alice": [_resp(404, branch="z9hG4bKnew")]}}   # a new transaction counts
+    c = adapter.to_record([invite_404, other], "x", "f", spec=spec)
+    assert c.steps[1] != a.steps[1]
+
+
 def test_mask_random_tokens():
     a = driver.mask_random("SIP/2.0/UDP {lab}:5070;received={lab};branch=z9hG4bK444ac0133e09;rport=5070")
     b = driver.mask_random("SIP/2.0/UDP {lab}:5070;received={lab};branch=z9hG4bKe187f16c3773;rport=5070")

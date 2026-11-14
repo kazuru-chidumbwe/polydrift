@@ -517,17 +517,19 @@ def run(req: dict) -> list[dict]:
             else:
                 lab.listen(int(st.get("window_ms", 1500)))
         raw = {n: p.inbox[start[n]:] for n, p in lab.parties.items()}
-        got = {n: [m for m in msgs if not is_probe(m, lab.own_callids)] for n, msgs in raw.items()}
+        opened = opened_callids(m for p in lab.parties.values() for m in p.inbox)
+        got = {n: [m for m in msgs if not set_aside(m, lab.own_callids, opened)] for n, msgs in raw.items()}
         obs = {"step": i, "op": op, "actor": st.get("from", "alice" if op != "reply" else "bob"), "error": err,
                "got": got, "ms": int((time.time() - t0) * 1000)}
-        probes = {n: len(raw[n]) - len(got[n]) for n in raw if len(raw[n]) != len(got[n])}
-        if probes:
-            obs["probes"] = probes
+        for why in ("probe", "stray"):
+            n_aside = {n: c for n in raw if (c := sum(1 for m in raw[n] if set_aside(m, lab.own_callids, opened) == why))}
+            if n_aside:
+                obs[why + "s"] = n_aside
         if st.get("extract"):
             # step messages per party, the last request each party sent, and every message each party received so
             # far in the fixture ("hist", for clauses that compare a retransmission with the first transmission)
             ctx = {**got, "sent": lab.sent,
-                   "hist": {n: [m for m in p.inbox if not is_probe(m, lab.own_callids)] for n, p in lab.parties.items()}}
+                   "hist": {n: [m for m in p.inbox if not set_aside(m, lab.own_callids, opened)] for n, p in lab.parties.items()}}
             obs["extract"] = {k: _unu(evaluate(lab.fill(e, obs["actor"]), ctx), lab) for k, e in st["extract"].items()}
         out.append(obs)
     return out
@@ -543,6 +545,49 @@ def is_probe(m: dict, own_callids: set[str]) -> bool:
     return cid not in own_callids
 
 
+LAB_TOKEN = re.compile(r"pd[0-9a-f]{10}")  # the per-fixture unique ("pd" + 10 hex of the fixture id, runner.py)
+
+
+def _callid(m: dict) -> str:
+    return (m.get("hdr", {}).get("call-id") or [""])[0]
+
+
+def _in_dialog(m: dict) -> bool:
+    return ";tag=" in ((m.get("hdr", {}).get("to") or [""])[0]).replace(" ", "").lower()
+
+
+def opened_callids(msgs) -> set[str]:
+    """Call-IDs of out-of-dialog requests (no To tag) a party received: a call or registration the element or the
+    user agent under test started itself in this fixture."""
+    return {_callid(m) for m in msgs if m.get("kind") == "req" and not _in_dialog(m)}
+
+
+def is_stray(m: dict, own_callids: set[str], opened: set[str] = frozenset()) -> bool:
+    """A message that belongs to another fixture, or to an earlier repeat of this one, and lands in whichever step
+    window is open. (1) A Call-ID with a lab token (every lab Call-ID template holds {U} or {callid}) that the lab
+    did not send in this fixture: the element still finishing an old transaction (retransmitting toward a registered
+    contact, timing out with 408). (2) A Call-ID without a lab token that nothing opened in this fixture (`opened`,
+    see opened_callids), on a response or an in-dialog request (To tag): a user agent ending an old dialog (a late
+    BYE). A new call the element or user agent starts (no To tag) is behaviour."""
+    cid = _callid(m)
+    if cid in own_callids:
+        return False
+    if LAB_TOKEN.search(cid):
+        return True
+    if cid in opened:
+        return False
+    return m.get("kind") == "resp" or _in_dialog(m)
+
+
+def set_aside(m: dict, own_callids: set[str], opened: set[str] = frozenset()) -> str | None:
+    """Why a received message is kept out of the step: "probe", "stray", or None (it is the fixture's behaviour)."""
+    if is_probe(m, own_callids):
+        return "probe"
+    if is_stray(m, own_callids, opened):
+        return "stray"
+    return None
+
+
 def _ceil10(m: re.Match) -> str:
     return f"{m.group(1)}{-(-int(m.group(2)) // 10) * 10}"
 
@@ -550,9 +595,11 @@ def _ceil10(m: re.Match) -> str:
 def mask_random(s: str) -> str:
     """Per-run random tokens mapped to placeholders, so a value compares across repeats: Via branches (the RFC 3261
     magic cookie kept), tag and ftag values, and remaining registration time in an expires parameter (rounded up to
-    ten seconds: the registrar counts down from the time of the REGISTER, which moves with step timing)."""
+    ten seconds: the registrar counts down from the time of the REGISTER, which moves with step timing), and an
+    opaque URI user part holding 16 or more hex digits (ejabberd puts a timestamp and hash in its Record-Route)."""
     s = re.sub(r"(branch=z9hG4bK)[^;>,\s\"]+", r"\1{r}", s)
     s = re.sub(r"([;?&](?:f?tag|branch))=(?!z9hG4bK)[^;>,\s\"]+", r"\1={r}", s)
+    s = re.sub(r"(sips?:)[0-9A-Za-z-]*[0-9a-f]{16,}[0-9A-Za-z-]*@", r"\1{r}@", s)
     return re.sub(r"(expires=)(\d+)", _ceil10, s)
 
 

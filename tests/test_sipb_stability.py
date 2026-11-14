@@ -29,6 +29,47 @@ def test_probe_is_options_on_foreign_callid_only():
     assert not driver.is_probe(_resp(200), own)
 
 
+def test_stray_is_lab_callid_not_sent_in_this_fixture():
+    own = {"pdca1b83a9c5-958890a3a7@10.0.0.9", "reg-bob-pdca1b83a9c5@10.0.0.9"}
+    assert driver.is_stray(_req("INVITE", callid="pd5636dd9dff-ecbacc1a3b@10.0.0.9"), own)    # another fixture
+    assert driver.is_stray(_req("INVITE", callid="pdca1b83a9c5-0000000001@10.0.0.9"), own)    # earlier repeat
+    late = _resp(408)
+    late["hdr"]["call-id"] = ["pd42848afaa5-dd991815a3@10.0.0.9"]
+    assert driver.is_stray(late, own)
+    assert not driver.is_stray(_req("INVITE", callid="pdca1b83a9c5-958890a3a7@10.0.0.9"), own)
+    assert not driver.is_stray(_req("INVITE", callid="reg-bob-pdca1b83a9c5@10.0.0.9"), own)
+    assert not driver.is_stray(_req("INVITE", callid="5c1f0e6a-ua-own@10.0.0.10"), own)        # a UA's own call
+    assert not driver.is_stray(_req("INVITE", callid="one"), own)
+    assert driver.set_aside(_req("OPTIONS", callid="keepalive-9"), own) == "probe"
+    assert driver.set_aside(_req("OPTIONS", callid="pd5636dd9dff-1@x"), own) == "probe"
+    assert driver.set_aside(_req("INVITE", callid="pd5636dd9dff-1@x"), own) == "stray"
+    assert driver.set_aside(_req("INVITE", callid="reg-bob-pdca1b83a9c5@10.0.0.9"), own) is None
+
+
+def test_stray_old_dialog_on_ua_callid():
+    own = {"pdca1b83a9c5-958890a3a7@10.0.0.9"}
+    bye = _req("BYE", callid="23551af62746ea37", cseq="11160 BYE")
+    bye["hdr"]["to"] = ["<sip:dave@10.0.0.9:5073>;tag=8f1e"]
+    inv = _req("INVITE", callid="5e3ca80c7e6599a1")
+    inv["hdr"]["to"] = ["<sip:dave@10.0.0.9:5073>"]
+    assert driver.is_stray(bye, own)                                   # a dialog this fixture never opened
+    assert not driver.is_stray(inv, own)                               # a new call by the UA is behaviour
+    opened = driver.opened_callids([inv])
+    bye2 = _req("BYE", callid="5e3ca80c7e6599a1", cseq="2 BYE")
+    bye2["hdr"]["to"] = ["<sip:dave@10.0.0.9:5073>;tag=77"]
+    assert not driver.is_stray(bye2, own, opened)                      # BYE in the dialog it opened
+    other = _req("INVITE", callid="pdf00ac16e8d-ea7432fc27@10.0.0.9")  # another fixture's late INVITE opens nothing
+    assert driver.is_stray(other, own, driver.opened_callids([other]))
+    assert driver.opened_callids([bye, inv]) == {"5e3ca80c7e6599a1"}
+    r = _resp(200)
+    r["hdr"]["call-id"] = ["23551af62746ea37"]
+    assert driver.is_stray(r, own)
+    probe = _req("OPTIONS", callid="keepalive-9")
+    opened = driver.opened_callids([probe])
+    assert driver.set_aside(probe, own, opened) == "probe"
+    assert driver.set_aside(bye, own, opened) == "stray"
+
+
 def test_retransmissions_collapse_but_distinct_transactions_stay():
     msgs = [_req("INVITE"), _req("INVITE"), _req("INVITE", branch="z9hG4bKbbb"), _req("ACK", cseq="1 ACK")]
     assert [m["method"] for m in adapter.distinct(msgs)] == ["INVITE", "INVITE", "ACK"]
@@ -53,6 +94,10 @@ def test_mask_random_tokens():
         "<sip:carol@{lab}:5072>;expires=232") == "<sip:carol@{lab}:5072>;expires=240"
     assert driver.mask_random("<sip:bob@{lab}:5071>;expires=300") == "<sip:bob@{lab}:5071>;expires=300"
     assert driver.mask_random("To: <sip:bob@x>") == "To: <sip:bob@x>"  # no tag stays no tag
+    rr = "<sip:1794605499-02065bc64883b512869a7e6f4f711df1b64f757c@{eut};lr>"
+    assert driver.mask_random(rr) == "<sip:{r}@{eut};lr>"
+    assert driver.mask_random("<sip:{U}@{eut}>") == "<sip:{U}@{eut}>"
+    assert driver.mask_random("<sip:pdca1b83a9c5@{eut}>") == "<sip:pdca1b83a9c5@{eut}>"   # 10 hex: a lab name
 
 
 def test_cyrus_mailbox_names_modified_utf7():

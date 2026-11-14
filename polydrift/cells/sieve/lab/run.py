@@ -17,7 +17,9 @@ It prints one JSON object with three layers, using only the engine's own tools:
 Engines: pigeonhole (sieve-test), mailutils (sieve), exim (exim -bf, intent only), sieve-rs (pd-sieve-rs runner,
 intent only), jsieve (pd-jsieve runner, intent only), pigeonhole-lmtp (phase 2: compile and intent as
 pigeonhole, effect from a real delivery through Dovecot's LMTP server, with the reply to DATA), cyrus (phase 2:
-sievec compile, then a real delivery through Cyrus lmtpd; effect records only, Cyrus has no dry run).
+sievec compile, then a real delivery through Cyrus lmtpd; effect records only, Cyrus has no dry run), stalwart
+(phase 2: sieve-rs inside Stalwart; compile from JMAP SieveScript/set, then a real delivery over LMTP; effect
+only, outgoing mail relayed to an in-container sink).
 """
 
 from __future__ import annotations
@@ -730,6 +732,301 @@ def cyrus(fx: Path, meta: dict) -> dict:
     return res
 
 
+# ---------------------------------------------------------------- Stalwart (sieve-rs inside the server) over LMTP (phase 2)
+ST = Path("/tmp/stal")
+ST_ADMIN = ("admin", "Lab-Admin-2026")       # lab only: STALWART_RECOVERY_ADMIN of this throwaway container
+ST_USER = ("user", "Lab-User-2026")
+SINK_PORT = 2525
+KEYWORD_FLAG = {"$seen": "\\Seen", "$flagged": "\\Flagged", "$answered": "\\Answered", "$draft": "\\Draft"}
+SERVER_KEYWORDS = {"$hasattachment", "$hasnoattachment"}  # set by Stalwart on ingest, not by the script
+
+
+class SmtpSink:
+    """The lab's only next hop: every message Stalwart sends out (redirect, vacation, reject MDN, DSN) is relayed
+    here and kept as N.eml with N.args ("-f", sender, recipients), the format capture.sh writes for the other
+    engines, so emitted() reads both the same way. Nothing leaves the container (no network)."""
+
+    def __init__(self, port: int = SINK_PORT):
+        import socket
+        import threading
+        OUT.mkdir(parents=True, exist_ok=True)
+        self.n = 0
+        self.last = 0.0
+        self.srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.srv.bind(("127.0.0.1", port))
+        self.srv.listen(8)
+        threading.Thread(target=self._accept, daemon=True).start()
+
+    def _accept(self) -> None:
+        import threading
+        while True:
+            try:
+                c, _ = self.srv.accept()
+            except OSError:
+                return
+            threading.Thread(target=self._session, args=(c,), daemon=True).start()
+
+    def _session(self, c) -> None:
+        import time
+        f = c.makefile("rb")
+        send = lambda s: c.sendall(s.encode() + b"\r\n")  # noqa: E731
+        send("220 pd-sink ESMTP")
+        mfrom, rcpts = "", []
+        try:
+            while True:
+                line = f.readline()
+                if not line:
+                    return
+                cmd = line.decode("utf-8", "replace").strip()
+                up = cmd.upper()
+                if up.startswith(("EHLO", "HELO")):
+                    send("250 pd-sink")
+                elif up.startswith("MAIL FROM:"):
+                    mfrom, rcpts = cmd[10:].split()[0].strip("<>") if cmd[10:].strip() else "", []
+                    send("250 OK")
+                elif up.startswith("RCPT TO:"):
+                    rcpts.append(cmd[8:].split()[0].strip("<>"))
+                    send("250 OK")
+                elif up == "DATA":
+                    send("354 go")
+                    body = []
+                    while True:
+                        ln = f.readline()
+                        if not ln or ln in (b".\r\n", b".\n"):
+                            break
+                        body.append(ln[1:] if ln.startswith(b"..") else ln)
+                    n, self.n = self.n, self.n + 1
+                    (OUT / f"{n}.eml").write_bytes(b"".join(body))
+                    (OUT / f"{n}.args").write_text("\n".join(["-f", mfrom, *rcpts]))
+                    self.last = time.time()
+                    send("250 OK queued")
+                elif up == "QUIT":
+                    send("221 bye")
+                    return
+                else:
+                    send("250 OK")
+        finally:
+            c.close()
+
+
+def _st_http(method: str, path: str, auth: tuple[str, str], body: bytes | None = None,
+             ctype: str = "application/json") -> tuple[int, dict | str]:
+    import base64
+    import urllib.error
+    import urllib.request
+    h = {"Authorization": "Basic " + base64.b64encode(f"{auth[0]}:{auth[1]}".encode()).decode()}
+    if body is not None:
+        h["Content-Type"] = ctype
+    r = urllib.request.Request("http://127.0.0.1:8080" + path, data=body, method=method, headers=h)
+    try:
+        with urllib.request.urlopen(r, timeout=20) as resp:
+            raw = resp.read().decode("utf-8", "replace")
+            code = resp.status
+    except urllib.error.HTTPError as e:
+        raw, code = e.read().decode("utf-8", "replace"), e.code
+    try:
+        return code, json.loads(raw)
+    except ValueError:
+        return code, raw
+
+
+def _st_jmap(auth: tuple[str, str], calls: list, using: list[str]) -> list:
+    code, res = _st_http("POST", "/jmap/", auth, json.dumps({"using": using, "methodCalls": calls}).encode())
+    if not isinstance(res, dict) or "methodResponses" not in res:
+        raise RuntimeError(f"jmap {code}: {str(res)[:200]}")
+    return res["methodResponses"]
+
+
+def _st_admin(calls: list) -> list:
+    out = _st_jmap(ST_ADMIN, calls, ["urn:ietf:params:jmap:core", "urn:stalwart:jmap"])
+    for name, val, _ in out:
+        if name == "error" or val.get("notCreated") or val.get("notUpdated"):
+            raise RuntimeError(f"stalwart admin {name}: {json.dumps(val)[:300]}")
+    return out
+
+
+def _st_start(log) -> "subprocess.Popen":
+    import time
+    env = {**os.environ, "STALWART_RECOVERY_ADMIN": f"{ST_ADMIN[0]}:{ST_ADMIN[1]}"}
+    p = subprocess.Popen(["stalwart", "--config", str(ST / "config.json")], cwd=str(ST), env=env, stdout=log,
+                         stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL)
+    for _ in range(300):
+        if p.poll() is not None:
+            raise RuntimeError(f"stalwart exited {p.returncode}")
+        try:
+            if _st_http("GET", "/.well-known/jmap", ST_ADMIN)[0] in (200, 307):
+                return p
+        except OSError:
+            pass
+        time.sleep(0.1)
+    p.kill()
+    raise RuntimeError("stalwart http not up in 30 s")
+
+
+def _st_stop(p) -> None:
+    p.terminate()
+    try:
+        p.wait(timeout=15)
+    except subprocess.TimeoutExpired:
+        p.kill()
+        p.wait(timeout=5)
+
+
+def _st_configure() -> None:
+    """Lab settings through the server's own management methods (Stalwart >= 0.16 keeps its configuration in the
+    store; read 14 Nov 2026 from x:*/get on v1.1.0): the domain and the user; an LMTP listener on port 24 without
+    TLS; a relay route to the sink chosen for every non-local recipient (the default MX route needs DNS, and the
+    container has no network); the spam filter off, so a message lands where the user's script puts it (spam
+    classification is not Sieve behaviour); no SASL on the LMTP port (the default asks for it on every port but 25;
+    LMTP is the hop from the lab's trusted MTA, as with Dovecot and Cyrus)."""
+    out = _st_admin([["x:Domain/set", {"create": {"d1": {"name": "lab.test"}}}, "c0"]])
+    dom = out[0][1]["created"]["d1"]["id"]
+    _st_admin([
+        ["x:Account/set", {"create": {"a1": {"@type": "User", "name": ST_USER[0], "domainId": dom, "credentials": {
+            "0": {"@type": "Password", "secret": ST_USER[1]}}}}}, "c1"],
+        ["x:NetworkListener/set", {"create": {"l1": {"name": "lmtp", "bind": {"[::]:24": True}, "protocol": "lmtp",
+                                                    "useTls": False}}}, "c2"],
+        ["x:MtaRoute/set", {"create": {"r1": {"@type": "Relay", "name": "sink", "host": "127.0.0.1",
+                                              "port": SINK_PORT}}}, "c3"],
+        ["x:MtaOutboundStrategy/set", {"update": {"singleton": {"route": {
+            "match": {"0": {"if": "is_local_domain(rcpt_domain)", "then": "'local'"}}, "else": "'sink'"}}}}, "c4"],
+        ["x:MtaStageData/set", {"update": {"singleton": {"enableSpamFilter": {"match": {}, "else": "false"}}}}, "c5"],
+        ["x:MtaStageAuth/set", {"update": {"singleton": {"require": {
+            "match": {"0": {"if": "local_port == 24", "then": "false"}}, "else": "local_port != 25"}}}}, "c6"],
+    ])
+
+
+def _st_mailboxes(acct: str, auth: tuple[str, str]) -> list[dict]:
+    out = _st_jmap(auth, [["Mailbox/get", {"accountId": acct, "ids": None,
+                                           "properties": ["name", "role", "parentId", "totalEmails"]}, "m0"]],
+                   ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail"])
+    return out[0][1]["list"]
+
+
+def _st_name(mb: dict, by_id: dict) -> str:
+    """IMAP-style name of a mailbox: INBOX for the inbox role, else the path joined with the server's "/"."""
+    if mb.get("role") == "inbox":
+        return "INBOX"
+    parts, cur = [], mb
+    while cur:
+        parts.append("INBOX" if cur.get("role") == "inbox" else cur["name"])
+        cur = by_id.get(cur.get("parentId"))
+    return "/".join(reversed(parts))
+
+
+def stalwart(fx: Path, meta: dict) -> dict:
+    """sieve-rs as Stalwart runs it at delivery time (the user's active script, untrusted runtime). Effect only:
+    the server has no dry run. Compile is the server's answer to JMAP SieveScript/set (RFC 9661: invalidSieve)."""
+    import smtplib
+    import time
+    ver = sh(["stalwart", "--version"])[1].strip().split()[-1]
+    res = {"engine_version": f"stalwart {ver} lmtp", "effect_only": True}
+    shutil.rmtree(ST, ignore_errors=True)
+    shutil.rmtree(OUT, ignore_errors=True)
+    (ST / "db").mkdir(parents=True)
+    (ST / "config.json").write_text(json.dumps({"@type": "RocksDb", "path": str(ST / "db") + "/"}))
+    log = open("/tmp/pd-stalwart.log", "wb")
+    proc = None
+    try:
+        proc = _st_start(log)
+        _st_configure()
+        _st_stop(proc)                         # listeners bind at start: restart for the LMTP listener
+        proc = _st_start(log)
+        auth = (f"{ST_USER[0]}@lab.test", ST_USER[1])
+        code, sess = _st_http("GET", "/jmap/session", auth)
+        if not isinstance(sess, dict):
+            raise RuntimeError(f"user session {code}: {str(sess)[:150]}")
+        acct = sess["primaryAccounts"]["urn:ietf:params:jmap:mail"]
+        mail = ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail"]
+        boxes = _st_mailboxes(acct, auth)
+        # the lab folders: INBOX.X as a mailbox named "INBOX.X" at top level (the IMAP name the fixture uses, with
+        # the server's "/" delimiter); where fileinto "INBOX.X" puts the message is the engine's behaviour
+        create = {f"f{i}": {"name": f, "parentId": None} for i, f in enumerate(meta.get("folders", ["INBOX"]))
+                  if f != "INBOX"}
+        if create:
+            out = _st_jmap(auth, [["Mailbox/set", {"accountId": acct, "create": create}, "m1"]], mail)
+            if out[0][1].get("notCreated"):
+                raise RuntimeError(f"mailbox create: {json.dumps(out[0][1]['notCreated'])[:200]}")
+        code, up = _st_http("POST", f"/jmap/upload/{acct}/", auth, (fx / "script.sieve").read_bytes(),
+                            "application/sieve")
+        if not isinstance(up, dict) or "blobId" not in up:
+            raise RuntimeError(f"script upload {code}: {str(up)[:150]}")
+        out = _st_jmap(auth, [["SieveScript/set", {"accountId": acct, "create": {"s1": {"name": "pd", "blobId": up["blobId"]}},
+                                                   "onSuccessActivateScript": "#s1"}, "s0"]],
+                       ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:sieve"])
+        nc = out[0][1].get("notCreated") if out[0][0] == "SieveScript/set" else {"s1": out[0][1]}
+        if nc:
+            err = nc.get("s1", {})
+            txt = f"{err.get('type', '')}: {err.get('description', '')}"
+            res.update(compile="refused", compile_class=compile_class(txt), compile_text=txt.strip()[-300:])
+            if err.get("type") not in ("invalidSieve", "invalidScript"):   # RFC 9661 name; v1.1.0 says invalidScript
+                res["harness_error"] = f"sieve upload: {txt[:200]}"
+            return res
+        res.update(compile="ok", compile_class=None, compile_text="")
+        sink = SmtpSink()
+        c = smtplib.LMTP("127.0.0.1", 24, timeout=30)
+        c.ehlo_or_helo_if_needed()
+        code, msg = c.mail(meta.get("from", "sender@example.invalid"))
+        mail_reply = {"code": code, "text": msg.decode("utf-8", "replace")[:300]}
+        rcpt = None
+        if code < 400:
+            code, msg = c.rcpt(meta.get("to", "user@lab.test"))
+            rcpt = {"code": code, "text": msg.decode("utf-8", "replace")[:300]}
+        if code >= 400:
+            final = (code, msg)
+        else:
+            c.putcmd("data")
+            code, msg = c.getreply()
+            if code != 354:
+                final = (code, msg)
+            else:
+                data = (fx / "msg.eml").read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n")
+                c.send(smtplib._quote_periods(data) + (b"" if data.endswith(b"\r\n") else b"\r\n") + b".\r\n")
+                final = c.getreply()
+        try:
+            c.quit()
+        except Exception:  # noqa: BLE001
+            pass
+        # delivery and anything sent out run from the server's queues: wait until the mailboxes and the sink have
+        # been still for 2 s (at most 20 s)
+        t0, seen, still = time.time(), None, time.time()
+        while time.time() - t0 < 20:
+            now = (tuple(sorted((b["id"], b["totalEmails"]) for b in _st_mailboxes(acct, auth))), sink.n)
+            if now != seen:
+                seen, still = now, time.time()
+            elif time.time() - still >= 2:
+                break
+            time.sleep(0.25)
+        boxes = _st_mailboxes(acct, auth)
+        by_id = {b["id"]: b for b in boxes}
+        stored = {f: 0 for f in meta.get("folders", ["INBOX"])}
+        flags: dict[str, list[str]] = {}
+        for b in boxes:
+            name = _st_name(b, by_id)
+            if b["totalEmails"] or name in stored:
+                stored[name] = b["totalEmails"]
+            if b["totalEmails"]:
+                q = _st_jmap(auth, [["Email/query", {"accountId": acct, "filter": {"inMailbox": b["id"]}}, "q0"],
+                                    ["Email/get", {"accountId": acct, "#ids": {"resultOf": "q0", "name": "Email/query",
+                                                                               "path": "/ids"},
+                                                   "properties": ["keywords"]}, "g0"]], mail)
+                flags[name] = sorted(" ".join(sorted(KEYWORD_FLAG.get(k, k) for k, v in (e.get("keywords") or {}).items()
+                                                     if v and k not in SERVER_KEYWORDS))
+                                     for e in q[1][1]["list"])
+        res["effect"] = {"stored": stored, "flags": flags, "emitted": emitted(),
+                         "lmtp": lmtp_reply_facts(final[0], final[1].decode("utf-8", "replace")), "lmtp_rcpt": rcpt,
+                         "lmtp_mail": mail_reply}
+    except Exception as e:  # noqa: BLE001
+        res["harness_error"] = f"stalwart: {e!r}"[:300]
+    finally:
+        if proc is not None and proc.poll() is None:
+            _st_stop(proc)
+        log.close()
+        res["log_tail"] = Path("/tmp/pd-stalwart.log").read_text(errors="replace")[-400:]
+    return res
+
+
 # ---------------------------------------------------------------- library runners (JSON already)
 def runner(cmd: str):
     def f(fx: Path, meta: dict) -> dict:
@@ -747,7 +1044,7 @@ def runner(cmd: str):
 
 
 ENGINES = {"pigeonhole": pigeonhole, "pigeonhole-lmtp": pigeonhole_lmtp, "cyrus": cyrus, "mailutils": mailutils, "exim": exim,
-           "sieve-rs": runner("pd-sieve-rs"), "jsieve": runner("pd-jsieve")}
+           "sieve-rs": runner("pd-sieve-rs"), "jsieve": runner("pd-jsieve"), "stalwart": stalwart}
 
 
 def main() -> int:

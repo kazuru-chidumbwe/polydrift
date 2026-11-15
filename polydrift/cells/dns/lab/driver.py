@@ -75,6 +75,45 @@ def observe(resp: dns.message.Message) -> dict:
     }
 
 
+class RecSock(socket.socket):
+    """A socket that keeps the bytes it receives, handed to dnspython (``sock=``) so the response is parsed and
+    matched exactly as before while its wire form is kept for consumer replay (manuscript 3.6). UDP: the last
+    datagram is the one dnspython accepted. TCP: everything after the two-byte length prefix."""
+
+    def __init__(self, *a, **kw) -> None:
+        super().__init__(*a, **kw)
+        self.got: list[bytes] = []
+
+    def recvfrom(self, n, *a):  # noqa: ANN001, ANN201
+        data, addr = super().recvfrom(n, *a)
+        self.got.append(data)
+        return data, addr
+
+    def recv(self, n, *a):  # noqa: ANN001, ANN201
+        data = super().recv(n, *a)
+        self.got.append(data)
+        return data
+
+
+def query_wire(q: dns.message.Message, server: str, timeout: float, tcp: bool) -> tuple[dns.message.Message, bytes]:
+    if not tcp:
+        s = RecSock(socket.AF_INET, socket.SOCK_DGRAM)
+        s.setblocking(False)
+        with s:
+            resp = dns.query.udp(q, server, timeout=timeout, ignore_unexpected=True, sock=s)
+            return resp, s.got[-1]
+    s = RecSock(socket.AF_INET, socket.SOCK_STREAM)
+    with s:
+        s.settimeout(timeout)
+        try:
+            s.connect((server, 53))
+        except TimeoutError as e:
+            raise dns.exception.Timeout from e
+        s.setblocking(False)
+        resp = dns.query.tcp(q, server, timeout=timeout, sock=s)
+        return resp, b"".join(s.got)[2:]
+
+
 def send_raw(server: str, wire: bytes, timeout: float) -> bytes:
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.settimeout(timeout)
@@ -265,11 +304,9 @@ def run(server: str, steps: list[dict]) -> list[dict]:
                 q = make_query(st)
                 if st.get("z"):
                     q.flags |= 0x0040
-                if st.get("tcp"):
-                    resp = dns.query.tcp(q, server, timeout=timeout)
-                else:
-                    resp = dns.query.udp(q, server, timeout=timeout, ignore_unexpected=True)
+                resp, wire = query_wire(q, server, timeout, bool(st.get("tcp")))
                 obs = observe(resp)
+                obs["wire"] = wire.hex()
         except dns.exception.Timeout:
             obs = {"error": "timeout"}
         except (ConnectionError, OSError) as e:

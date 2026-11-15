@@ -131,7 +131,7 @@ def main() -> int:
                 with (out / ("raw.jsonl" if final else "raw-failed.jsonl")).open("a") as rawf, \
                         (out / ("records.jsonl" if final else "records-failed.jsonl")).open("a") as recf:
                     for fid, obs in batch:
-                        rawf.write(json.dumps({"impl": t["key"], "repeat": r, "fixture": fid, "image_id": image_id,
+                        rawf.write(json.dumps({"impl": t["key"], "repeat": r, "fixture": fid, "image_id": image_id, "session": sess,
                                                "canary": [ok_start, ok_end], "account": note, "obs": obs}) + "\n")
                         if ok_start and ok_end and obs:
                             rec = adapter.to_record(obs, t["key"], fid, spec=spec, repeat=r,

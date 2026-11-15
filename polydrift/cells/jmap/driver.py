@@ -52,6 +52,10 @@ def _subst(v: Any, env: dict[str, str]) -> Any:
     return v
 
 
+# The exact bytes of the last HTTP response body, kept with each step for consumer replay (manuscript 3.6).
+LAST_RAW: dict[str, bytes | None] = {"body": None}
+
+
 def _req(url: str, body: bytes | None, ctype: str | None, auth: str | None, method: str = "POST",
          headers: dict[str, str] | None = None) -> tuple[int, str, str, dict[str, str]]:
     r = urllib.request.Request(url, data=body, method=method)
@@ -62,12 +66,17 @@ def _req(url: str, body: bytes | None, ctype: str | None, auth: str | None, meth
         r.add_header(k, v)
     if auth:
         r.add_header("Authorization", auth)
+    LAST_RAW["body"] = None
     try:
         with urllib.request.urlopen(r, timeout=15) as resp:
-            return (resp.status, resp.headers.get("Content-Type", ""), resp.read().decode("utf-8", "replace"),
+            data = resp.read()
+            LAST_RAW["body"] = data
+            return (resp.status, resp.headers.get("Content-Type", ""), data.decode("utf-8", "replace"),
                     {k.lower(): v for k, v in resp.headers.items()})
     except urllib.error.HTTPError as e:
-        return (e.code, e.headers.get("Content-Type", "") if e.headers else "", e.read().decode("utf-8", "replace"),
+        data = e.read()
+        LAST_RAW["body"] = data
+        return (e.code, e.headers.get("Content-Type", "") if e.headers else "", data.decode("utf-8", "replace"),
                 {k.lower(): v for k, v in (e.headers.items() if e.headers else [])})
 
 
@@ -334,6 +343,9 @@ def run_script(base: str, user: str, password: str, session: dict[str, Any], ste
             else:
                 raise ValueError(f"unknown op {op}")
             obs.update({"http": code, "content_type": ctype.split(";")[0].strip().lower()})
+            if op != "eventsource" and LAST_RAW["body"] is not None:
+                obs["wire"] = base64.b64encode(LAST_RAW["body"]).decode()
+                obs["wire_ctype"] = ctype
             try:
                 obs["json"] = json.loads(text) if text.strip() else None
             except ValueError:

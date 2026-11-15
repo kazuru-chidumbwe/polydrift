@@ -882,13 +882,20 @@ def _st_configure() -> None:
     LMTP is the hop from the lab's trusted MTA, as with Dovecot and Cyrus)."""
     out = _st_admin([["x:Domain/set", {"create": {"d1": {"name": "lab.test"}}}, "c0"]])
     dom = out[0][1]["created"]["d1"]["id"]
+    # the relay route's host field is "host" in 1.x and "address" in 0.16 (read from each server's own error)
+    route = _st_jmap(ST_ADMIN, [["x:MtaRoute/set", {"create": {"r1": {"@type": "Relay", "name": "sink", "host": "127.0.0.1",
+                                                                      "port": SINK_PORT}}}, "c3"]],
+                     ["urn:ietf:params:jmap:core", "urn:stalwart:jmap"])[0][1]
+    if (route.get("notCreated") or {}).get("r1", {}).get("properties") == ["host"]:
+        _st_admin([["x:MtaRoute/set", {"create": {"r1": {"@type": "Relay", "name": "sink", "address": "127.0.0.1",
+                                                         "port": SINK_PORT}}}, "c3"]])
+    elif route.get("notCreated"):
+        raise RuntimeError(f"stalwart admin x:MtaRoute/set: {json.dumps(route)[:300]}")
     _st_admin([
         ["x:Account/set", {"create": {"a1": {"@type": "User", "name": ST_USER[0], "domainId": dom, "credentials": {
             "0": {"@type": "Password", "secret": ST_USER[1]}}}}}, "c1"],
         ["x:NetworkListener/set", {"create": {"l1": {"name": "lmtp", "bind": {"[::]:24": True}, "protocol": "lmtp",
                                                     "useTls": False}}}, "c2"],
-        ["x:MtaRoute/set", {"create": {"r1": {"@type": "Relay", "name": "sink", "host": "127.0.0.1",
-                                              "port": SINK_PORT}}}, "c3"],
         ["x:MtaOutboundStrategy/set", {"update": {"singleton": {"route": {
             "match": {"0": {"if": "is_local_domain(rcpt_domain)", "then": "'local'"}}, "else": "'sink'"}}}}, "c4"],
         ["x:MtaStageData/set", {"update": {"singleton": {"enableSpamFilter": {"match": {}, "else": "false"}}}}, "c5"],

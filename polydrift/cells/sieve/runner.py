@@ -26,6 +26,7 @@ import yaml
 
 from polydrift.cells.sieve import adapter
 from polydrift.cells.sip.runner import harness_commit
+from polydrift.core.fixset import fixtures_file
 from polydrift.core.record import ObservationRecord, Status, StepRecord
 
 CELL_DIR = Path(__file__).resolve().parent
@@ -34,7 +35,7 @@ CANARY = {"script": "keep;\n", "message": "clean.eml"}
 
 
 def load_all() -> tuple[dict, dict[str, dict[str, Any]]]:
-    d = yaml.safe_load(FIXTURES_PATH.read_text(encoding="utf-8"))
+    d = yaml.safe_load(fixtures_file(CELL_DIR).read_text(encoding="utf-8"))
     return d.get("defaults", {}), d["fixtures"]
 
 

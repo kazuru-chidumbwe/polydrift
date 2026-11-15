@@ -101,7 +101,52 @@ def main(argv: list[str] | None = None) -> int:
     cell_rep.add_argument("--out", required=True, help="Output JSON.")
     cell_an.add_argument("--out", required=True, help="Output JSON.")
 
+    recall_p = subparsers.add_parser(
+        "recall",
+        help="RQ5 recall: known-bug cases (polydrift/rq5/cases.yaml) against the records of recall runs.",
+    )
+    recall_p.add_argument("records", nargs="+", help="JSONL record files of recall runs (any cells).")
+    recall_p.add_argument("--cases", default="", help="Comma list of case ids (default: every case of the cells "
+                          "present in the records).")
+    recall_p.add_argument("--current", default="", help="Comma list of impl keys that are the current peers "
+                          "(default: the highest version of every other family).")
+    recall_p.add_argument("--min-repeats", type=int, default=3)
+    recall_p.add_argument("--out", required=True, help="Output JSON.")
+
     args = parser.parse_args(argv)
+
+    if args.command == "recall":
+        import importlib
+        import json
+
+        from polydrift.core.record import read_jsonl
+        from polydrift.recall import evaluate, load_cases, summary
+
+        records = [r for path in args.records for r in read_jsonl(path)]
+        cells = {r.cell for r in records}
+        cases = load_cases()
+        wanted = set(args.cases.split(",")) if args.cases else {k for k, c in cases.items() if c.cell in cells}
+        unknown = wanted - set(cases)
+        if unknown:
+            print(f"error: unknown case ids {sorted(unknown)}", file=sys.stderr)
+            return 2
+        cur = set(args.current.split(",")) if args.current else None
+        results = []
+        for cid in sorted(wanted):
+            c = cases[cid]
+            rc = importlib.import_module(f"polydrift.cells.{c.cell}.adapter").load_spec().refusal_class
+            results.append(evaluate([r for r in records if r.cell == c.cell], c, current=cur, refusal_class=rc,
+                                    min_repeats=args.min_repeats))
+        out = {"summary": summary(results), "cases": results}
+        nl = chr(10)
+        with open(args.out, "w", encoding="utf-8", newline=nl) as handle:
+            json.dump(out, handle, indent=2, sort_keys=True, ensure_ascii=False, default=str)
+            handle.write(nl)
+        for r in results:
+            print(f"{r['case']}: {r['outcome']} (reproduced {r['reproduced']}, peers {len(r['peers'])}, "
+                  f"faults {r['harness_faults']})")
+        print(json.dumps(out["summary"], sort_keys=True))
+        return 0
 
     if args.command == "cell-run":
         from polydrift.cells.sip.runner import run_impl, shell_restart

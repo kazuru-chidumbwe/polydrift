@@ -1,0 +1,77 @@
+# RQ5 ground truth (manuscript 4.6), frozen with the harness before the campaign. Selection rule: a published
+# divergence or bug with a reproducible input, an affected version and a fixed version, in an implementation and
+# role a cell tests. `status: unfixed` (vendor accepted the behaviour) and `status: fix-unconfirmed` (no fixed
+# version located) cases count for recall only; their later versions are run as a bisect and reported as observed.
+# Each case's fixtures are in cells/<cell>/fixtures_rq5.yaml. `axes` are the axes on which the reported behaviour
+# shows; `known` is the value the report gives for the affected version, where it gives one.
+# Verification notes per case: CURRENT-WORK/polydrift/manuscript/RQ5-GROUND-TRUTH.md (Atlas, not in the artifact).
+cases:
+  D1:
+    cell: dns
+    family: unbound-fwd
+    fixtures: [rq5_d1_rd0_forwarded]
+    axes: [upstream_count, upstream_rd]
+    affected: ["1.17.1"]
+    fixed: ["1.18.0"]
+    known: [{fixture: rq5_d1_rd0_forwarded, axis: upstream_rd, step: 3, value: [false]}]
+    source: "ResolverFuzz RC3; Unbound Changelog 18 Jan 2023 (first release 1.18.0)"
+    clause: "RFC 1034 4.3.1"
+  D1p:
+    cell: dns
+    family: pdns-fwd
+    status: fix-unconfirmed
+    fixtures: [rq5_d1_rd0_forwarded]
+    axes: [upstream_count, upstream_rd]
+    affected: ["4.7.0"]
+    fixed: ["4.9.0"]
+    source: "ResolverFuzz RC3 (PowerDNS Recursor 4.7.0); RD=0 forwarding changed in 4.9.0-alpha1 (PR 12425), not described as the fix"
+    clause: "RFC 1034 4.3.1"
+  D9:
+    cell: dns
+    family: pdns-recursor
+    status: unfixed
+    fixtures: [rq5_d9_dname_self_loop]
+    axes: [native_code, answers]
+    affected: ["4.7.3"]
+    source: "ResolFuzz (PowerDNS Recursor 4.7.3; vendor accepted the risk)"
+    clause: "RFC 6672 3.4; RFC 1035 7.1"
+  D10:
+    cell: dns
+    family: bind
+    fixtures: [rq5_d10_dname_self_answer]
+    axes: [__status__]
+    affected: ["9.16.13"]
+    fixed: ["9.16.15"]
+    known: [{fixture: rq5_d10_dname_self_answer, axis: __status__, step: 3, value: crashed}]
+    source: "CVE-2021-25215 (ISC advisory 28 Apr 2021; affected 9.12.0 to 9.16.13, fixed 9.16.15); SCALE"
+    clause: "RFC 6672 3.4"
+  M1:
+    cell: mqtt
+    family: nanomq
+    status: fix-unconfirmed
+    fixtures: [rq5_m1_sys_via_wildcard]
+    axes: [dollar_topics]
+    affected: ["0.21.10"]
+    fixed: ["0.22.2", "0.24.13"]
+    source: "nanomq issue #1782 (NanoMQ 0.21.8); CVE-2024-42655; MBFuzzer N29 (0.21.10)"
+    clause: "MQTT-4.7.2-1"
+  L2:
+    cell: ldap
+    family: lldap
+    fixtures: [rq5_l2_bind_empty_dn]
+    axes: [native_codes]
+    affected: ["0.5.0"]
+    fixed: ["0.6.0"]
+    known: [{fixture: rq5_l2_bind_empty_dn, axis: native_codes, step: 1, value: [64]}]
+    source: "lldap issue #974, PR #977 (0.6.0 CHANGELOG: Correctly detect and refuse anonymous binds)"
+    clause: "RFC 4513 5.1.1, 5.1.2"
+  J1:
+    cell: jmap
+    family: stalwart
+    fixtures: [rq5_j1_mailbox_get_no_account]
+    axes: [method_errors]
+    affected: ["0.13.3"]
+    fixed: ["0.13.4", "0.16.10"]
+    known: [{fixture: rq5_j1_mailbox_get_no_account, axis: method_errors, step: 1, value: [forbidden]}]
+    source: "Stalwart issue #1936; CHANGELOG 0.13.4 (primary account) and 0.16.10 (accountId required)"
+    clause: "RFC 8620 5.1, 3.6.2"

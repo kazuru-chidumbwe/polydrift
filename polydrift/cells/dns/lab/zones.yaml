@@ -90,6 +90,10 @@ servers:
       - "nosoa 300 A 10.0.11.5"
       - "dn0 300 DNAME dtarget.other.pdlab."
       - "anyq 300 A 10.0.11.7"
+      # RQ5 known-bug names (fixtures_rq5.yaml; used only in recall runs)
+      - "rq5-self 300 DNAME pd.pdlab."
+      - "rq5-loop 300 DNAME rq5-loop.pd.pdlab."
+      - "rq5-rd0 300 A 10.0.12.1"
       - "tcpa 300 A 10.0.11.8"
       - "tcpb 300 A 10.0.11.9"
       - "tcpc 300 A 10.0.11.10"

@@ -30,6 +30,7 @@ import yaml
 
 from polydrift.cells.sip.runner import harness_commit
 from polydrift.cells.sipb import adapter
+from polydrift.core.fixset import fixtures_file
 from polydrift.core.record import ObservationRecord, Status, StepRecord
 
 CELL_DIR = Path(__file__).resolve().parent
@@ -43,7 +44,7 @@ CANARY = [{"op": "send", "window_ms": 1500, "msg": "OPTIONS sip:{domain} SIP/2.0
 
 
 def load_fixtures() -> dict[str, dict[str, Any]]:
-    return yaml.safe_load(FIXTURES_PATH.read_text(encoding="utf-8"))["fixtures"]
+    return yaml.safe_load(fixtures_file(CELL_DIR).read_text(encoding="utf-8"))["fixtures"]
 
 
 def sh(args: list[str], timeout: int = 300, stdin: str | None = None) -> subprocess.CompletedProcess:

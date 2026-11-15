@@ -1,0 +1,10 @@
+# RQ5 known-bug fixtures, LDAP cell (manuscript 4.4 and 4.6); see dns/fixtures_rq5.yaml for the rule.
+fixtures:
+  # L2, lldap issue #974: a simple bind with an empty DN (the client set no credentials) was answered
+  # namingViolation (64) "Missing DN value"; PR #977 (lldap 0.6.0) answers inappropriateAuthentication (48).
+  rq5_l2_bind_empty_dn:
+    kind: security
+    tags: [authentication]
+    clause: "RFC 4513 5.1.1 and 5.1.2; RFC 4511 4.2.2"
+    steps:
+      - {op: bind, args: {dn: "", password: ""}}

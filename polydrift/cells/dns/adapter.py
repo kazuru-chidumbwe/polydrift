@@ -95,6 +95,8 @@ def load_spec() -> CellSpec:
 
 
 def classify_status(obs: dict[str, Any]) -> Status:
+    if obs.get("crashed") and obs.get("op") != "upstream":
+        return Status.CRASHED  # the runner saw the resolver exit during this fixture (runner.mark_crashed)
     err = obs.get("error")
     if not err:
         if obs.get("rcode") in (None, "", "null", "NULL"):

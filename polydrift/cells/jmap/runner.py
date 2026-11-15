@@ -25,6 +25,7 @@ import yaml
 
 from polydrift.cells.jmap import accounts, adapter, driver
 from polydrift.cells.sip.runner import harness_commit
+from polydrift.core.fixset import fixtures_file
 from polydrift.core.record import ObservationRecord, Status, StepRecord
 
 CELL_DIR = Path(__file__).resolve().parent
@@ -35,7 +36,7 @@ WARMUP = [{"op": "call", "calls": [["Mailbox/get", {"accountId": "{acct}", "ids"
 
 
 def load_fixtures() -> dict:
-    return yaml.safe_load((CELL_DIR / "fixtures.yaml").read_text(encoding="utf-8"))["fixtures"]
+    return yaml.safe_load(fixtures_file(CELL_DIR).read_text(encoding="utf-8"))["fixtures"]
 
 
 def sh(a: list[str], timeout: int = 300) -> subprocess.CompletedProcess:

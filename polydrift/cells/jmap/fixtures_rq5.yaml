@@ -1,0 +1,10 @@
+# RQ5 known-bug fixtures, JMAP cell (manuscript 4.4 and 4.6); see dns/fixtures_rq5.yaml for the rule.
+fixtures:
+  # J1, Stalwart issue #1936 (v0.13.x): Mailbox/get with arguments {} (no accountId) was answered with error
+  # `forbidden` ("You do not have access to account ..."). 0.13.4 uses the primary account; 0.16.10 requires the
+  # argument. RFC 8620 makes accountId a required argument.
+  rq5_j1_mailbox_get_no_account:
+    kind: probe
+    clause: "RFC 8620 5.1 (accountId) and 3.6.2 invalidArguments"
+    steps:
+      - {op: call, calls: [["Mailbox/get", {}, c1]]}

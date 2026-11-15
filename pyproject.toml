@@ -34,6 +34,7 @@ include = ["polydrift*"]
 [tool.setuptools.package-data]
 "polydrift.cells.sip" = ["*.yaml"]
 "polydrift.cells.dns" = ["*.yaml"]
+"polydrift.rq5" = ["*.yaml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -26,6 +26,7 @@ import yaml
 
 from polydrift.cells.dns import adapter
 from polydrift.cells.sip.runner import harness_commit
+from polydrift.core.fixset import fixtures_file
 from polydrift.core.record import ObservationRecord, Status, StepRecord
 
 CELL_DIR = Path(__file__).resolve().parent
@@ -38,7 +39,7 @@ CANARY_ANSWER = ["ok.pd.pdlab A 10.0.0.1"]
 
 
 def load_fixtures() -> dict[str, dict[str, Any]]:
-    return yaml.safe_load(FIXTURES_PATH.read_text(encoding="utf-8"))["fixtures"]
+    return yaml.safe_load(fixtures_file(CELL_DIR).read_text(encoding="utf-8"))["fixtures"]
 
 
 def sh(args: list[str], timeout: int = 300, stdin: str | None = None) -> subprocess.CompletedProcess:
@@ -60,6 +61,24 @@ def canary() -> bool:
     except Exception:  # noqa: BLE001
         return False
     return bool(o) and o[0].get("answers") == CANARY_ANSWER
+
+
+def wait_canary(ready: float) -> bool:
+    t0 = time.time()
+    while time.time() - t0 < ready:
+        if canary():
+            return True
+        time.sleep(2)
+    return False
+
+
+def running(name: str) -> bool:
+    return sh(["docker", "inspect", "-f", "{{.State.Running}}", name]).stdout.strip() == "true"
+
+
+def mark_crashed(obs: list[dict]) -> list[dict]:
+    """Steps the resolver left unanswered because it exited (the adapter maps them to Status.CRASHED)."""
+    return [{**o, "crashed": True} if o.get("error") or o.get("rcode") in (None, "") else o for o in obs]
 
 
 def lab_up(lab: str, zones: dict) -> None:
@@ -141,19 +160,29 @@ def main() -> int:
                     log(f"{t['key']} repeat {r}: {e}")
                     lab_down(zones)
                     break
-                t0, ok_start = time.time(), False
-                while time.time() - t0 < t.get("ready", 90):
-                    if canary():
-                        ok_start = True
-                        break
-                    time.sleep(2)
+                ok_start = wait_canary(t.get("ready", 90))
                 image_id = sh(["docker", "image", "inspect", "-f", "{{.Id}}", t["image"]]).stdout.strip()
                 batch = []
+                alive = ok_start
                 for fid, fx in fixtures.items():
                     try:
-                        obs = drive(fx["steps"]) if ok_start else []
+                        obs = drive(fx["steps"]) if alive else []
                     except Exception as e:  # noqa: BLE001
                         obs = [{"step": 1, "op": "?", "error": f"driver: {e!r}"[:200]}]
+                    if alive and not running("pdns-res"):
+                        # The element under test exited during this fixture: a behaviour (crashed), not an instrument
+                        # failure. Its unanswered steps are marked, the container log is kept, and a fresh resolver
+                        # is started for the remaining fixtures (the end canary still has to pass).
+                        obs = mark_crashed(obs)
+                        lg = sh(["docker", "logs", "--tail", "200", "pdns-res"])
+                        (out / f"crash-{t['key']}-r{r}-a{attempt}-{fid}.log").write_text(lg.stdout + lg.stderr)
+                        log(f"{t['key']} repeat {r}: resolver exited during {fid}; restarting")
+                        try:
+                            start_resolver(t, lab)
+                            alive = wait_canary(t.get("ready", 90))
+                        except Exception as e:  # noqa: BLE001
+                            log(f"{t['key']} repeat {r}: restart after {fid}: {e}")
+                            alive = False
                     batch.append((fid, obs))
                 ok_end = ok_start and canary()
                 final = (ok_start and ok_end) or attempt == 2

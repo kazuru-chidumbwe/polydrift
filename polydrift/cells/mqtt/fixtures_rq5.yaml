@@ -1,0 +1,18 @@
+# RQ5 known-bug fixtures, MQTT cell (manuscript 4.4 and 4.6); see dns/fixtures_rq5.yaml for the rule.
+fixtures:
+  # M1, nanomq issue #1782 (16 Jun 2024, NanoMQ 0.21.8; CVE-2024-42655): `mosquitto_sub -t "+/brokers/+"` received
+  # $SYS data, against MQTT-4.7.2-1. Another client then connects, publishes to 1/1/1 and disconnects, which is what
+  # makes a broker publish its $SYS client events.
+  rq5_m1_sys_via_wildcard:
+    kind: probe
+    tags: ["security:topic-isolation"]
+    spec_refs:
+      - {"native": "MQTT-4.7.2-1", "keyword": "MUST", "axis": "dollar_topics", "step": 3, "allowed": [[]]}
+      - {"native": "MQTT-4.7.2-1", "keyword": "MUST", "axis": "dollar_topics", "step": 4, "allowed": [[]]}
+      - {"native": "MQTT-4.7.2-1", "keyword": "MUST", "axis": "dollar_topics", "step": 5, "allowed": [[]]}
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}, "window_ms": 500}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "+/brokers/+"}]}, "window_ms": 1500}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}, "window_ms": 3000}
+      - {"client": "a", "op": "publish", "args": {"topic": "1/1/1", "payload": "123", "qos": 0}, "window_ms": 3000}
+      - {"client": "a", "op": "disconnect", "window_ms": 3000}

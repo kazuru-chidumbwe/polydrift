@@ -24,6 +24,7 @@ import yaml
 
 from polydrift.cells.mqtt import adapter, driver
 from polydrift.cells.sip.runner import harness_commit
+from polydrift.core.fixset import fixtures_file
 from polydrift.core.record import ObservationRecord, Status, StepRecord
 
 CELL_DIR = Path(__file__).resolve().parent
@@ -33,7 +34,7 @@ CANARY = [{"client": "a", "op": "connect", "args": {"client_id": "{C}canary", "c
 
 
 def load_fixtures() -> dict[str, dict[str, Any]]:
-    return yaml.safe_load(FIXTURES_PATH.read_text(encoding="utf-8"))["fixtures"]
+    return yaml.safe_load(fixtures_file(CELL_DIR).read_text(encoding="utf-8"))["fixtures"]
 
 
 def canary(host: str, port: int, tag: str, version: int = 5) -> bool:

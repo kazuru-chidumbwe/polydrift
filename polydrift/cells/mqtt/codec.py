@@ -336,9 +336,10 @@ def decode(first: int, body: bytes, version: int = 5) -> dict[str, Any]:
     return p
 
 
-def split_stream(buf: bytes) -> tuple[list[tuple[int, bytes]], bytes]:
-    """Cut complete packets off the front of a receive buffer; returns (packets, rest)."""
-    out: list[tuple[int, bytes]] = []
+def split_stream_raw(buf: bytes) -> tuple[list[tuple[int, bytes, bytes]], bytes]:
+    """Cut complete packets off the front of a receive buffer; returns ([(first byte, body, exact bytes)], rest).
+    The exact bytes keep the sender's Remaining Length encoding (a non-minimal one included) for consumer replay."""
+    out: list[tuple[int, bytes, bytes]] = []
     while len(buf) >= 2:
         n, mult, i = 0, 1, 1
         ok = False
@@ -352,6 +353,12 @@ def split_stream(buf: bytes) -> tuple[list[tuple[int, bytes]], bytes]:
                 break
         if not ok or len(buf) < i + n:
             break
-        out.append((buf[0], bytes(buf[i:i + n])))
+        out.append((buf[0], bytes(buf[i:i + n]), bytes(buf[:i + n])))
         buf = buf[i + n:]
     return out, buf
+
+
+def split_stream(buf: bytes) -> tuple[list[tuple[int, bytes]], bytes]:
+    """Cut complete packets off the front of a receive buffer; returns (packets, rest)."""
+    pkts, rest = split_stream_raw(buf)
+    return [(f, b) for f, b, _raw in pkts], rest

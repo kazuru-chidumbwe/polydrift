@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import os
 import subprocess
 import time
@@ -67,6 +68,39 @@ def drive(steps: list[dict], unique: str, domain: str, creds: dict | None = None
     if r.returncode != 0:
         raise RuntimeError(f"driver exit {r.returncode}: {r.stderr.strip()[-300:]}")
     return json.loads(r.stdout)
+
+
+_TO_AOR = re.compile(r"^To:\s*<sip:([^>;]+)>", re.MULTILINE | re.IGNORECASE)
+
+
+def cleanup_steps(steps: list[dict]) -> list[dict]:
+    """Deregistration of every address of record the fixture registered (REGISTER with Contact: * and Expires: 0,
+    from the same party, RFC 3261 10.2.2), run after the fixture and not recorded. Without it a binding made by one
+    fixture is still listed in a later fixture's 200 OK, with a remaining time that moves with step timing."""
+    seen, out = set(), []
+    for st in steps:
+        msg = st.get("msg") or ""
+        if st.get("op") != "send" or not msg.startswith("REGISTER "):
+            continue
+        m = _TO_AOR.search(msg)
+        if not m or (st.get("from"), m.group(1)) in seen:
+            continue
+        seen.add((st.get("from"), m.group(1)))
+        n = len(out) + 1
+        party, aor = st.get("from"), m.group(1)
+        out.append({"op": "send", "from": party, "window_ms": 400, "msg": "\n".join([
+            "REGISTER sip:{domain} SIP/2.0",
+            "Via: SIP/2.0/UDP {lab}:{port:" + party + "};branch={branch};rport",
+            "Max-Forwards: 70",
+            "From: <sip:" + aor + ">;tag={tag:dereg" + str(n) + "}",
+            "To: <sip:" + aor + ">",
+            "Call-ID: dereg" + str(n) + "-{U}@{lab}",
+            "CSeq: 1 REGISTER",
+            "Contact: *",
+            "Expires: 0",
+            "Content-Length: {clen}",
+            "", ""])})
+    return out
 
 
 def canary(domain: str) -> bool:
@@ -159,6 +193,12 @@ def main() -> int:
                     except Exception as e:  # noqa: BLE001
                         obs = [{"step": 1, "op": "?", "error": f"driver: {e!r}"[:300]}]
                     batch.append((fid, obs))
+                    clean = cleanup_steps(fx["steps"]) if ok_start and "proxy" in roles else []
+                    if clean:
+                        try:
+                            drive(clean, unique, domain, t.get("creds"), t.get("ctl"))
+                        except Exception as e:  # noqa: BLE001
+                            log(f"{t['key']} repeat {r}: cleanup after {fid}: {e!r}"[:300])
                 ok_end = ok_start and canary(domain)
                 final = (ok_start and ok_end) or attempt == 2
                 with (out / ("raw.jsonl" if final else "raw-failed.jsonl")).open("a") as rawf, \

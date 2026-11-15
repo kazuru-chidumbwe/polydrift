@@ -66,6 +66,7 @@ class Client:
     closed: bool = False
     auto_ack: bool = True
     inbox: list[dict[str, Any]] = field(default_factory=list)
+    wire: list[str] = field(default_factory=list)  # each inbox packet as received (hex), for consumer replay
     # limits this client announced in its CONNECT (MQTT 5.0 3.1.2.11): the server must respect them when it sends
     max_size: int | None = None
     alias_max: int = 0
@@ -101,8 +102,8 @@ class Client:
             self.closed = True
             return
         self.buf += data
-        pkts, self.buf = codec.split_stream(self.buf)
-        for first, body in pkts:
+        pkts, self.buf = codec.split_stream_raw(self.buf)
+        for first, body, raw in pkts:
             p = codec.decode(first, body, self.version)
             p["size"] = 1 + len(codec.varint(len(body))) + len(body)
             if p.get("type") == "PUBLISH" and p.get("qos"):
@@ -112,6 +113,7 @@ class Client:
                         self.reuse += 1
                     self.unacked.add(p.get("packet_id"))
             self.inbox.append(p)
+            self.wire.append(raw.hex())
             if self.auto_ack and p.get("type") == "PUBLISH" and p.get("qos") in (1, 2):
                 kind = "puback" if p["qos"] == 1 else "pubrec"
                 self.send(codec.BUILDERS[kind]({"packet_id": p.get("packet_id", 0), "version": self.version}))
@@ -204,6 +206,7 @@ def run_script(host: str, port: int, steps: list[dict[str, Any]], *, topic_prefi
             got = k.inbox[start.get(n, 0):]
             obs["clients"][n] = {
                 "packets": got,
+                "wire": k.wire[start.get(n, 0):],
                 "last_pid_before": last_before.get(n),
                 "oversize": sum(1 for p in got if k.max_size is not None and p.get("size", 0) > k.max_size),
                 "pid_reuse": k.reuse - reuse_before.get(n, 0),

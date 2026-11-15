@@ -60,7 +60,7 @@ def test_server_plays_reply_then_other_clients_deliveries():
         {"actor": True, "type": "DISCONNECT", "wire": [], "closed": False}]}))
     out, close = srv.play(bytes.fromhex("100d00044d5154540502003c000000"))
     assert [p.hex() for _, p in out] == ["2003000000"] and not close
-    sub = bytes.fromhex("8209002a0000037432f7800")[:0] or bytes([0x82, 9, 0, 42, 0, 0, 3]) + b"t/x" + b"\x00"
+    sub = bytes([0x82, 9, 0, 42, 0, 0, 3]) + b"t/x" + b"\x00"  # SUBSCRIBE, packet id 42, one filter
     out, _ = srv.play(sub)
     assert out[0][1] == bytes.fromhex("9004002a0000") and out[1][1] == deliver
     assert srv.play(bytes.fromhex("4002002a"))[0] == []            # a PUBACK from the consumer is not a request

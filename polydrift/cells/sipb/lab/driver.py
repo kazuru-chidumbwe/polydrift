@@ -23,6 +23,7 @@ Output (stdout, JSON): one observation per step except wait.
 
 from __future__ import annotations
 
+import base64
 import json
 import random
 import re
@@ -42,7 +43,8 @@ def parse(data: bytes, transport: str) -> dict:
     head, _, body = text.partition("\r\n\r\n")
     lines = head.split("\r\n")
     first = lines[0]
-    msg: dict = {"transport": transport, "hdr": {}, "body": body}
+    # "wire": the exact bytes as received, for consumer replay (manuscript 3.6); never compared
+    msg: dict = {"transport": transport, "hdr": {}, "body": body, "wire": base64.b64encode(data).decode()}
     if first.startswith("SIP/"):
         parts = first.split(" ", 2)
         msg.update(kind="resp", code=int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else None,

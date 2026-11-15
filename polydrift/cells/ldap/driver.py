@@ -46,6 +46,7 @@ class Conn:
     closed: bool = False
     next_id: int = 1
     inbox: list[dict[str, Any]] = field(default_factory=list)
+    wire: list[str] = field(default_factory=list)  # each inbox message as received (hex), for consumer replay
 
     def send(self, data: bytes) -> str | None:
         if self.sock is None or self.closed:
@@ -73,6 +74,7 @@ class Conn:
         self.buf += data
         msgs, self.buf = codec.split_stream(self.buf)
         self.inbox.extend(codec.decode(m) for m in msgs)
+        self.wire.extend(m.hex() for m in msgs)
 
 
 def _lower_dyn(value: Any) -> Any:
@@ -160,7 +162,7 @@ def run_script(host: str, port: int, steps: list[dict[str, Any]], env: dict[str,
         obs = {"step": i, "actor": name, "op": op, "id": mid, "end": bool(st.get("end")), "error": err,
                "expects_reply": bool(need or (op in codec.ANSWERED)), "clients": {}}
         for n, k in conns.items():
-            obs["clients"][n] = {"messages": k.inbox[start.get(n, 0):],
+            obs["clients"][n] = {"messages": k.inbox[start.get(n, 0):], "wire": k.wire[start.get(n, 0):],
                                  "closed_now": k.closed and not was_closed.get(n, False) and not (n == name and op == "close")}
         out.append(obs)
     for k in conns.values():

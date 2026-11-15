@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import random
 from dataclasses import dataclass, field
-from typing import Iterable
+from typing import Any, Iterable
 
 from polydrift.core.oracle import Outcome, PairResult
 from polydrift.core.record import Tier
@@ -90,3 +90,32 @@ class Confusion:
 
 def predicted_consequential(stratum: str) -> bool:
     return stratum == "T0-T2"
+
+
+def replay_summary(lines: list[dict[str, Any]], sampled: list[tuple[str, Any]], not_replayable: list[str],
+                   consumers: tuple[str, ...], seed: int) -> dict[str, Any]:
+    """Per consumer: confusion of predicted tier (T0 to T2 vs the rest) against observed consequence (any replayed
+    step gave the consumer a different result), consequential pairs per stratum, and pairs on which the consumers
+    disagree (consumer-dependent differences, reported apart)."""
+    by_pair: dict[tuple, dict[str, dict]] = {}
+    for ln in lines:
+        k = (ln["fixture"], ln["left"], ln["right"], ln["stratum"])
+        by_pair.setdefault(k, {}).setdefault(ln["consumer"], {}).setdefault(ln["step"], {})[ln["side"]] = ln["result"]
+    conf = {c: Confusion() for c in consumers}
+    consequential: dict[tuple, dict[str, bool]] = {}
+    for k, per_c in by_pair.items():
+        for c, steps in per_c.items():
+            obs = any(s.get("left") != s.get("right") for s in steps.values())
+            consequential.setdefault(k, {})[c] = obs
+            conf[c].add(predicted_consequential(k[3]), obs)
+    disagree = [list(k) for k, v in consequential.items() if len(set(v.values())) > 1]
+    strata = {s: sum(1 for st, _ in sampled if st == s) for s in ("T0-T2", "T3", "T4-only")}
+    return {
+        "seed": seed, "sampled": strata, "replayed_pairs": len(by_pair), "not_replayable": len(not_replayable),
+        "confusion": {c: {"tp": m.tp, "fp": m.fp, "fn": m.fn, "tn": m.tn, "precision": m.precision,
+                          "recall": m.recall} for c, m in conf.items()},
+        "consumer_disagreements": disagree,
+        "per_stratum_consequential": {
+            s: {c: sum(1 for k, v in consequential.items() if k[3] == s and v.get(c)) for c in consumers}
+            for s in strata},
+    }

@@ -30,7 +30,7 @@ from polydrift.cells.dns import adapter
 from polydrift.cells.dns.runner import load_fixtures
 from polydrift.core.oracle import compare_all
 from polydrift.core.record import ObservationRecord, Status, read_jsonl
-from polydrift.core.replay import Confusion, predicted_consequential, sample
+from polydrift.core.replay import replay_summary, sample
 from polydrift.core.repeat import MIN_REPEATS, flaky_triples
 
 SEED = 20261116  # part of the frozen oracle specification (3.6): the replay sample is drawn with it
@@ -94,28 +94,7 @@ def consumer_result(raw: str) -> dict[str, Any]:
 
 
 def summarise(lines: list[dict[str, Any]], sampled: list[tuple[str, Any]], not_replayable: list[str]) -> dict:
-    by_pair: dict[tuple, dict[str, dict]] = {}
-    for ln in lines:
-        k = (ln["fixture"], ln["left"], ln["right"], ln["stratum"])
-        by_pair.setdefault(k, {}).setdefault(ln["consumer"], {}).setdefault(ln["step"], {})[ln["side"]] = ln["result"]
-    conf = {c: Confusion() for c in CONSUMERS}
-    consequential: dict[tuple, dict[str, bool]] = {}
-    for k, per_c in by_pair.items():
-        for c, steps in per_c.items():
-            obs = any(s.get("left") != s.get("right") for s in steps.values())
-            consequential.setdefault(k, {})[c] = obs
-            conf[c].add(predicted_consequential(k[3]), obs)
-    disagree = [list(k) for k, v in consequential.items() if len(set(v.values())) > 1]
-    strata = {s: sum(1 for st, _ in sampled if st == s) for s in ("T0-T2", "T3", "T4-only")}
-    return {
-        "seed": SEED, "sampled": strata, "replayed_pairs": len(by_pair), "not_replayable": len(not_replayable),
-        "confusion": {c: {"tp": m.tp, "fp": m.fp, "fn": m.fn, "tn": m.tn, "precision": m.precision,
-                          "recall": m.recall} for c, m in conf.items()},
-        "consumer_disagreements": disagree,
-        "per_stratum_consequential": {
-            s: {c: sum(1 for k, v in consequential.items() if k[3] == s and v.get(c)) for c in CONSUMERS}
-            for s in strata},
-    }
+    return replay_summary(lines, sampled, not_replayable, tuple(CONSUMERS), SEED)
 
 
 def sh(a: list[str], timeout: int = 120, stdin: str | None = None) -> subprocess.CompletedProcess:

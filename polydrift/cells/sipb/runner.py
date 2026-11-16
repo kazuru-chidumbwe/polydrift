@@ -199,7 +199,14 @@ def main() -> int:
                             drive(clean, unique, domain, t.get("creds"), t.get("ctl"))
                         except Exception as e:  # noqa: BLE001
                             log(f"{t['key']} repeat {r}: cleanup after {fid}: {e!r}"[:300])
-                ok_end = ok_start and canary(domain)
+                # the end canary retries like the start one (linphone after a long run of calls answered OPTIONS
+                # again only after a pause, stability x5 16 Nov): it checks the element is alive, not its latency
+                ok_end, t1 = False, time.time()
+                while ok_start and time.time() - t1 < t.get("end_ready", 30):
+                    if canary(domain):
+                        ok_end = True
+                        break
+                    time.sleep(3)
                 final = (ok_start and ok_end) or attempt == 2
                 with (out / ("raw.jsonl" if final else "raw-failed.jsonl")).open("a") as rawf, \
                         (out / ("records.jsonl" if final else "records-failed.jsonl")).open("a") as recf:

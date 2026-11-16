@@ -21,7 +21,7 @@ from typing import Any
 from polydrift.cells.ldap import codec
 
 DEFAULT_WINDOW_MS = 800
-REPLY_MAX_MS = 5000
+REPLY_MAX_MS = 15000  # Samba AD and ApacheDS sometimes answer an Add after 5 s under load (stability x5, 16 Nov)
 SETTLE_MS = 300
 FINAL = {"BindResponse", "SearchResultDone", "ModifyResponse", "AddResponse", "DelResponse", "ModifyDNResponse",
          "CompareResponse", "ExtendedResponse"}

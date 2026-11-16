@@ -24,6 +24,8 @@ Two conventions used by fixture files:
 
 from __future__ import annotations
 
+import re
+
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Iterable, Mapping
@@ -101,15 +103,42 @@ def allowed_set(ref: Mapping[str, Any]) -> set[Any]:
     return {freeze_value(v) for v in ref.get("allowed", [])}
 
 
+PREDICATES = ("allowed", "excludes", "excludes_re", "order", "same_as")
+
+
 def labels(ref: Mapping[str, Any]) -> bool:
-    """Does this reference label implementations (it states the values its clause allows)?"""
-    return "allowed" in ref
+    """Does this reference label implementations? Its clause fixes the outcome through one predicate:
+    ``allowed`` (the values the clause allows); where those cannot be listed, ``excludes`` (values that must not be,
+    or be among, the observed value: "MUST NOT include X"), ``excludes_re`` (a regular expression no observed string
+    may match, e.g. an unescaped space in a URI), ``order: [a, b]`` (in an observed sequence, every a comes before
+    any b), or ``same_as: <step>`` (the value equals the same axis at another step: "the field is ignored")."""
+    return any(k in ref for k in PREDICATES)
+
+
+def _elements(value: Any) -> tuple:
+    return value if isinstance(value, tuple) else (value,)
 
 
 def inside(rec: ObservationRecord, ref: Mapping[str, Any], refusal_class: str | None = None) -> bool:
     if not labels(ref):
         return True
-    return observed(rec, ref["axis"], _step_of(ref), refusal_class) in allowed_set(ref)
+    value = observed(rec, ref["axis"], _step_of(ref), refusal_class)
+    if "allowed" in ref:
+        return value in allowed_set(ref)
+    if "same_as" in ref:
+        return value == observed(rec, ref["axis"], ref["same_as"], refusal_class)
+    if value is None:
+        return True  # nothing observed at the step: the clause has nothing to bind
+    if "excludes" in ref:
+        bad = {freeze_value(v) for v in ref["excludes"]}
+        return not any(v in bad for v in _elements(value))
+    if "excludes_re" in ref:
+        rx = re.compile(ref["excludes_re"])
+        return not any(isinstance(v, str) and rx.search(v) for v in _elements(value))
+    first, second = ref["order"]
+    seq = list(_elements(value))
+    return not (first in seq and second in seq and max(i for i, v in enumerate(seq) if v == first)
+                > min(i for i, v in enumerate(seq) if v == second))
 
 
 def conflicting_refs(refs: Iterable[Mapping[str, Any]]) -> set[int]:
@@ -121,7 +150,7 @@ def conflicting_refs(refs: Iterable[Mapping[str, Any]]) -> set[int]:
     for i, a in enumerate(refs):
         for j in range(i + 1, len(refs)):
             b = refs[j]
-            if labels(a) and labels(b) and a["axis"] == b["axis"] and _step_of(a) == _step_of(b):
+            if "allowed" in a and "allowed" in b and a["axis"] == b["axis"] and _step_of(a) == _step_of(b):
                 if not (allowed_set(a) & allowed_set(b)):
                     bad.update((i, j))
     return bad

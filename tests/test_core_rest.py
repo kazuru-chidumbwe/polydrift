@@ -269,3 +269,41 @@ def test_breach_on_flaky_axis_does_not_label():
     b = rec("b", step(x=f(1, 1), y=f(3, "q")))
     pr = compare_pair(a, b, flaky={("a", "F1", "x")})
     assert fault_class(pr, a, b, fx) == FaultClass.UNSPECIFIED
+
+
+def test_excludes_predicate_labels_must_not_include():
+    spec = FixtureSpec.from_dict({"id": "F1", "cell": "test", "spec_refs": [
+        {"req_id": "R1", "keyword": "MUST", "axis": "x", "step": 1, "excludes": ["root"]}]})
+    good = rec("a", step(x=f(2, ("a", "b"))))
+    bad = rec("b", step(x=f(2, ("a", "root"))))
+    none = rec("c", step(x=f(2, None)))
+    assert label_impl(good, spec).verdict == "conforms"
+    assert label_impl(bad, spec).verdict == "violation"
+    assert label_impl(none, spec).verdict == "conforms"
+    scalar = rec("d", step(x=f(2, "root")))
+    assert label_impl(scalar, spec).verdict == "violation"
+
+
+def _verdict(ref, value, step2=None):
+    spec = FixtureSpec.from_dict({"id": "F1", "cell": "test", "spec_refs": [{"req_id": "R", "keyword": "MUST", **ref}]})
+    steps = [step(x=f(2, value))] + ([step(x=f(2, step2))] if step2 is not None else [])
+    return label_impl(rec("a", *steps), spec).verdict
+
+
+def test_excludes_predicates():
+    assert _verdict({"axis": "x", "step": 1, "excludes": ["root"]}, ("a", "b")) == "conforms"
+    assert _verdict({"axis": "x", "step": 1, "excludes": ["root"]}, ("a", "root")) == "violation"
+    assert _verdict({"axis": "x", "step": 1, "excludes": ["root"]}, "root") == "violation"
+    assert _verdict({"axis": "x", "step": 1, "excludes": ["root"]}, None) == "conforms"
+    assert _verdict({"axis": "x", "step": 1, "excludes_re": " "}, ("ldap://h/a%20b",)) == "conforms"
+    assert _verdict({"axis": "x", "step": 1, "excludes_re": " "}, ("ldap://h/a b",)) == "violation"
+
+
+def test_order_and_same_as_predicates():
+    o = {"axis": "x", "step": 1, "order": ["Done", "Bind"]}
+    assert _verdict(o, ("Entry", "Done", "Bind")) == "conforms"
+    assert _verdict(o, ("Bind",)) == "conforms"
+    assert _verdict(o, ("Bind", "Done")) == "violation"
+    s = {"axis": "x", "step": 2, "same_as": 1}
+    assert _verdict(s, (7,), (7,)) == "conforms"
+    assert _verdict(s, (7,), (48,)) == "violation"

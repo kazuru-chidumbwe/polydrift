@@ -59,7 +59,7 @@ def fixture_refs(cell: str, kinds: dict[str, set[str]] | None = None) -> dict[st
 
 
 def ref_kind(ref: dict) -> str:
-    if "allowed" in ref:
+    if any(k in ref for k in ("allowed", "excludes", "excludes_re", "order", "same_as")):
         return "labelled"
     return ref.get("basis") if ref.get("basis") in BASES else "untriaged"
 

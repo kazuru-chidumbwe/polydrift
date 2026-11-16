@@ -93,7 +93,7 @@ def main() -> int:
                     ap2 = free_port()
                     args += ["-p", f"127.0.0.1:{ap2}:{t['admin_port']}"]
                     admin_base = f"http://127.0.0.1:{ap2}"
-                rr = sh(args + [*t.get("extra", []), t["image"], *(t.get("cmd") or [])])
+                rr = sh(args + [*[str(x).replace("{celldir}", str(CELL_DIR)) for x in t.get("extra", [])], t["image"], *(t.get("cmd") or [])])
                 if rr.returncode != 0:
                     log(f"{t['key']} repeat {r}: start failed {rr.stderr[-200:]}")
                     break

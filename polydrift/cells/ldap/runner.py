@@ -62,7 +62,7 @@ def start(t: dict[str, Any], name: str) -> int:
     port = free_port()
     sh(["docker", "rm", "-f", name])
     args = ["docker", "run", "-d", "--name", name, "--cpus=4", "--memory=4g", "-p", f"127.0.0.1:{port}:{t['port']}",
-            *t.get("extra", []), t["image"], *(t.get("cmd") or [])]
+            *[str(x).replace("{celldir}", str(CELL_DIR)) for x in t.get("extra", [])], t["image"], *(t.get("cmd") or [])]
     r = sh(args)
     if r.returncode != 0:
         raise RuntimeError(f"start failed: {r.stderr.strip()[-200:]}")

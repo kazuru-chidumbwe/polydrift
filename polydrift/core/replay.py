@@ -103,9 +103,15 @@ def replay_summary(lines: list[dict[str, Any]], sampled: list[tuple[str, Any]], 
         by_pair.setdefault(k, {}).setdefault(ln["consumer"], {}).setdefault(ln["step"], {})[ln["side"]] = ln["result"]
     conf = {c: Confusion() for c in consumers}
     consequential: dict[tuple, dict[str, bool]] = {}
+
+    def acted(r: Any) -> Any:
+        # a result's "data" (values the library passes to its program without acting on them, e.g. a SIP reason
+        # phrase) is kept in replay.jsonl but not compared
+        return {k: v for k, v in r.items() if k != "data"} if isinstance(r, dict) else r
+
     for k, per_c in by_pair.items():
         for c, steps in per_c.items():
-            obs = any(s.get("left") != s.get("right") for s in steps.values())
+            obs = any(acted(s.get("left")) != acted(s.get("right")) for s in steps.values())
             consequential.setdefault(k, {})[c] = obs
             conf[c].add(predicted_consequential(k[3]), obs)
     disagree = [list(k) for k, v in consequential.items() if len(set(v.values())) > 1]

@@ -40,6 +40,7 @@ static void on_call_media_state(pjsua_call_id id) {
 int main(int argc, char **argv) {
     if (argc < 3) return 2;
     int wait_ms = atoi(argv[2]);
+    pj_log_set_level(0);
     pjsua_create();
     pjsua_config cfg;
     pjsua_logging_config log;

@@ -47,8 +47,11 @@ def header_values(lines: list[str], name: str) -> list[str]:
     out = []
     for ln in lines[1:]:
         if ":" in ln and hname(ln) == name:
-            out.extend(v.strip() for v in re.split(r",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", ln.split(":", 1)[1])
-                       if name == "via" else [ln.split(":", 1)[1].strip()])
+            val = ln.split(":", 1)[1]
+            if name == "via":
+                out.extend(v.strip() for v in re.split(r",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", val))
+            else:
+                out.append(val.strip())
     return out
 
 

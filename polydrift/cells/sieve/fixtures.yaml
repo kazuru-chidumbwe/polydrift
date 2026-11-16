@@ -350,7 +350,7 @@ fixtures:
     kind: probe
     message: clean.eml
     spec_refs:
-      - {"req_id": "SIEVE-d87354a8", "keyword": "MAY", "axis": "decision_class", "step": 1, "note": "quoted string across lines; comparison only"}
+      - {"req_id": "SIEVE-d87354a8", "keyword": "MAY", "axis": "decision_class", "step": 1, "basis": "option"}
     script: |
       require "fileinto";
       if header :contains "Subject" "Lunch
@@ -396,9 +396,9 @@ fixtures:
     folders: ["INBOX", "INBOX.Nul"]
     spec_refs:
       - {"req_id": "SIEVE-e025a69c", "keyword": "SHOULD", "axis": "intent", "step": 1, "allowed": [["fileinto:INBOX.Nul"]]}
-      - {"req_id": "SIEVE-3c33e280", "keyword": "SHOULD", "axis": "intent", "step": 1, "note": "decoded comparison; comparison only"}
-      - {"req_id": "SIEVE-60f38245", "keyword": "MAY", "axis": "intent", "step": 1, "note": "undecodable text; comparison only"}
-      - {"req_id": "SIEVE-d2c8c805", "keyword": "MUST", "axis": "intent", "step": 1, "note": "fallback rules when not decoding; comparison only"}
+      - {"req_id": "SIEVE-3c33e280", "keyword": "SHOULD", "axis": "intent", "step": 1, "basis": "option", "note": "how an encoded NUL is decoded is not fixed by the SHOULD"}
+      - {"req_id": "SIEVE-60f38245", "keyword": "MAY", "axis": "intent", "step": 1, "basis": "option"}
+      - {"req_id": "SIEVE-d2c8c805", "keyword": "MUST", "axis": "intent", "step": 1, "basis": "conditional", "note": "binds only for an engine that does not decode"}
     script: |
       require "fileinto";
       if header :contains "Subject" "needleafter" { fileinto "INBOX.Nul"; }
@@ -416,7 +416,7 @@ fixtures:
     kind: probe
     message: clean.eml
     spec_refs:
-      - {"req_id": "SIEVE-b09fe242", "keyword": "MAY", "axis": "outcome", "step": 1, "note": "whole-script parse before running; comparison only"}
+      - {"req_id": "SIEVE-b09fe242", "keyword": "MAY", "axis": "outcome", "step": 1, "basis": "option"}
     script: |
       keep;
       if true { stop; }
@@ -434,7 +434,7 @@ fixtures:
     kind: probe
     message: clean.eml
     spec_refs:
-      - {"req_id": "SIEVE-35c65e99", "keyword": "MAY", "axis": "outcome", "step": 1, "note": "checks on code not reached; comparison only"}
+      - {"req_id": "SIEVE-35c65e99", "keyword": "MAY", "axis": "outcome", "step": 1, "basis": "option"}
     script: |
       if false { redirect "not an address"; }
       keep;
@@ -464,7 +464,7 @@ fixtures:
     kind: probe
     message: clean.eml
     spec_refs:
-      - {"req_id": "SIEVE-44b989d1", "keyword": "MAY", "axis": "outcome", "step": 1, "note": "invalid mailbox name; comparison only"}
+      - {"req_id": "SIEVE-44b989d1", "keyword": "MAY", "axis": "outcome", "step": 1, "basis": "option"}
     script: |
       require "fileinto";
       fileinto "INBOX..bad";
@@ -474,7 +474,7 @@ fixtures:
     message: clean.eml
     folders: ["INBOX", "INBOX.Bücher"]
     spec_refs:
-      - {"req_id": "SIEVE-4c63c070", "keyword": "SHOULD", "axis": "stored", "step": 1, "layer": "effect", "note": "mailbox name re-encoded (modified UTF-7); comparison only"}
+      - {"req_id": "SIEVE-4c63c070", "keyword": "SHOULD", "axis": "stored", "step": 1, "layer": "effect", "basis": "conditional", "note": "binds only for an engine whose store uses another encoding"}
     script: |
       require "fileinto";
       fileinto "INBOX.Bücher";
@@ -491,8 +491,8 @@ fixtures:
     kind: probe
     message: clean.eml
     spec_refs:
-      - {"req_id": "SIEVE-1a34030c", "keyword": "MAY", "axis": "emitted", "step": 1, "layer": "effect", "note": "one submission with two recipients or two; comparison only"}
-      - {"req_id": "SIEVE-c26ca950", "keyword": "MAY", "axis": "emitted_headers", "step": 1, "layer": "effect", "note": "comparison only"}
+      - {"req_id": "SIEVE-1a34030c", "keyword": "MAY", "axis": "emitted", "step": 1, "layer": "effect", "basis": "option"}
+      - {"req_id": "SIEVE-c26ca950", "keyword": "MAY", "axis": "emitted_headers", "step": 1, "layer": "effect", "basis": "option"}
     script: |
       redirect "a@example.invalid";
       redirect "b@example.invalid";
@@ -502,7 +502,7 @@ fixtures:
     message: clean.eml
     from: ""
     spec_refs:
-      - {"req_id": "SIEVE-8bda45c2", "keyword": "MUST", "axis": "emitted_headers", "step": 1, "layer": "effect", "note": "envelope sender stays empty; comparison only (sieve-test does not report it)"}
+      - {"req_id": "SIEVE-8bda45c2", "keyword": "MUST", "axis": "redirect_env_from", "step": 1, "layer": "effect", "allowed": [[], [""], null], "note": "the redirected message keeps the empty envelope sender"}
     script: |
       redirect "review@example.invalid";
 
@@ -510,7 +510,7 @@ fixtures:
     kind: probe
     message: many-hops.eml
     spec_refs:
-      - {"req_id": "SIEVE-63ceb935", "keyword": "MUST", "axis": "emitted", "step": 1, "layer": "effect", "note": "loop control on a 40-hop message; comparison only"}
+      - {"req_id": "SIEVE-63ceb935", "keyword": "MUST", "axis": "emitted", "step": 1, "layer": "effect", "basis": "option", "note": "a 40-hop message is within SMTP's limit; the measure taken is the engine's"}
       - {"req_id": "SIEVE-6bb244cc", "keyword": "MUST", "axis": "intent", "step": 1, "allowed": [["redirect:review@example.invalid"], ["keep"], ["keep", "redirect:review@example.invalid"]]}
     script: |
       redirect "review@example.invalid";
@@ -602,7 +602,7 @@ fixtures:
     spec_refs:
       - {"req_id": "SIEVE-674f7e23", "keyword": "MUST", "axis": "intent", "step": 1, "allowed": [["fileinto:INBOX.Bin"]]}
       - {"req_id": "SIEVE-084f52d9", "keyword": "SHOULD", "axis": "intent", "step": 1, "allowed": [["fileinto:INBOX.Bin"]]}
-      - {"req_id": "SIEVE-dcaf13ed", "keyword": "MAY", "axis": "intent", "step": 1, "note": "undecodable parts; comparison only"}
+      - {"req_id": "SIEVE-dcaf13ed", "keyword": "MAY", "axis": "intent", "step": 1, "basis": "option"}
     script: |
       require ["body", "fileinto"];
       if body :content "text" :contains "needlenul" { fileinto "INBOX.Bin"; }
@@ -642,7 +642,7 @@ fixtures:
     message: mime-parts.eml
     folders: ["INBOX", "INBOX.QP", "INBOX.B64", "INBOX.Latin", "INBOX.Seven", "INBOX.Bin", "INBOX.Split", "INBOX.Hdr", "INBOX.Whole", "INBOX.Html", "INBOX.Strip", "INBOX.Empty", "INBOX.Set"]
     spec_refs:
-      - {"req_id": "SIEVE-1138b45c", "keyword": "MAY", "axis": "intent", "step": 1, "note": ":text as :content text; comparison only"}
+      - {"req_id": "SIEVE-1138b45c", "keyword": "MAY", "axis": "intent", "step": 1, "basis": "option"}
     script: |
       require ["body", "fileinto"];
       if body :text :contains "needlehtml" { fileinto "INBOX.Html"; }
@@ -652,7 +652,7 @@ fixtures:
     message: mime-parts.eml
     folders: ["INBOX", "INBOX.QP", "INBOX.B64", "INBOX.Latin", "INBOX.Seven", "INBOX.Bin", "INBOX.Split", "INBOX.Hdr", "INBOX.Whole", "INBOX.Html", "INBOX.Strip", "INBOX.Empty", "INBOX.Set"]
     spec_refs:
-      - {"req_id": "SIEVE-bc84fa96", "keyword": "MAY", "axis": "intent", "step": 1, "note": "mark-up stripped; comparison only"}
+      - {"req_id": "SIEVE-bc84fa96", "keyword": "MAY", "axis": "intent", "step": 1, "basis": "option"}
     script: |
       require ["body", "fileinto"];
       if body :text :contains "htmlneedlehtml" { fileinto "INBOX.Strip"; }
@@ -708,7 +708,7 @@ fixtures:
     spec_refs:
       - {"req_id": "SIEVE-4629a37b", "keyword": "MUST", "axis": "stored_flags", "step": 1, "layer": "effect", "allowed": [[["INBOX", ["\\Flagged \\Seen"]]]]}
       - {"req_id": "SIEVE-c159a1a4", "keyword": "MUST", "axis": "stored_flags", "step": 1, "layer": "effect", "allowed": [[["INBOX", ["\\Flagged \\Seen"]]]]}
-      - {"req_id": "SIEVE-c61e6d4c", "keyword": "MAY", "axis": "stored_flags", "step": 1, "layer": "effect", "note": "any rewrite that keeps the set; comparison only"}
+      - {"req_id": "SIEVE-c61e6d4c", "keyword": "MAY", "axis": "stored_flags", "step": 1, "layer": "effect", "basis": "option"}
     script: |
       require "imap4flags";
       setflag "  \\Seen    \\Flagged  ";
@@ -751,11 +751,11 @@ fixtures:
     kind: probe
     message: vacation.eml
     spec_refs:
-      - {"req_id": "SIEVE-f10561e0", "keyword": "MUST", "axis": "emitted", "step": 1, "layer": "effect", "note": "one delivery per run: tracking is compared, not labelled"}
-      - {"req_id": "SIEVE-94ca4bed", "keyword": "MUST", "axis": "emitted", "step": 1, "layer": "effect", "note": "comparison only"}
-      - {"req_id": "SIEVE-f8c203bb", "keyword": "MAY", "axis": "emitted", "step": 1, "layer": "effect", "note": "comparison only"}
-      - {"req_id": "SIEVE-ed6235b5", "keyword": "MUST", "axis": "emitted", "step": 1, "layer": "effect", "note": "limit not observable in one delivery; comparison only"}
-      - {"req_id": "SIEVE-9c9865bc", "keyword": "SHOULD", "axis": "emitted", "step": 1, "layer": "effect", "note": "comparison only"}
+      - {"req_id": "SIEVE-f10561e0", "keyword": "MUST", "axis": "emitted", "step": 1, "layer": "effect", "basis": "not-observable", "note": "one delivery per run cannot show response tracking"}
+      - {"req_id": "SIEVE-94ca4bed", "keyword": "MUST", "axis": "emitted", "step": 1, "layer": "effect", "basis": "not-applicable", "note": "the script uses no variables"}
+      - {"req_id": "SIEVE-f8c203bb", "keyword": "MAY", "axis": "emitted", "step": 1, "layer": "effect", "basis": "option"}
+      - {"req_id": "SIEVE-ed6235b5", "keyword": "MUST", "axis": "emitted", "step": 1, "layer": "effect", "basis": "not-observable", "note": "one delivery per run cannot show the tracking limit"}
+      - {"req_id": "SIEVE-9c9865bc", "keyword": "SHOULD", "axis": "emitted", "step": 1, "layer": "effect", "basis": "not-observable", "note": "one delivery per run cannot show the tracking limit"}
     script: |
       require "vacation";
       vacation :days 7 "Away";
@@ -789,8 +789,8 @@ fixtures:
       - {"req_id": "SIEVE-1c5e2887", "keyword": "SHOULD", "axis": "vacation_from", "step": 1, "layer": "effect", "allowed": [["user@lab.test"]]}
       - {"req_id": "SIEVE-eb9713e9", "keyword": "SHOULD", "axis": "vacation_to", "step": 1, "layer": "effect", "allowed": [["probe@example.invalid"]]}
       - {"req_id": "SIEVE-bd230d0c", "keyword": "MUST", "axis": "vacation_in_reply_to", "step": 1, "layer": "effect", "allowed": [[true]]}
-      - {"req_id": "SIEVE-36518d02", "keyword": "SHOULD", "axis": "emitted_headers", "step": 1, "layer": "effect", "note": "envelope sender <>; comparison only"}
-      - {"req_id": "SIEVE-11f22447", "keyword": "SHOULD", "axis": "emitted_headers", "step": 1, "layer": "effect", "note": "NOTIFY=NEVER not observable; comparison only"}
+      - {"req_id": "SIEVE-36518d02", "keyword": "SHOULD", "axis": "vacation_env_from", "step": 1, "layer": "effect", "allowed": [[], [""], null], "note": "the vacation response goes out with an empty envelope sender"}
+      - {"req_id": "SIEVE-11f22447", "keyword": "SHOULD", "axis": "emitted_headers", "step": 1, "layer": "effect", "basis": "not-observable", "note": "the RCPT parameters are not recorded"}
     script: |
       require "vacation";
       vacation "Away";
@@ -833,7 +833,7 @@ fixtures:
     message: clean.eml
     spec_refs:
       - {"req_id": "SIEVE-7f171b25", "keyword": "MUST", "axis": "mdn_disposition", "step": 1, "layer": "effect", "allowed": [[], ["automatic-action/mdn-sent-automatically; deleted"]]}
-      - {"req_id": "SIEVE-7a3135f5", "keyword": "SHOULD", "axis": "emitted_headers", "step": 1, "layer": "effect", "note": "human-readable alert; comparison only"}
+      - {"req_id": "SIEVE-7a3135f5", "keyword": "SHOULD", "axis": "emitted_headers", "step": 1, "layer": "effect", "basis": "not-observable", "note": "the MDN text is recorded only as marker presence"}
       - {"req_id": "SIEVE-fea6d9e0", "keyword": "MUST", "axis": "stored", "step": 1, "layer": "effect", "allowed": [[]]}
     script: |
       require "reject";
@@ -853,11 +853,11 @@ fixtures:
     kind: probe
     message: clean.eml
     spec_refs:
-      - {"req_id": "SIEVE-41dc297e", "keyword": "MUST", "axis": "emitted", "step": 1, "layer": "effect", "note": "a DSN for each refusing recipient; comparison only"}
-      - {"req_id": "SIEVE-8e12cf65", "keyword": "MUST", "axis": "emitted_headers", "step": 1, "layer": "effect", "note": "DSN structure; comparison only"}
+      - {"req_id": "SIEVE-41dc297e", "keyword": "MUST", "axis": "emitted", "step": 1, "layer": "effect", "basis": "conditional", "note": "binds only where the engine cannot refuse at the protocol level"}
+      - {"req_id": "SIEVE-8e12cf65", "keyword": "MUST", "axis": "dsn_action", "step": 1, "layer": "effect", "excludes": [null], "note": "every DSN carries a parseable Action field (RFC 3464)"}
       - {"req_id": "SIEVE-f0bad974", "keyword": "MUST", "axis": "dsn_action", "step": 1, "layer": "effect", "allowed": [[], ["failed"]]}
       - {"req_id": "SIEVE-c7898c9c", "keyword": "MUST", "axis": "reason_in_text", "step": 1, "layer": "effect", "allowed": [[], [true]]}
-      - {"req_id": "SIEVE-bb1f2c30", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "ereject availability depends on the environment; comparison only"}
+      - {"req_id": "SIEVE-bb1f2c30", "keyword": "MUST", "axis": "decision_class", "step": 1, "basis": "conditional", "note": "availability depends on the engine's environment"}
     script: |
       require "ereject";
       ereject "PD-MARKER refused by policy";
@@ -886,7 +886,7 @@ fixtures:
     kind: probe
     message: clean.eml
     spec_refs:
-      - {"req_id": "SIEVE-f7cad0a0", "keyword": "MUST", "axis": "emitted_headers", "step": 1, "layer": "effect", "note": "the refused message's notification is unmodified; comparison only"}
+      - {"req_id": "SIEVE-f7cad0a0", "keyword": "MUST", "axis": "emitted_headers", "step": 1, "layer": "effect", "basis": "not-observable", "note": "added header fields are not recorded in the notification facts"}
     script: |
       require ["reject", "editheader"];
       addheader "X-PD" "added";
@@ -896,11 +896,11 @@ fixtures:
     kind: probe
     message: clean.eml
     spec_refs:
-      - {"req_id": "SIEVE-35d36874", "keyword": "MUST", "axis": "lmtp_reply", "step": 1, "layer": "effect", "note": "LMTP/SMTP reply; phase 2 engines; comparison only until then"}
-      - {"req_id": "SIEVE-0ffb8975", "keyword": "MUST", "axis": "lmtp_reply", "step": 1, "layer": "effect", "note": "LMTP/SMTP reply; phase 2 engines; comparison only until then"}
-      - {"req_id": "SIEVE-a0efcd11", "keyword": "MUST", "axis": "lmtp_reply", "step": 1, "layer": "effect", "note": "LMTP/SMTP reply; phase 2 engines; comparison only until then"}
-      - {"req_id": "SIEVE-68b36c0a", "keyword": "SHOULD", "axis": "lmtp_reply", "step": 1, "layer": "effect", "note": "LMTP/SMTP reply; phase 2 engines; comparison only until then"}
-      - {"req_id": "SIEVE-6e37f07b", "keyword": "MAY", "axis": "lmtp_reply", "step": 1, "layer": "effect", "note": "LMTP/SMTP reply; phase 2 engines; comparison only until then"}
+      - {"req_id": "SIEVE-35d36874", "keyword": "MUST", "axis": "lmtp_reply", "step": 1, "layer": "effect", "basis": "conditional", "note": "binds only for an engine able to refuse at the LMTP level"}
+      - {"req_id": "SIEVE-0ffb8975", "keyword": "MUST", "axis": "lmtp_reply", "step": 1, "layer": "effect", "basis": "not-applicable", "note": "the reason is US-ASCII"}
+      - {"req_id": "SIEVE-a0efcd11", "keyword": "MUST", "axis": "lmtp_reply", "step": 1, "layer": "effect", "basis": "conditional", "note": "binds only for a server that offers enhanced status codes"}
+      - {"req_id": "SIEVE-68b36c0a", "keyword": "SHOULD", "axis": "lmtp_reply", "step": 1, "layer": "effect", "excludes_re": "^5\\.(?!7\\.[01]$)\\d+\\.\\d+$", "note": "a protocol-level refusal uses 5.7.1 or 5.7.0"}
+      - {"req_id": "SIEVE-6e37f07b", "keyword": "MAY", "axis": "lmtp_reply", "step": 1, "layer": "effect", "basis": "option"}
     script: |
       require "ereject";
       ereject "PD-MARKER refused by policy";
@@ -909,7 +909,7 @@ fixtures:
     kind: probe
     message: clean.eml
     spec_refs:
-      - {"req_id": "SIEVE-ec1d767e", "keyword": "MUST", "axis": "lmtp_reply", "step": 1, "layer": "effect", "note": "LMTP/SMTP reply; phase 2 engines; comparison only until then"}
+      - {"req_id": "SIEVE-ec1d767e", "keyword": "MUST", "axis": "lmtp_reply", "step": 1, "layer": "effect", "basis": "conditional", "note": "binds only when the reason is returned at the protocol level"}
     script: |
       require "ereject";
       ereject text:
@@ -922,8 +922,8 @@ fixtures:
     kind: probe
     message: clean.eml
     spec_refs:
-      - {"req_id": "SIEVE-6d47c0d4", "keyword": "MUST", "axis": "lmtp_reply", "step": 1, "layer": "effect", "note": "LMTP/SMTP reply; phase 2 engines; comparison only until then"}
-      - {"req_id": "SIEVE-b50d82d8", "keyword": "MAY", "axis": "lmtp_reply", "step": 1, "layer": "effect", "note": "LMTP/SMTP reply; phase 2 engines; comparison only until then"}
+      - {"req_id": "SIEVE-6d47c0d4", "keyword": "MUST", "axis": "lmtp_reply", "step": 1, "layer": "effect", "basis": "conditional", "note": "binds only when the reason is returned at the protocol level"}
+      - {"req_id": "SIEVE-b50d82d8", "keyword": "MAY", "axis": "lmtp_reply", "step": 1, "layer": "effect", "basis": "option"}
     script: |
       require "ereject";
       ereject "PD-MARKER xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
@@ -932,7 +932,7 @@ fixtures:
     kind: probe
     message: clean.eml
     spec_refs:
-      - {"req_id": "SIEVE-9e53ff0f", "keyword": "MUST", "axis": "lmtp_reply", "step": 1, "layer": "effect", "note": "LMTP/SMTP reply; phase 2 engines; comparison only until then"}
+      - {"req_id": "SIEVE-9e53ff0f", "keyword": "MUST", "axis": "lmtp_reply", "step": 1, "layer": "effect", "basis": "not-observable", "note": "an upgrade inside the engine is not distinguishable on the wire from a permitted refusal"}
     script: |
       require "reject";
       reject "PD-MARKER refused by policy";
@@ -941,8 +941,8 @@ fixtures:
     kind: probe
     message: clean.eml
     spec_refs:
-      - {"req_id": "SIEVE-d06635ab", "keyword": "MUST", "axis": "outcome", "step": 1, "note": "user-context annotations; comparison only"}
-      - {"req_id": "SIEVE-61860a20", "keyword": "SHOULD", "axis": "outcome", "step": 1, "note": "temporary failure handling; comparison only"}
+      - {"req_id": "SIEVE-d06635ab", "keyword": "MUST", "axis": "outcome", "step": 1, "basis": "not-observable", "note": "annotation permissions are not exercised"}
+      - {"req_id": "SIEVE-61860a20", "keyword": "SHOULD", "axis": "outcome", "step": 1, "basis": "not-observable", "note": "no temporary failure is induced"}
     script: |
       require ["mboxmetadata", "fileinto"];
       if metadataexists "INBOX" "/private/pd" { fileinto "INBOX.Meta"; }

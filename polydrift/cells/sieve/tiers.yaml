@@ -39,6 +39,12 @@ axes:
   redirect_received_more:
     tier: 2
     clause: "T2: each redirected message has more Received fields than the message as received (RFC 5228 4.2; loop detection downstream)"
+  redirect_env_from:
+    tier: 2
+    clause: "T2: envelope sender of each redirected message (RFC 5228 4.2: an empty sender stays empty; bounces go there)"
+  vacation_env_from:
+    tier: 2
+    clause: "T2: envelope sender of each vacation response (RFC 5230 5.1: SHOULD be <>, so no auto-reply loops)"
   vacation_in_reply_to:
     tier: 2
     clause: "T2: each vacation reply's In-Reply-To names the original Message-ID (RFC 5230 5.8); threading clients rely on it"

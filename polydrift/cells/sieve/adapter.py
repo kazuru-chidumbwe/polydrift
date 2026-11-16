@@ -72,6 +72,8 @@ def effect_step(res: dict[str, Any], spec: CellSpec) -> StepRecord | None:
         def per(kind: str, key: str, fn=lambda x: x) -> tuple:
             return tuple(fn((e.get("facts") or {}).get(key)) for e in sent if e.get("kind") == kind)
         vals["redirect_received_more"] = per("redirect", "received_delta", lambda d: d is not None and d > 0)
+        vals["redirect_env_from"] = per("redirect", "env_from")
+        vals["vacation_env_from"] = per("vacation", "env_from")
         vals["vacation_in_reply_to"] = per("vacation", "in_reply_to_orig")
         vals["vacation_subject"] = per("vacation", "subject")
         vals["vacation_subject_encoded"] = per("vacation", "subject", lambda x: bool(x) and "=?" in x)

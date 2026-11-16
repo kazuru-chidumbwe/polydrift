@@ -133,7 +133,7 @@ fixtures:
     kind: probe
     spec_refs:
       - {native: MQTT-3.1.3-6, keyword: MUST, axis: decision_class, step: 1, allowed: [proceed, "fix-request"]}
-      - {native: MQTT-3.2.2-16, keyword: MUST, axis: connack_props, step: 1, note: "on success the CONNACK carries an Assigned Client Identifier"}
+      - {native: MQTT-3.2.2-16, keyword: MUST, axis: connack_presence, step: 1, allowed: [["assigned_client_identifier"], ["refused"]], note: "on success the CONNACK carries an Assigned Client Identifier"}
     steps:
       - {client: a, op: connect, args: {client_id: "", clean_start: true}}
 
@@ -338,8 +338,8 @@ fixtures:
   forward_user_properties_order:
     kind: control
     spec_refs:
-      - {native: MQTT-3.3.2-17, keyword: MUST, axis: forwarded_props, step: 4, note: "user properties arrive in the order sent, duplicates kept"}
-      - {native: MQTT-3.3.2-18, keyword: MUST, axis: forwarded_props, step: 4}
+      - {native: MQTT-3.3.2-17, keyword: MUST, axis: forwarded_props, step: 4, allowed: [[["b", [[["user_property", "[['k', '2'], ['k', '1'], ['a', 'b']]"]]]]]], note: "user properties arrive unaltered, in the order sent, duplicates kept"}
+      - {native: MQTT-3.3.2-18, keyword: MUST, axis: forwarded_props, step: 4, allowed: [[["b", [[["user_property", "[['k', '2'], ['k', '1'], ['a', 'b']]"]]]]]]}
     steps:
       - {client: b, op: connect, args: {client_id: "{C}b"}}
       - {client: b, op: subscribe, args: {packet_id: 1, filters: ["{T}u"]}}
@@ -349,10 +349,10 @@ fixtures:
   forward_request_response_props:
     kind: control
     spec_refs:
-      - {native: MQTT-3.3.2-4, keyword: MUST, axis: forwarded_props, step: 4}
-      - {native: MQTT-3.3.2-15, keyword: MUST, axis: forwarded_props, step: 4}
-      - {native: MQTT-3.3.2-16, keyword: MUST, axis: forwarded_props, step: 4}
-      - {native: MQTT-3.3.2-20, keyword: MUST, axis: forwarded_props, step: 4}
+      - {native: MQTT-3.3.2-4, keyword: MUST, axis: forwarded_props, step: 4, allowed: [[["b", [[["payload_format_indicator", "1"], ["content_type", "application/json"], ["response_topic", "reply"], ["correlation_data", "633066666565"]]]]]]}
+      - {native: MQTT-3.3.2-15, keyword: MUST, axis: forwarded_props, step: 4, allowed: [[["b", [[["payload_format_indicator", "1"], ["content_type", "application/json"], ["response_topic", "reply"], ["correlation_data", "633066666565"]]]]]]}
+      - {native: MQTT-3.3.2-16, keyword: MUST, axis: forwarded_props, step: 4, allowed: [[["b", [[["payload_format_indicator", "1"], ["content_type", "application/json"], ["response_topic", "reply"], ["correlation_data", "633066666565"]]]]]]}
+      - {native: MQTT-3.3.2-20, keyword: MUST, axis: forwarded_props, step: 4, allowed: [[["b", [[["payload_format_indicator", "1"], ["content_type", "application/json"], ["response_topic", "reply"], ["correlation_data", "633066666565"]]]]]]}
     steps:
       - {client: b, op: connect, args: {client_id: "{C}b"}}
       - {client: b, op: subscribe, args: {packet_id: 1, filters: ["{T}rr"]}}
@@ -371,7 +371,7 @@ fixtures:
   overlapping_subscriptions:
     kind: probe
     spec_refs:
-      - {native: MQTT-3.3.4-2, keyword: MUST, axis: own_publishes, step: 4, note: "one message at the maximum QoS, or one per subscription"}
+      - {native: MQTT-3.3.4-2, keyword: MUST, axis: own_publishes, step: 4, allowed: [[["b", [["o/x", "both", 0, 0]]]], [["b", [["o/x", "both", 0, 0], ["o/x", "both", 0, 0]]]]], note: "one message at the maximum QoS (here 0, the QoS published), or one per subscription"}
     steps:
       - {client: b, op: connect, args: {client_id: "{C}b"}}
       - {client: b, op: subscribe, args: {packet_id: 1, filters: [{topic: "{T}o/#", qos: 0}]}}
@@ -560,7 +560,7 @@ fixtures:
   census_topic_long_legal:
     kind: control
     spec_refs:
-      - {"native": "MQTT-4.7.3-3", "keyword": "MUST", "axis": "status", "step": 2, "note": "a 4,096-byte topic name is within the limit; comparison only"}
+      - {"native": "MQTT-4.7.3-3", "keyword": "MUST", "axis": "status", "step": 2, "note": "a 4,096-byte topic name is within the limit; the clause bounds what is sent, not how a server treats a legal name", "basis": "option"}
     steps:
       - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
       - {"client": "a", "op": "publish", "args": {"topic": "{T}LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL", "payload": "p", "qos": 1, "packet_id": 9}}
@@ -669,7 +669,7 @@ fixtures:
   census_connect_auth_ignored:
     kind: probe
     spec_refs:
-      - {"native": "MQTT-3.1.4-2", "keyword": "SHOULD", "axis": "decision_class", "step": 1, "note": "authentication policy of the default configuration; comparison only"}
+      - {"native": "MQTT-3.1.4-2", "keyword": "SHOULD", "axis": "decision_class", "step": 1, "note": "authentication policy of the default configuration", "basis": "option"}
     steps:
       - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "username": "pd-nouser", "password": "pd-wrong"}}
 
@@ -741,23 +741,23 @@ fixtures:
   census_server_capabilities:
     kind: control
     spec_refs:
-      - {"native": "MQTT-3.2.2-9", "keyword": "MUST", "axis": "connack_props", "step": 1, "note": "Maximum QoS present when QoS 2 is not supported; comparison only"}
-      - {"native": "MQTT-3.2.2-10", "keyword": "MUST", "axis": "connack_props", "step": 1, "note": "comparison only"}
-      - {"native": "MQTT-3.2.2-22", "keyword": "MUST", "axis": "connack_props", "step": 1, "note": "Server Keep Alive; comparison only"}
+      - {"native": "MQTT-3.2.2-9", "keyword": "MUST", "axis": "connack_props", "step": 1, "note": "Maximum QoS present when QoS 2 is not supported", "basis": "conditional"}
+      - {"native": "MQTT-3.2.2-10", "keyword": "MUST", "axis": "connack_props", "step": 1, "basis": "conditional"}
+      - {"native": "MQTT-3.2.2-22", "keyword": "MUST", "axis": "connack_props", "step": 1, "note": "Server Keep Alive; the keep-alive the server enforces is not exercised within the fixture", "basis": "not-observable"}
     steps:
       - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "keep_alive": 2}}
 
   census_will_qos2:
     kind: probe
     spec_refs:
-      - {"native": "MQTT-3.2.2-12", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "accept, or reject when Will QoS 2 exceeds the server's maximum; comparison only"}
+      - {"native": "MQTT-3.2.2-12", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "accept, or reject when Will QoS 2 exceeds the server's maximum", "basis": "conditional"}
     steps:
       - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "will": {"topic": "{T}w", "payload": "q2", "qos": 2}}}
 
   census_will_retain:
     kind: probe
     spec_refs:
-      - {"native": "MQTT-3.2.2-13", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "accept, or reject when retain is unsupported; comparison only"}
+      - {"native": "MQTT-3.2.2-13", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "accept, or reject when retain is unsupported", "basis": "conditional"}
     steps:
       - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "will": {"topic": "{T}w", "payload": "r", "qos": 0, "retain": true}}}
 
@@ -1097,7 +1097,7 @@ fixtures:
   census_pubrec_error_new_message:
     kind: probe
     spec_refs:
-      - {"native": "MQTT-4.3.3-9", "keyword": "MUST", "axis": "packet_types", "step": 3, "note": "needs a PUBREC >= 0x80 from the server; comparison only"}
+      - {"native": "MQTT-4.3.3-9", "keyword": "MUST", "axis": "packet_types", "step": 3, "note": "needs a PUBREC >= 0x80 from the server", "basis": "conditional"}
     steps:
       - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
       - {"client": "a", "op": "publish", "args": {"topic": "{T}pf", "payload": [255, 254], "qos": 2, "packet_id": 5, "properties": {"payload_format_indicator": 1}}}
@@ -1196,7 +1196,7 @@ fixtures:
   census_unsubscribe_inflight:
     kind: stateful
     spec_refs:
-      - {"native": "MQTT-3.10.4-3", "keyword": "MUST", "axis": "own_publishes", "step": 6, "note": "QoS 1 delivery started before UNSUBSCRIBE; comparison only"}
+      - {"native": "MQTT-3.10.4-3", "keyword": "MUST", "axis": "own_publishes", "step": 6, "note": "binds only if the server had started the QoS 1 delivery when the UNSUBSCRIBE arrived", "basis": "conditional"}
     steps:
       - {"client": "b", "op": "connect", "args": {"client_id": "{C}b", "clean_start": true, "properties": {"session_expiry_interval": 300}}, "auto_ack": false}
       - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x", "qos": 1}]}}

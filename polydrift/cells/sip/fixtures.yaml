@@ -287,11 +287,11 @@ fixtures:
   r_ruri_tel:
     cell: sip
     spec_refs:
-      - {"req_id": "SIP-6fe43eca", "keyword": "MAY", "axis": "decision_class", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-af0dc035", "keyword": "MAY", "axis": "decision_class", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-a03efa30", "keyword": "MAY", "axis": "decision_class", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-bde58b4d", "keyword": "MAY", "axis": "decision_class", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-323dcbbf", "keyword": "MAY", "axis": "decision_class", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-6fe43eca", "keyword": "MAY", "axis": "decision_class", "step": 1, "note": "comparison only", "basis": "option"}
+      - {"req_id": "SIP-af0dc035", "keyword": "MAY", "axis": "decision_class", "step": 1, "note": "comparison only", "basis": "option"}
+      - {"req_id": "SIP-a03efa30", "keyword": "MAY", "axis": "decision_class", "step": 1, "note": "comparison only", "basis": "option"}
+      - {"req_id": "SIP-bde58b4d", "keyword": "MAY", "axis": "decision_class", "step": 1, "note": "comparison only", "basis": "option"}
+      - {"req_id": "SIP-323dcbbf", "keyword": "MAY", "axis": "decision_class", "step": 1, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-c8ce2fc3", "keyword": "MUST", "axis": "decision_class", "step": 1, "note": "comparison only"}
 
   r_via_rows_and_commas:

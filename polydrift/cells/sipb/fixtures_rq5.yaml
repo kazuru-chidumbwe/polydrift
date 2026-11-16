@@ -1,0 +1,42 @@
+# RQ5 known-bug fixtures, SIP proxy role (manuscript 4.4 and 4.6); see dns/fixtures_rq5.yaml for the rule.
+# Inputs from SIPConfusion (Wang et al., NDSS 2026, read in full 9 Oct; internal/refs-fulltext/w4): Fig. 8c and 12c
+# (A3/D3, two From headers), Fig. 10c (C3, semicolon) and 10d (C4, NUL in a quoted display-name). The paper's From
+# lines carry no tag; a From tag is added (RFC 3261 8.1.1.3) so the request is otherwise well formed. B3 (quoted
+# display-name holding a URI) is a server-versus-UA display mismatch, which a proxy observation cannot show; it is
+# not a proxy-cell case.
+fixtures:
+  # S1 (A3/D3): ejabberd 24.12 and OpenSIPS 3.4.1 forward a request with two From headers (most servers reject it);
+  # RFC 3261 7.3.1 and 20: From is a single-valued header. x1 = From headers bob receives, x2 = alice's codes.
+  rq5_s1_two_from:
+    kind: security
+    roles: ["proxy"]
+    clause: "RFC 3261 7.3.1, 20.20 (From appears once)"
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 1200, "msg": "INVITE sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nFrom: <sip:admin@{domain}>\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "len:bob/0/hdr/from", "x2": "codes:alice"}}
+      - {"op": "reply", "from": "bob", "code": 486, "reason": "Busy Here", "window_ms": 1200, "extract": {"x2": "codes:alice"}}
+      - {"op": "ack", "from": "alice", "window_ms": 600}
+
+  # S2 (C3): OpenSIPS 3.4.1 takes the semicolon as the end of the URI and leaves the domain unvalidated, then forwards.
+  # x1 = the From bob receives, x2 = alice's codes.
+  rq5_s2_semicolon_from:
+    kind: security
+    roles: ["proxy"]
+    clause: "RFC 3261 25.1 name-addr / addr-spec grammar (20.20)"
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 1200, "msg": "INVITE sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: admin; <sip:admin@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "bob/0/hdr/from", "x2": "codes:alice"}}
+      - {"op": "reply", "from": "bob", "code": 486, "reason": "Busy Here", "window_ms": 1200, "extract": {"x2": "codes:alice"}}
+      - {"op": "ack", "from": "alice", "window_ms": 600}
+
+  # S2 (C4): an unescaped NUL inside the quoted display-name (RFC 3261 25.1 excludes control characters from
+  # qdtext); OpenSIPS 3.4.1 misreads the display-name and forwards the message unchanged.
+  rq5_s2_nul_display_name:
+    kind: security
+    roles: ["proxy"]
+    clause: "RFC 3261 25.1 quoted-string (qdtext excludes control characters)"
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 1200, "msg": "INVITE sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: \"admin\u0000\" <sip:admin@admin.com>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "bob/0/hdr/from", "x2": "codes:alice"}}
+      - {"op": "reply", "from": "bob", "code": 486, "reason": "Busy Here", "window_ms": 1200, "extract": {"x2": "codes:alice"}}
+      - {"op": "ack", "from": "alice", "window_ms": 600}

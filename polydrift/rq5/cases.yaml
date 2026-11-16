@@ -75,3 +75,35 @@ cases:
     known: [{fixture: rq5_j1_mailbox_get_no_account, axis: method_errors, step: 1, value: [forbidden]}]
     source: "Stalwart issue #1936; CHANGELOG 0.13.4 (primary account) and 0.16.10 (accountId required)"
     clause: "RFC 8620 5.1, 3.6.2"
+  S1o:
+    cell: sipb
+    family: opensips
+    status: fix-unconfirmed
+    fixtures: [rq5_s1_two_from]
+    axes: [x1, x2]
+    affected: ["3.4.1"]
+    fixed: ["3.6"]
+    known: [{fixture: rq5_s1_two_from, axis: x1, step: 2, value: 2}]
+    source: "SIPConfusion A3/D3 (OpenSIPS 3.4.1 forwards multiple From headers); no fixed version located"
+    clause: "RFC 3261 7.3.1, 20.20"
+  S1e:
+    cell: sipb
+    family: ejabberd
+    status: fix-unconfirmed
+    fixtures: [rq5_s1_two_from]
+    axes: [x1, x2]
+    affected: ["24.12"]
+    fixed: ["26.09"]
+    known: [{fixture: rq5_s1_two_from, axis: x1, step: 2, value: 2}]
+    source: "SIPConfusion A3/D3 (ejabberd 24.12 forwards multiple From headers); no fixed version located"
+    clause: "RFC 3261 7.3.1, 20.20"
+  S2:
+    cell: sipb
+    family: opensips
+    status: fix-unconfirmed
+    fixtures: [rq5_s2_semicolon_from, rq5_s2_nul_display_name]
+    axes: [x1, x2]
+    affected: ["3.4.1"]
+    fixed: ["3.6"]
+    source: "SIPConfusion C3 and C4 (OpenSIPS 3.4.1); no fixed version located"
+    clause: "RFC 3261 25.1"

@@ -323,8 +323,8 @@ fixtures:
       - {"req_id": "DNS-96757511", "keyword": "MUST", "axis": "parallel_order", "step": 1, "allowed": [["fast", "slow"]]}
       - {"req_id": "DNS-53474e5b", "keyword": "SHOULD", "axis": "parallel_order", "step": 1, "allowed": [["fast", "slow"]]}
       - {"req_id": "DNS-20b312c0", "keyword": "MUST", "axis": "parallel_order", "step": 1, "allowed": [["fast", "slow"]]}
-      - {"req_id": "DNS-cee0b3ca", "keyword": "SHOULD", "axis": "parallel_rcodes", "step": 1, "note": "comparison only"}
-      - {"req_id": "DNS-431a7263", "keyword": "SHOULD", "axis": "parallel_order", "step": 1, "note": "answers in any order; comparison only"}
+      - {"req_id": "DNS-cee0b3ca", "keyword": "SHOULD", "axis": "parallel_rcodes", "step": 1, "note": "comparison only", "basis": "option"}
+      - {"req_id": "DNS-431a7263", "keyword": "SHOULD", "axis": "parallel_order", "step": 1, "note": "answers in any order; comparison only", "basis": "option"}
     steps:
       - {"op": "parallel", "timeout": 8, "queries": [{"label": "slow", "qname": "slow.pd.pdlab"}, {"label": "fast", "qname": "fast.pd.pdlab"}]}
 
@@ -350,7 +350,7 @@ fixtures:
     spec_refs:
       - {"req_id": "DNS-11c391a4", "keyword": "MUST", "axis": "answers", "step": 1, "allowed": [["under_score.pd.pdlab a 10.0.10.2"]]}
       - {"req_id": "DNS-7864a472", "keyword": "SHOULD", "axis": "answers", "step": 2, "allowed": [["oct\\200x.pd.pdlab a 10.0.10.3"]]}
-      - {"req_id": "DNS-b01d6921", "keyword": "MUST", "axis": "answers", "step": 2, "note": "comparison only"}
+      - {"req_id": "DNS-b01d6921", "keyword": "MUST", "axis": "answers", "step": 2, "note": "comparison only", "basis": "option"}
     steps:
       - {"qname": "under_score.pd.pdlab", "qtype": "A"}
       - {"qname": "oct\\200x.pd.pdlab", "qtype": "A"}
@@ -375,8 +375,8 @@ fixtures:
       - {"req_id": "DNS-9771d94d", "keyword": "MUST", "axis": "status", "step": 1, "allowed": ["proceed"]}
       - {"req_id": "DNS-d600457a", "keyword": "MUST", "axis": "status", "step": 1, "allowed": ["proceed"]}
       - {"req_id": "DNS-70efc68d", "keyword": "SHOULD", "axis": "status", "step": 1, "allowed": ["proceed"]}
-      - {"req_id": "DNS-9b318529", "keyword": "MAY", "axis": "status", "step": 1, "note": "comparison only"}
-      - {"req_id": "DNS-2ba42d01", "keyword": "SHOULD", "axis": "status", "step": 1, "note": "comparison only"}
+      - {"req_id": "DNS-9b318529", "keyword": "MAY", "axis": "status", "step": 1, "note": "comparison only", "basis": "option"}
+      - {"req_id": "DNS-2ba42d01", "keyword": "SHOULD", "axis": "status", "step": 1, "note": "comparison only", "basis": "option"}
     steps:
       - {"qname": "a.pd.pdlab", "qtype": "A"}
       - {"op": "raw", "build": "zflag", "qname": "a.pd.pdlab"}
@@ -385,7 +385,7 @@ fixtures:
     kind: probe
     spec_refs:
       - {"req_id": "DNS-db4377ba", "keyword": "SHOULD", "axis": "aa", "step": 2, "allowed": [false, null]}
-      - {"req_id": "DNS-51586f68", "keyword": "SHOULD", "axis": "upstream_count", "step": 4, "note": "QCLASS=* result not cached; comparison only"}
+      - {"req_id": "DNS-51586f68", "keyword": "SHOULD", "axis": "upstream_count", "step": 4, "note": "QCLASS=* result not cached; comparison only", "basis": "option"}
     steps:
       - {"op": "upstream", "match": "anyq", "id": "up1"}
       - {"qname": "anyq.pd.pdlab", "qtype": "A", "qclass": "ANY", "id": "q1"}
@@ -406,7 +406,7 @@ fixtures:
   census_inverse_query:
     kind: probe
     spec_refs:
-      - {"req_id": "DNS-4676f865", "keyword": "SHOULD", "axis": "status", "step": 1, "note": "inverse query result not cached; comparison only"}
+      - {"req_id": "DNS-4676f865", "keyword": "SHOULD", "axis": "status", "step": 1, "note": "inverse query result not cached; comparison only", "basis": "not-applicable"}
     steps:
       - {"op": "raw", "build": "iquery", "qname": "a.pd.pdlab"}
       - {"op": "raw", "build": "iquery", "qname": "a.pd.pdlab"}
@@ -415,8 +415,8 @@ fixtures:
     kind: probe
     spec_refs:
       - {"req_id": "DNS-e8ef9737", "keyword": "SHOULD", "axis": "upstream_count", "step": 4, "allowed": [[["short.pd.pdlab A", 2]]]}
-      - {"req_id": "DNS-c3ad8958", "keyword": "SHOULD", "axis": "upstream_count", "step": 4, "note": "comparison only"}
-      - {"req_id": "DNS-ab03cc49", "keyword": "SHOULD", "axis": "answer_ttls", "step": 2, "note": "comparison only"}
+      - {"req_id": "DNS-c3ad8958", "keyword": "SHOULD", "axis": "upstream_count", "step": 4, "allowed": [[["short.pd.pdlab A", 2]]], "note": "expired data is ignored: the second query goes upstream again"}
+      - {"req_id": "DNS-ab03cc49", "keyword": "SHOULD", "axis": "answer_ttls", "step": 2, "note": "comparison only", "basis": "option"}
     steps:
       - {"op": "upstream", "match": "short.pd", "id": "up1"}
       - {"qname": "short.pd.pdlab", "qtype": "A", "id": "q1"}
@@ -436,9 +436,9 @@ fixtures:
     spec_refs:
       - {"req_id": "DNS-a6579113", "keyword": "SHOULD", "axis": "answer_ttls", "step": 1, "allowed": [[60]]}
       - {"req_id": "DNS-e9e1d37f", "keyword": "MUST", "axis": "answer_ttls", "step": 1, "allowed": [[0], [2], [60], [300]]}
-      - {"req_id": "DNS-1a67a73f", "keyword": "SHOULD", "axis": "status", "step": 1, "note": "comparison only"}
-      - {"req_id": "DNS-6de20748", "keyword": "SHOULD", "axis": "answers", "step": 1, "note": "comparison only"}
-      - {"req_id": "DNS-772c6e83", "keyword": "SHOULD", "axis": "answers", "step": 1, "note": "comparison only"}
+      - {"req_id": "DNS-1a67a73f", "keyword": "SHOULD", "axis": "status", "step": 1, "note": "comparison only", "basis": "option"}
+      - {"req_id": "DNS-6de20748", "keyword": "SHOULD", "axis": "answers", "step": 1, "note": "comparison only", "basis": "option"}
+      - {"req_id": "DNS-772c6e83", "keyword": "SHOULD", "axis": "answers", "step": 1, "note": "comparison only", "basis": "option"}
     steps:
       - {"qname": "ttlsplit.pd.pdlab", "qtype": "A"}
 
@@ -449,14 +449,14 @@ fixtures:
       - {"req_id": "DNS-30aa0854", "keyword": "SHOULD", "axis": "answers", "step": 1, "allowed": [["duprr.pd.pdlab a 10.0.11.3"]]}
       - {"req_id": "DNS-a9faa8b1", "keyword": "SHOULD", "axis": "answers", "step": 1, "allowed": [["duprr.pd.pdlab a 10.0.11.3"]]}
       - {"req_id": "DNS-6c212039", "keyword": "MUST", "axis": "answer_ttls", "step": 1, "allowed": [[0], [2], [60], [300]]}
-      - {"req_id": "DNS-d4fd1b89", "keyword": "MAY", "axis": "additional", "step": 1, "note": "comparison only"}
+      - {"req_id": "DNS-d4fd1b89", "keyword": "MAY", "axis": "additional", "step": 1, "note": "comparison only", "basis": "option"}
     steps:
       - {"qname": "duprr.pd.pdlab", "qtype": "A"}
 
   census_soa_ttl:
     kind: control
     spec_refs:
-      - {"req_id": "DNS-a348811c", "keyword": "SHOULD", "axis": "authority_soa", "step": 1, "note": "comparison only"}
+      - {"req_id": "DNS-a348811c", "keyword": "SHOULD", "axis": "authority_soa", "step": 1, "note": "comparison only", "basis": "option"}
     steps:
       - {"qname": "mail.pd.pdlab", "qtype": "MX"}
 
@@ -464,7 +464,7 @@ fixtures:
     kind: control
     spec_refs:
       - {"req_id": "DNS-55f52a20", "keyword": "SHOULD", "axis": "answers", "step": 1, "allowed": [["a.pd.pdlab a 10.0.0.2", "c1.pd.pdlab cname a.pd.pdlab"]]}
-      - {"req_id": "DNS-07a120a9", "keyword": "MAY", "axis": "answers", "step": 1, "note": "comparison only"}
+      - {"req_id": "DNS-07a120a9", "keyword": "MAY", "axis": "answers", "step": 1, "note": "comparison only", "basis": "option"}
     steps:
       - {"qname": "c1.pd.pdlab", "qtype": "A"}
 
@@ -479,14 +479,14 @@ fixtures:
     kind: probe
     spec_refs:
       - {"req_id": "DNS-98e3af0d", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
-      - {"req_id": "DNS-9b038eef", "keyword": "MUST", "axis": "answers", "step": 1, "note": "DNAME target sent uncompressed; comparison only"}
+      - {"req_id": "DNS-9b038eef", "keyword": "MUST", "axis": "answers", "step": 1, "note": "DNAME target sent uncompressed; comparison only", "basis": "not-observable"}
     steps:
       - {"qname": "x.dn0.pd.pdlab", "qtype": "A"}
 
   census_dname_synth_ttl:
     kind: probe
     spec_refs:
-      - {"req_id": "DNS-e2b0f8dd", "keyword": "SHOULD", "axis": "answer_ttls", "step": 2, "note": "synthesized CNAME TTL follows the cached DNAME; comparison only"}
+      - {"req_id": "DNS-e2b0f8dd", "keyword": "SHOULD", "axis": "answer_ttls", "step": 2, "note": "synthesized CNAME TTL follows the cached DNAME; comparison only", "basis": "not-observable"}
     steps:
       - {"qname": "x.dn.pd.pdlab", "qtype": "A"}
       - {"op": "sleep", "ms": 2000}
@@ -496,21 +496,21 @@ fixtures:
     kind: probe
     spec_refs:
       - {"req_id": "DNS-145f0f8b", "keyword": "SHOULD", "axis": "response_type", "step": 2, "allowed": ["positive"]}
-      - {"req_id": "DNS-f081a58a", "keyword": "SHOULD", "axis": "upstream_servers", "step": 3, "note": "server selection and retransmission; comparison only"}
-      - {"req_id": "DNS-f164edfb", "keyword": "SHOULD", "axis": "upstream_servers", "step": 3, "note": "server selection and retransmission; comparison only"}
-      - {"req_id": "DNS-4828e006", "keyword": "SHOULD", "axis": "upstream_servers", "step": 3, "note": "server selection and retransmission; comparison only"}
-      - {"req_id": "DNS-a616fb42", "keyword": "SHOULD", "axis": "upstream_servers", "step": 3, "note": "server selection and retransmission; comparison only"}
-      - {"req_id": "DNS-ef0e9ccc", "keyword": "SHOULD", "axis": "upstream_servers", "step": 3, "note": "server selection and retransmission; comparison only"}
-      - {"req_id": "DNS-93ed8de2", "keyword": "SHOULD", "axis": "upstream_servers", "step": 3, "note": "server selection and retransmission; comparison only"}
-      - {"req_id": "DNS-504d5fe1", "keyword": "SHOULD", "axis": "upstream_servers", "step": 3, "note": "server selection and retransmission; comparison only"}
-      - {"req_id": "DNS-4ac4a571", "keyword": "SHOULD", "axis": "upstream_servers", "step": 3, "note": "server selection and retransmission; comparison only"}
-      - {"req_id": "DNS-3ad103e6", "keyword": "SHOULD", "axis": "upstream_servers", "step": 3, "note": "server selection and retransmission; comparison only"}
-      - {"req_id": "DNS-c55f635a", "keyword": "SHOULD", "axis": "upstream_servers", "step": 3, "note": "server selection and retransmission; comparison only"}
-      - {"req_id": "DNS-1e1db0c6", "keyword": "SHOULD", "axis": "upstream_servers", "step": 3, "note": "server selection and retransmission; comparison only"}
-      - {"req_id": "DNS-f9dc4a68", "keyword": "SHOULD", "axis": "upstream_servers", "step": 3, "note": "server selection and retransmission; comparison only"}
-      - {"req_id": "DNS-5c03a45d", "keyword": "MAY", "axis": "upstream_count", "step": 3, "note": "comparison only"}
-      - {"req_id": "DNS-85356140", "keyword": "MUST", "axis": "upstream_count", "step": 3, "note": "dead-server memory at most 5 minutes; comparison only"}
-      - {"req_id": "DNS-be1ff8dc", "keyword": "MUST", "axis": "upstream_count", "step": 3, "note": "comparison only"}
+      - {"req_id": "DNS-f081a58a", "keyword": "SHOULD", "axis": "upstream_servers", "step": 3, "note": "server selection and retransmission; comparison only", "basis": "option"}
+      - {"req_id": "DNS-f164edfb", "keyword": "SHOULD", "axis": "upstream_servers", "step": 3, "note": "server selection and retransmission; comparison only", "basis": "option"}
+      - {"req_id": "DNS-4828e006", "keyword": "SHOULD", "axis": "upstream_servers", "step": 3, "note": "server selection and retransmission; comparison only", "basis": "option"}
+      - {"req_id": "DNS-a616fb42", "keyword": "SHOULD", "axis": "upstream_servers", "step": 3, "note": "server selection and retransmission; comparison only", "basis": "option"}
+      - {"req_id": "DNS-ef0e9ccc", "keyword": "SHOULD", "axis": "upstream_servers", "step": 3, "note": "server selection and retransmission; comparison only", "basis": "option"}
+      - {"req_id": "DNS-93ed8de2", "keyword": "SHOULD", "axis": "upstream_servers", "step": 3, "note": "server selection and retransmission; comparison only", "basis": "option"}
+      - {"req_id": "DNS-504d5fe1", "keyword": "SHOULD", "axis": "upstream_servers", "step": 3, "note": "server selection and retransmission; comparison only", "basis": "option"}
+      - {"req_id": "DNS-4ac4a571", "keyword": "SHOULD", "axis": "upstream_servers", "step": 3, "note": "server selection and retransmission; comparison only", "basis": "option"}
+      - {"req_id": "DNS-3ad103e6", "keyword": "SHOULD", "axis": "upstream_servers", "step": 3, "note": "server selection and retransmission; comparison only", "basis": "option"}
+      - {"req_id": "DNS-c55f635a", "keyword": "SHOULD", "axis": "upstream_servers", "step": 3, "note": "server selection and retransmission; comparison only", "basis": "option"}
+      - {"req_id": "DNS-1e1db0c6", "keyword": "SHOULD", "axis": "upstream_servers", "step": 3, "note": "server selection and retransmission; comparison only", "basis": "option"}
+      - {"req_id": "DNS-f9dc4a68", "keyword": "SHOULD", "axis": "upstream_servers", "step": 3, "note": "server selection and retransmission; comparison only", "basis": "option"}
+      - {"req_id": "DNS-5c03a45d", "keyword": "MAY", "axis": "upstream_count", "step": 3, "note": "comparison only", "basis": "option"}
+      - {"req_id": "DNS-85356140", "keyword": "MUST", "axis": "upstream_count", "step": 3, "note": "dead-server memory at most 5 minutes; comparison only", "basis": "not-observable"}
+      - {"req_id": "DNS-be1ff8dc", "keyword": "MUST", "axis": "upstream_count", "step": 3, "note": "comparison only", "basis": "not-observable"}
     steps:
       - {"op": "upstream", "match": "halflame", "id": "up1"}
       - {"qname": "x.halflame.pdlab", "qtype": "A", "timeout": 12, "id": "q"}
@@ -526,7 +526,7 @@ fixtures:
   census_delegation_cached:
     kind: probe
     spec_refs:
-      - {"req_id": "DNS-8595fca5", "keyword": "SHOULD", "axis": "upstream_count", "step": 4, "note": "NS and glue cached; comparison only"}
+      - {"req_id": "DNS-8595fca5", "keyword": "SHOULD", "axis": "upstream_count", "step": 4, "note": "NS and glue cached; comparison only", "basis": "option"}
     steps:
       - {"op": "upstream", "match": "other.pdlab", "id": "up1"}
       - {"qname": "target.other.pdlab", "qtype": "A", "id": "q1"}
@@ -557,9 +557,9 @@ fixtures:
       - {"req_id": "DNS-b98f80a0", "keyword": "MUST", "axis": "answers", "step": 3, "allowed": [["a2.pd.pdlab a 10.0.0.22"], ["a2.pd.pdlab a 6.6.6.8"]]}
       - {"req_id": "DNS-5730ded7", "keyword": "MUST", "axis": "answers", "step": 3, "allowed": [["a2.pd.pdlab a 10.0.0.22"], ["a2.pd.pdlab a 6.6.6.8"]]}
       - {"req_id": "DNS-e4bd491a", "keyword": "SHOULD", "axis": "answers", "step": 3, "allowed": [["a2.pd.pdlab a 10.0.0.22"], ["a2.pd.pdlab a 6.6.6.8"]]}
-      - {"req_id": "DNS-8ba9e893", "keyword": "SHOULD", "axis": "answers", "step": 3, "note": "comparison only"}
-      - {"req_id": "DNS-379fe763", "keyword": "SHOULD", "axis": "answers", "step": 3, "note": "more authoritative data replaces the cached set; comparison only"}
-      - {"req_id": "DNS-c36cf23f", "keyword": "MAY", "axis": "answers", "step": 3, "note": "comparison only"}
+      - {"req_id": "DNS-8ba9e893", "keyword": "SHOULD", "axis": "answers", "step": 3, "note": "comparison only", "basis": "option"}
+      - {"req_id": "DNS-379fe763", "keyword": "SHOULD", "axis": "answers", "step": 3, "note": "more authoritative data replaces the cached set; comparison only", "basis": "option"}
+      - {"req_id": "DNS-c36cf23f", "keyword": "MAY", "axis": "answers", "step": 3, "note": "comparison only", "basis": "option"}
     steps:
       - {"qname": "a2.pd.pdlab", "qtype": "A"}
       - {"qname": "inbail.pd.pdlab", "qtype": "A"}
@@ -569,7 +569,7 @@ fixtures:
     kind: probe
     spec_refs:
       - {"req_id": "DNS-2fd8aa2a", "keyword": "SHOULD", "axis": "answers", "step": 2, "allowed": [["trunc.pd.pdlab a 10.0.4.1"]]}
-      - {"req_id": "DNS-0efa2af4", "keyword": "SHOULD", "axis": "answers", "step": 2, "note": "comparison only"}
+      - {"req_id": "DNS-0efa2af4", "keyword": "SHOULD", "axis": "answers", "step": 2, "note": "comparison only", "basis": "option"}
     steps:
       - {"op": "upstream", "match": "trunc.pd", "id": "up1"}
       - {"qname": "trunc.pd.pdlab", "qtype": "A", "id": "q"}
@@ -578,8 +578,8 @@ fixtures:
   census_cache_vs_zone:
     kind: probe
     spec_refs:
-      - {"req_id": "DNS-c90af5c8", "keyword": "MUST", "axis": "answers", "step": 2, "note": "cached data never overrides zone data; comparison only"}
-      - {"req_id": "DNS-387db06e", "keyword": "SHOULD", "axis": "answers", "step": 1, "note": "all MX RRs or none from cache; comparison only"}
+      - {"req_id": "DNS-c90af5c8", "keyword": "MUST", "axis": "answers", "step": 2, "note": "cached data never overrides zone data; comparison only", "basis": "not-applicable"}
+      - {"req_id": "DNS-387db06e", "keyword": "SHOULD", "axis": "answers", "step": 1, "note": "all MX RRs or none from cache; comparison only", "basis": "option"}
     steps:
       - {"qname": "mx2.pd.pdlab", "qtype": "MX"}
       - {"qname": "mx2.pd.pdlab", "qtype": "MX"}
@@ -597,9 +597,9 @@ fixtures:
     kind: probe
     spec_refs:
       - {"req_id": "DNS-85ed76f7", "keyword": "MUST", "axis": "authority_soa", "step": 2, "allowed": [true]}
-      - {"req_id": "DNS-665ce4e4", "keyword": "MAY", "axis": "response_type", "step": 2, "note": "comparison only"}
-      - {"req_id": "DNS-8e3e3614", "keyword": "SHOULD", "axis": "authority_soa", "step": 2, "note": "implicit referral; comparison only"}
-      - {"req_id": "DNS-5779cabb", "keyword": "MAY", "axis": "answers", "step": 3, "note": "data under an NXDOMAIN cut; comparison only"}
+      - {"req_id": "DNS-665ce4e4", "keyword": "MAY", "axis": "response_type", "step": 2, "note": "comparison only", "basis": "option"}
+      - {"req_id": "DNS-8e3e3614", "keyword": "SHOULD", "axis": "authority_soa", "step": 2, "note": "implicit referral; comparison only", "basis": "option"}
+      - {"req_id": "DNS-5779cabb", "keyword": "MAY", "axis": "answers", "step": 3, "note": "data under an NXDOMAIN cut; comparison only", "basis": "option"}
     steps:
       - {"qname": "missing.neg.pdlab", "qtype": "A"}
       - {"qname": "missing.neg.pdlab", "qtype": "A"}
@@ -608,8 +608,8 @@ fixtures:
   census_servfail_caching:
     kind: probe
     spec_refs:
-      - {"req_id": "DNS-891f1d63", "keyword": "MAY", "axis": "upstream_count", "step": 4, "note": "comparison only"}
-      - {"req_id": "DNS-a78bd3e2", "keyword": "MUST", "axis": "upstream_count", "step": 4, "note": "SERVFAIL cached at most 5 minutes, per query tuple; comparison only"}
+      - {"req_id": "DNS-891f1d63", "keyword": "MAY", "axis": "upstream_count", "step": 4, "note": "comparison only", "basis": "option"}
+      - {"req_id": "DNS-a78bd3e2", "keyword": "MUST", "axis": "upstream_count", "step": 4, "note": "SERVFAIL cached at most 5 minutes, per query tuple; comparison only", "basis": "not-observable"}
     steps:
       - {"op": "upstream", "match": "servfail.pd", "id": "up1"}
       - {"qname": "servfail.pd.pdlab", "qtype": "A", "id": "q1"}
@@ -620,15 +620,15 @@ fixtures:
     kind: probe
     spec_refs:
       - {"req_id": "DNS-e101ebd6", "keyword": "MUST", "axis": "decision_class", "step": 2, "allowed": ["proceed"]}
-      - {"req_id": "DNS-5560eff9", "keyword": "MAY", "axis": "upstream_edns", "step": 3, "note": "comparison only"}
-      - {"req_id": "DNS-419127ba", "keyword": "MAY", "axis": "upstream_servers", "step": 3, "note": "comparison only"}
-      - {"req_id": "DNS-0b478274", "keyword": "MAY", "axis": "upstream_payloads", "step": 3, "note": "comparison only"}
-      - {"req_id": "DNS-fdef66c3", "keyword": "MAY", "axis": "upstream_payloads", "step": 3, "note": "comparison only"}
-      - {"req_id": "DNS-21777f19", "keyword": "MUST", "axis": "upstream_payloads", "step": 3, "note": "advertised size not cached beyond the transaction; comparison only"}
-      - {"req_id": "DNS-0c28ef62", "keyword": "SHOULD", "axis": "upstream_payloads", "step": 3, "note": "comparison only"}
-      - {"req_id": "DNS-f3cfb226", "keyword": "SHOULD", "axis": "upstream_payloads", "step": 3, "note": "comparison only"}
-      - {"req_id": "DNS-3942c281", "keyword": "SHOULD", "axis": "upstream_payloads", "step": 3, "note": "comparison only"}
-      - {"req_id": "DNS-1bb42d08", "keyword": "SHOULD", "axis": "upstream_payloads", "step": 3, "note": "comparison only"}
+      - {"req_id": "DNS-5560eff9", "keyword": "MAY", "axis": "upstream_edns", "step": 3, "note": "comparison only", "basis": "option"}
+      - {"req_id": "DNS-419127ba", "keyword": "MAY", "axis": "upstream_servers", "step": 3, "note": "comparison only", "basis": "option"}
+      - {"req_id": "DNS-0b478274", "keyword": "MAY", "axis": "upstream_payloads", "step": 3, "note": "comparison only", "basis": "option"}
+      - {"req_id": "DNS-fdef66c3", "keyword": "MAY", "axis": "upstream_payloads", "step": 3, "note": "comparison only", "basis": "option"}
+      - {"req_id": "DNS-21777f19", "keyword": "MUST", "axis": "upstream_payloads", "step": 3, "note": "advertised size not cached beyond the transaction; comparison only", "basis": "not-observable"}
+      - {"req_id": "DNS-0c28ef62", "keyword": "SHOULD", "axis": "upstream_payloads", "step": 3, "note": "comparison only", "basis": "option"}
+      - {"req_id": "DNS-f3cfb226", "keyword": "SHOULD", "axis": "upstream_payloads", "step": 3, "note": "comparison only", "basis": "option"}
+      - {"req_id": "DNS-3942c281", "keyword": "SHOULD", "axis": "upstream_payloads", "step": 3, "note": "comparison only", "basis": "option"}
+      - {"req_id": "DNS-1bb42d08", "keyword": "SHOULD", "axis": "upstream_payloads", "step": 3, "note": "comparison only", "basis": "option"}
     steps:
       - {"op": "upstream", "match": "ednsfe", "id": "up1"}
       - {"qname": "ednsfe.pd.pdlab", "qtype": "A", "id": "q"}
@@ -639,9 +639,9 @@ fixtures:
     spec_refs:
       - {"req_id": "DNS-8d761c78", "keyword": "MUST", "axis": "upstream_local_opts", "step": 3, "allowed": [false]}
       - {"req_id": "DNS-fcec5e6f", "keyword": "MUST", "axis": "decision_class", "step": 2, "allowed": ["proceed"]}
-      - {"req_id": "DNS-7b344a75", "keyword": "MUST", "axis": "edns", "step": 2, "note": "forwarder keeps OPT contents; comparison only"}
-      - {"req_id": "DNS-cd6422cb", "keyword": "SHOULD", "axis": "edns", "step": 2, "note": "comparison only"}
-      - {"req_id": "DNS-ef3109f9", "keyword": "MUST", "axis": "edns", "step": 2, "note": "comparison only"}
+      - {"req_id": "DNS-7b344a75", "keyword": "MUST", "axis": "edns", "step": 2, "note": "forwarder keeps OPT contents; comparison only", "basis": "not-applicable"}
+      - {"req_id": "DNS-cd6422cb", "keyword": "SHOULD", "axis": "edns", "step": 2, "note": "comparison only", "basis": "option"}
+      - {"req_id": "DNS-ef3109f9", "keyword": "MUST", "axis": "edns", "step": 2, "note": "comparison only", "basis": "option"}
     steps:
       - {"op": "upstream", "match": "opttest", "id": "up1"}
       - {"qname": "opttest.pd.pdlab", "qtype": "A", "ednsopt": 65001, "id": "q"}
@@ -661,7 +661,7 @@ fixtures:
       - {"req_id": "DNS-0a93320f", "keyword": "MUST", "axis": "native_code", "step": 1, "allowed": ["FORMERR"]}
       - {"req_id": "DNS-22d8361b", "keyword": "MUST", "axis": "edns", "step": 1, "allowed": [true]}
       - {"req_id": "DNS-d03e9986", "keyword": "MUST", "axis": "edns", "step": 1, "allowed": [true]}
-      - {"req_id": "DNS-a8bedb49", "keyword": "MUST", "axis": "native_code", "step": 1, "note": "comparison only"}
+      - {"req_id": "DNS-a8bedb49", "keyword": "MUST", "axis": "native_code", "step": 1, "note": "comparison only", "basis": "not-applicable"}
     steps:
       - {"op": "raw", "build": "badopt", "qname": "a.pd.pdlab"}
 
@@ -669,8 +669,8 @@ fixtures:
     kind: probe
     spec_refs:
       - {"req_id": "DNS-06ebceaf", "keyword": "MUST", "axis": "native_code", "step": 1, "allowed": ["FORMERR"]}
-      - {"req_id": "DNS-ac3e8064", "keyword": "MAY", "axis": "edns", "step": 2, "note": "comparison only"}
-      - {"req_id": "DNS-991e5941", "keyword": "MAY", "axis": "edns", "step": 2, "note": "comparison only"}
+      - {"req_id": "DNS-ac3e8064", "keyword": "MAY", "axis": "edns", "step": 2, "note": "comparison only", "basis": "option"}
+      - {"req_id": "DNS-991e5941", "keyword": "MAY", "axis": "edns", "step": 2, "note": "comparison only", "basis": "option"}
     steps:
       - {"op": "raw", "build": "two_opt", "qname": "a.pd.pdlab"}
       - {"qname": "a.pd.pdlab", "qtype": "A"}
@@ -679,9 +679,9 @@ fixtures:
     kind: probe
     spec_refs:
       - {"req_id": "DNS-941ca3da", "keyword": "SHOULD", "axis": "tc", "step": 1, "allowed": [true]}
-      - {"req_id": "DNS-33a1c68b", "keyword": "SHOULD", "axis": "answers", "step": 1, "note": "comparison only"}
-      - {"req_id": "DNS-43fc85b8", "keyword": "MAY", "axis": "answers", "step": 1, "note": "comparison only"}
-      - {"req_id": "DNS-ac1c557d", "keyword": "SHOULD", "axis": "answers", "step": 1, "note": "comparison only"}
+      - {"req_id": "DNS-33a1c68b", "keyword": "SHOULD", "axis": "answers", "step": 1, "note": "comparison only", "basis": "option"}
+      - {"req_id": "DNS-43fc85b8", "keyword": "MAY", "axis": "answers", "step": 1, "note": "comparison only", "basis": "option"}
+      - {"req_id": "DNS-ac1c557d", "keyword": "SHOULD", "axis": "answers", "step": 1, "note": "comparison only", "basis": "option"}
       - {"req_id": "DNS-03b0cfb5", "keyword": "MUST", "axis": "tc", "step": 2, "allowed": [true]}
       - {"req_id": "DNS-03b0cfb5", "keyword": "MUST", "axis": "edns", "step": 2, "allowed": [true]}
       - {"req_id": "DNS-a3448afb", "keyword": "MUST", "axis": "tc", "step": 3, "allowed": [false]}
@@ -698,9 +698,9 @@ fixtures:
       - {"req_id": "DNS-46bc0bec", "keyword": "SHOULD", "axis": "tcp_rcodes", "step": 1, "allowed": [["NOERROR", "NOERROR", "NOERROR"]]}
       - {"req_id": "DNS-ce69a697", "keyword": "SHOULD", "axis": "tcp_open_after", "step": 1, "allowed": [true]}
       - {"req_id": "DNS-cdcc98f5", "keyword": "SHOULD", "axis": "parallel_rcodes", "step": 2, "allowed": [[["t1", "NOERROR"], ["t2", "NOERROR"]]]}
-      - {"req_id": "DNS-d26ebe1e", "keyword": "SHOULD", "axis": "parallel_order", "step": 2, "note": "comparison only"}
-      - {"req_id": "DNS-54fea357", "keyword": "SHOULD", "axis": "tcp_rcodes", "step": 1, "note": "comparison only"}
-      - {"req_id": "DNS-7d16e70b", "keyword": "MAY", "axis": "tcp_open_after", "step": 1, "note": "comparison only"}
+      - {"req_id": "DNS-d26ebe1e", "keyword": "SHOULD", "axis": "parallel_order", "step": 2, "note": "comparison only", "basis": "option"}
+      - {"req_id": "DNS-54fea357", "keyword": "SHOULD", "axis": "tcp_rcodes", "step": 1, "note": "comparison only", "basis": "not-applicable"}
+      - {"req_id": "DNS-7d16e70b", "keyword": "MAY", "axis": "tcp_open_after", "step": 1, "note": "comparison only", "basis": "option"}
     steps:
       - {"op": "tcp_session", "timeout": 8, "queries": [{"qname": "tcpa.pd.pdlab"}, {"qname": "tcpb.pd.pdlab", "idle_ms": 10000}, {"qname": "tcpc.pd.pdlab"}]}
       - {"op": "parallel", "timeout": 8, "queries": [{"label": "t1", "qname": "tcpa.pd.pdlab", "tcp": true}, {"label": "t2", "qname": "tcpb.pd.pdlab", "tcp": true}]}
@@ -708,10 +708,10 @@ fixtures:
   census_additional_processing:
     kind: control
     spec_refs:
-      - {"req_id": "DNS-4c5d6586", "keyword": "MAY", "axis": "additional", "step": 1, "note": "comparison only"}
-      - {"req_id": "DNS-dda0c057", "keyword": "MAY", "axis": "additional", "step": 1, "note": "comparison only"}
-      - {"req_id": "DNS-790a0685", "keyword": "MAY", "axis": "additional", "step": 1, "note": "comparison only"}
-      - {"req_id": "DNS-e9780f25", "keyword": "MAY", "axis": "additional", "step": 1, "note": "comparison only"}
+      - {"req_id": "DNS-4c5d6586", "keyword": "MAY", "axis": "additional", "step": 1, "note": "comparison only", "basis": "option"}
+      - {"req_id": "DNS-dda0c057", "keyword": "MAY", "axis": "additional", "step": 1, "note": "comparison only", "basis": "option"}
+      - {"req_id": "DNS-790a0685", "keyword": "MAY", "axis": "additional", "step": 1, "note": "comparison only", "basis": "option"}
+      - {"req_id": "DNS-e9780f25", "keyword": "MAY", "axis": "additional", "step": 1, "note": "comparison only", "basis": "option"}
     steps:
       - {"qname": "mx2.pd.pdlab", "qtype": "MX"}
 

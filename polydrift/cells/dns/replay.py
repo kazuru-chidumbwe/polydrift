@@ -34,9 +34,9 @@ from polydrift.core.replay import replay_summary, sample
 from polydrift.core.repeat import MIN_REPEATS, flaky_triples
 
 SEED = 20261116  # part of the frozen oracle specification (3.6): the replay sample is drawn with it
-NET, SUBNET, SERVER_IP = "pd-replay", "172.31.60.0/24", "172.31.60.53"
+NET, SUBNET, SERVER_IP = "pd-replay-dns", "172.31.65.0/24", "172.31.65.53"
 LAB_IMAGE = "pd-dns-py:lab"
-CONSUMERS = {"glibc": ("pd-consumer-glibc", "172.31.60.11"), "musl": ("pd-consumer-musl", "172.31.60.12")}
+CONSUMERS = {"glibc": ("pd-consumer-glibc", "172.31.65.11"), "musl": ("pd-consumer-musl", "172.31.65.12")}
 QTYPES = {"A": 1, "NS": 2, "CNAME": 5, "SOA": 6, "PTR": 12, "MX": 15, "TXT": 16, "AAAA": 28, "SRV": 33,
           "NAPTR": 35, "DNAME": 39, "DS": 43, "RRSIG": 46, "DNSKEY": 48, "CAA": 257, "ANY": 255}
 

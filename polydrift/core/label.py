@@ -103,14 +103,15 @@ def allowed_set(ref: Mapping[str, Any]) -> set[Any]:
     return {freeze_value(v) for v in ref.get("allowed", [])}
 
 
-PREDICATES = ("allowed", "excludes", "excludes_re", "order", "same_as")
+PREDICATES = ("allowed", "excludes", "excludes_re", "includes", "order", "same_as")
 
 
 def labels(ref: Mapping[str, Any]) -> bool:
     """Does this reference label implementations? Its clause fixes the outcome through one predicate:
     ``allowed`` (the values the clause allows); where those cannot be listed, ``excludes`` (values that must not be,
     or be among, the observed value: "MUST NOT include X"), ``excludes_re`` (a regular expression no observed string
-    may match, e.g. an unescaped space in a URI), ``order: [a, b]`` (in an observed sequence, every a comes before
+    may match, e.g. an unescaped space in a URI), ``includes`` (values that must be among the observed ones: "MUST
+    send a CANCEL"), ``order: [a, b]`` (in an observed sequence, every a comes before
     any b), or ``same_as: <step>`` (the value equals the same axis at another step: "the field is ignored")."""
     return any(k in ref for k in PREDICATES)
 
@@ -127,6 +128,10 @@ def inside(rec: ObservationRecord, ref: Mapping[str, Any], refusal_class: str | 
         return value in allowed_set(ref)
     if "same_as" in ref:
         return value == observed(rec, ref["axis"], ref["same_as"], refusal_class)
+    if "includes" in ref:
+        # every listed value must be among the observed ones (absence of the value breaks the clause)
+        have = set(_elements(value)) if value is not None else set()
+        return all(freeze_value(v) in have for v in ref["includes"])
     if value is None:
         return True  # nothing observed at the step: the clause has nothing to bind
     if "excludes" in ref:

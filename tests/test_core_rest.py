@@ -307,3 +307,10 @@ def test_order_and_same_as_predicates():
     s = {"axis": "x", "step": 2, "same_as": 1}
     assert _verdict(s, (7,), (7,)) == "conforms"
     assert _verdict(s, (7,), (48,)) == "violation"
+
+
+def test_includes_predicate():
+    i = {"axis": "x", "step": 1, "includes": ["CANCEL"]}
+    assert _verdict(i, ("INVITE", "CANCEL")) == "conforms"
+    assert _verdict(i, ("INVITE",)) == "violation"
+    assert _verdict(i, None) == "violation"

@@ -141,22 +141,22 @@ fixtures:
       - {"req_id": "SIP-2056d4c7", "keyword": "MUST", "axis": "x4", "step": 4, "allowed": [true]}
       - {"req_id": "SIP-df8db047", "keyword": "MUST", "axis": "x1", "step": 4, "allowed": [[200]]}
       - {"req_id": "SIP-4b74d1ec", "keyword": "MUST", "axis": "x1", "step": 4, "allowed": [[200]]}
-      - {"req_id": "SIP-685e55e6", "keyword": "MUST", "axis": "x1", "step": 4, "note": "stateless processing of unmatched responses; comparison only"}
+      - {"req_id": "SIP-685e55e6", "keyword": "MUST", "axis": "x1", "step": 4, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
       - {"req_id": "SIP-215685f3", "keyword": "MAY", "axis": "x4", "step": 4, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-6e770ccd", "keyword": "MAY", "axis": "x4", "step": 4, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-bdae6657", "keyword": "MAY", "axis": "x6", "step": 2, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-db42badb", "keyword": "MAY", "axis": "x8", "step": 2, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-6404fe03", "keyword": "MAY", "axis": "x8", "step": 2, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-ef39663c", "keyword": "MUST", "axis": "x1", "step": 5, "note": "comparison only"}
+      - {"req_id": "SIP-ef39663c", "keyword": "MUST", "axis": "x1", "step": 5, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-7cb7a2af", "keyword": "MUST", "axis": "x8", "step": 2, "allowed": [[100]]}
       - {"req_id": "SIP-d4f59db1", "keyword": "MUST", "axis": "x1", "step": 5, "allowed": [["ACK"]]}
-      - {"req_id": "SIP-1fece042", "keyword": "MUST", "axis": "x8", "step": 2, "note": "timer C (more than 3 minutes) not reached in the lab; comparison only"}
-      - {"req_id": "SIP-e63b8928", "keyword": "MUST", "axis": "x8", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-a716df3f", "keyword": "MUST", "axis": "x3", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-24a10821", "keyword": "MUST", "axis": "x3", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-4e480356", "keyword": "MUST", "axis": "x8", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-8eafe080", "keyword": "MUST", "axis": "x8", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-86bb70e0", "keyword": "MUST", "axis": "x8", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-1fece042", "keyword": "MUST", "axis": "x8", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-e63b8928", "keyword": "MUST", "axis": "x8", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-a716df3f", "keyword": "MUST", "axis": "x3", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-24a10821", "keyword": "MUST", "axis": "x3", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-4e480356", "keyword": "MUST", "axis": "x8", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-8eafe080", "keyword": "MUST", "axis": "x8", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-86bb70e0", "keyword": "MUST", "axis": "x8", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
     steps:
       - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
       - {"op": "send", "from": "alice", "window_ms": 400, "msg": "INVITE sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nX-Pd-Unknown: keep me\nX-Pd-Multi: one\nX-Pd-Multi: two\nSubject: pd census\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "bob/0/hdr/max-forwards/0", "x2": "len:bob/0/hdr/via", "x3": "re:bob/0/hdr/via/0=SIP/2.0/UDP .*;branch=z9hG4bK.*", "x4": "same:bob/0/body,sent/alice/body", "x5": "bob/0/hdr/x-pd-multi", "x6": "has:bob/0/hdr/x-pd-unknown", "x7": "re:bob/0/ruri=sip:bob@{lab}:{port:bob}.*", "x8": "codes:alice"}}
@@ -173,17 +173,17 @@ fixtures:
       - {"req_id": "SIP-158cb01a", "keyword": "MUST", "axis": "x2", "step": 2, "allowed": [true]}
       - {"req_id": "SIP-d5f7b664", "keyword": "SHOULD", "axis": "x3", "step": 2, "allowed": [true]}
       - {"req_id": "SIP-76061b24", "keyword": "MAY", "axis": "x2", "step": 2, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-03a3fa07", "keyword": "MUST", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-03a3fa07", "keyword": "MUST", "axis": "x2", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-f39e124f", "keyword": "MAY", "axis": "x2", "step": 2, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-3e63b896", "keyword": "MAY", "axis": "x4", "step": 3, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-bd030e81", "keyword": "SHOULD", "axis": "x4", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-bd030e81", "keyword": "SHOULD", "axis": "x4", "step": 3, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
       - {"req_id": "SIP-165307bb", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-f63b9972", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-6e2c9465", "keyword": "SHOULD", "axis": "x5", "step": 6, "note": "comparison only"}
-      - {"req_id": "SIP-05a41a60", "keyword": "MUST", "axis": "x6", "step": 4, "note": "comparison only"}
-      - {"req_id": "SIP-2ac72546", "keyword": "SHOULD", "axis": "x6", "step": 4, "note": "comparison only"}
-      - {"req_id": "SIP-d4d17b3c", "keyword": "SHOULD", "axis": "x6", "step": 4, "note": "comparison only"}
-      - {"req_id": "SIP-285a933b", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-6e2c9465", "keyword": "SHOULD", "axis": "x5", "step": 6, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
+      - {"req_id": "SIP-05a41a60", "keyword": "MUST", "axis": "x6", "step": 4, "excludes_re": "^(?!.*;lr)", "note": "the proxy's Record-Route URI carries lr (16.6 step 4)"}
+      - {"req_id": "SIP-2ac72546", "keyword": "SHOULD", "axis": "x6", "step": 4, "excludes_re": "transport=", "note": "no transport parameter in the Record-Route URI"}
+      - {"req_id": "SIP-d4d17b3c", "keyword": "SHOULD", "axis": "x6", "step": 4, "basis": "option", "note": "several outcomes conform"}
+      - {"req_id": "SIP-285a933b", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
     steps:
       - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
       - {"op": "send", "from": "alice", "window_ms": 400, "msg": "INVITE sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "has:bob/0/hdr/record-route", "x2": "re:bob/0/hdr/record-route/0=<?sips?:[^>]*;lr[^>]*>?.*", "x3": "nre:bob/0/hdr/record-route/0=.*transport=.*"}}
@@ -228,7 +228,7 @@ fixtures:
     roles: ["proxy"]
     spec_refs:
       - {"req_id": "SIP-6a127192", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [["PDCENSUS"]]}
-      - {"req_id": "SIP-8ad9a718", "keyword": "MUST", "axis": "x2", "step": 3, "note": "merged request; comparison only"}
+      - {"req_id": "SIP-8ad9a718", "keyword": "MUST", "axis": "x2", "step": 3, "excludes": [482], "note": "a merged request is not an error at a proxy"}
     steps:
       - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
       - {"op": "send", "from": "alice", "window_ms": 400, "msg": "PDCENSUS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 PDCENSUS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "methods:bob"}}
@@ -241,10 +241,10 @@ fixtures:
       - {"req_id": "SIP-dc89587f", "keyword": "MAY", "axis": "x1", "step": 1, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-6a06fca8", "keyword": "MAY", "axis": "x1", "step": 1, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-df61eb21", "keyword": "MAY", "axis": "x1", "step": 1, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-cd3c601c", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-db1a057d", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-36205e5c", "keyword": "MUST", "axis": "x1", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-b4512dd0", "keyword": "MUST", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-cd3c601c", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-db1a057d", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-36205e5c", "keyword": "MUST", "axis": "x1", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-b4512dd0", "keyword": "MUST", "axis": "x1", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
     steps:
       - {"op": "send", "from": "alice", "window_ms": 400, "msg": "OPTIONS sip:loop@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nVia: SIP/2.0/UDP {eut}:5060;branch=z9hG4bKpdloop;rport\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
 
@@ -273,10 +273,10 @@ fixtures:
     kind: probe
     roles: ["proxy"]
     spec_refs:
-      - {"req_id": "SIP-3d20b2c2", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-129af27b", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-6e4363ed", "keyword": "MUST", "axis": "x2", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-c618aa50", "keyword": "MUST", "axis": "x3", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-3d20b2c2", "keyword": "MUST", "axis": "x1", "step": 2, "includes": ["OPTIONS"], "note": "maddr naming the proxy: the request still reaches bob"}
+      - {"req_id": "SIP-129af27b", "keyword": "MUST", "axis": "x1", "step": 2, "includes": ["OPTIONS"], "note": "maddr naming the proxy: the request still reaches bob"}
+      - {"req_id": "SIP-6e4363ed", "keyword": "MUST", "axis": "x2", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-c618aa50", "keyword": "MUST", "axis": "x3", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
     steps:
       - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
       - {"op": "send", "from": "alice", "window_ms": 400, "msg": "OPTIONS sip:bob@{domain};maddr={eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "methods:bob"}}
@@ -296,9 +296,9 @@ fixtures:
     roles: ["proxy"]
     spec_refs:
       - {"req_id": "SIP-c42e7177", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [[100, 404], [404]]}
-      - {"req_id": "SIP-942301d6", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-fb8ee06e", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-d2ab6a2c", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-942301d6", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "option", "note": "several outcomes conform"}
+      - {"req_id": "SIP-fb8ee06e", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
+      - {"req_id": "SIP-d2ab6a2c", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
     steps:
       - {"op": "send", "from": "alice", "window_ms": 1200, "msg": "INVITE sip:nobody-{U}@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "codes:alice"}}
       - {"op": "ack", "from": "alice", "window_ms": 600}
@@ -313,16 +313,16 @@ fixtures:
       - {"req_id": "SIP-d87acbcf", "keyword": "MAY", "axis": "x1", "step": 3, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-d29de2c1", "keyword": "MAY", "axis": "x1", "step": 3, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-6ae773ad", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [false]}
-      - {"req_id": "SIP-0552a135", "keyword": "MUST", "axis": "x1", "step": 3, "note": "each contact once; comparison only"}
-      - {"req_id": "SIP-6ac2f947", "keyword": "MUST", "axis": "x1", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-0552a135", "keyword": "MUST", "axis": "x1", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-6ac2f947", "keyword": "MUST", "axis": "x1", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-388554cc", "keyword": "MUST", "axis": "x4", "step": 5, "allowed": [["CANCEL"]]}
-      - {"req_id": "SIP-7e34ef58", "keyword": "MUST", "axis": "x4", "step": 5, "note": "comparison only"}
+      - {"req_id": "SIP-7e34ef58", "keyword": "MUST", "axis": "x4", "step": 5, "includes": ["CANCEL"], "note": "the pending branch is cancelled after the 2xx"}
       - {"req_id": "SIP-62218bc2", "keyword": "MAY", "axis": "x1", "step": 3, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-b7371279", "keyword": "MAY", "axis": "x1", "step": 3, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-3744c2a4", "keyword": "SHOULD", "axis": "x1", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-ed221651", "keyword": "SHOULD", "axis": "x1", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-3744c2a4", "keyword": "SHOULD", "axis": "x1", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-ed221651", "keyword": "SHOULD", "axis": "x1", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-42a422ec", "keyword": "MAY", "axis": "x1", "step": 3, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-75e502fa", "keyword": "MUST", "axis": "x1", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-75e502fa", "keyword": "MUST", "axis": "x1", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
     steps:
       - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
       - {"op": "send", "from": "carol", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:carol};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rcarol}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob2-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:carol@{lab}:{port:carol}>\nExpires: 300\nContent-Length: {clen}\n\n"}
@@ -347,7 +347,7 @@ fixtures:
     spec_refs:
       - {"req_id": "SIP-1a41408e", "keyword": "MUST", "axis": "x1", "step": 5, "allowed": [[603]]}
       - {"req_id": "SIP-6cad2185", "keyword": "MUST", "axis": "x2", "step": 4, "allowed": [[]]}
-      - {"req_id": "SIP-0ca89195", "keyword": "SHOULD", "axis": "x3", "step": 4, "note": "comparison only"}
+      - {"req_id": "SIP-0ca89195", "keyword": "SHOULD", "axis": "x3", "step": 4, "includes": ["CANCEL"], "note": "the pending branch is cancelled after the 6xx"}
       - {"req_id": "SIP-09538356", "keyword": "MUST", "axis": "x1", "step": 5, "allowed": [[603]]}
       - {"req_id": "SIP-dd5f10bc", "keyword": "MAY", "axis": "x1", "step": 5, "note": "comparison only", "basis": "option"}
     steps:
@@ -377,7 +377,7 @@ fixtures:
     roles: ["proxy"]
     spec_refs:
       - {"req_id": "SIP-407b6738", "keyword": "SHOULD", "axis": "x1", "step": 3, "allowed": [[500]]}
-      - {"req_id": "SIP-9d2a22f7", "keyword": "SHOULD", "axis": "x1", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-9d2a22f7", "keyword": "SHOULD", "axis": "x1", "step": 3, "excludes": [503], "note": "the 503 is not forwarded upstream"}
     steps:
       - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
       - {"op": "send", "from": "alice", "window_ms": 600, "msg": "INVITE sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
@@ -409,8 +409,8 @@ fixtures:
     kind: probe
     roles: ["proxy"]
     spec_refs:
-      - {"req_id": "SIP-5238aba4", "keyword": "MUST", "axis": "x1", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-10364d5e", "keyword": "MUST", "axis": "x1", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-5238aba4", "keyword": "MUST", "axis": "x1", "step": 3, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
+      - {"req_id": "SIP-10364d5e", "keyword": "MUST", "axis": "x1", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
     steps:
       - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
       - {"op": "send", "from": "alice", "window_ms": 300, "msg": "OPTIONS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n"}
@@ -420,11 +420,11 @@ fixtures:
     kind: probe
     roles: ["proxy"]
     spec_refs:
-      - {"req_id": "SIP-7bebb592", "keyword": "MUST", "axis": "x1", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-f171c7b5", "keyword": "SHOULD", "axis": "x1", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-de657ee2", "keyword": "SHOULD", "axis": "x1", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-06c61c3b", "keyword": "SHOULD", "axis": "x1", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-9a5d0a3e", "keyword": "SHOULD", "axis": "x1", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-7bebb592", "keyword": "MUST", "axis": "x1", "step": 3, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
+      - {"req_id": "SIP-f171c7b5", "keyword": "SHOULD", "axis": "x1", "step": 3, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
+      - {"req_id": "SIP-de657ee2", "keyword": "SHOULD", "axis": "x1", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-06c61c3b", "keyword": "SHOULD", "axis": "x1", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-9a5d0a3e", "keyword": "SHOULD", "axis": "x1", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
     steps:
       - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
       - {"op": "send", "from": "alice", "window_ms": 300, "msg": "OPTIONS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n"}
@@ -434,8 +434,8 @@ fixtures:
     kind: probe
     roles: ["proxy"]
     spec_refs:
-      - {"req_id": "SIP-da656884", "keyword": "MUST", "axis": "x1", "step": 2, "note": "unreachable target (no listener); comparison only"}
-      - {"req_id": "SIP-e0a88222", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-da656884", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-e0a88222", "keyword": "SHOULD", "axis": "x1", "step": 2, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
     steps:
       - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@172.31.60.250:5099;transport=tcp>\nExpires: 300\nContent-Length: {clen}\n\n"}
       - {"op": "send", "from": "alice", "window_ms": 6000, "msg": "OPTIONS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
@@ -480,7 +480,7 @@ fixtures:
     kind: probe
     roles: ["proxy"]
     spec_refs:
-      - {"req_id": "SIP-64f0de31", "keyword": "MUST", "axis": "x1", "step": 2, "note": "lookup of a URI with a header component; comparison only"}
+      - {"req_id": "SIP-64f0de31", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
     steps:
       - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
       - {"op": "send", "from": "alice", "window_ms": 400, "msg": "OPTIONS sip:bob@{domain}?Subject=pd SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
@@ -489,16 +489,16 @@ fixtures:
     kind: probe
     roles: ["proxy"]
     spec_refs:
-      - {"req_id": "SIP-8aaf4660", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-b1899cd2", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-3685d3e0", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-8aaf4660", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-b1899cd2", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-3685d3e0", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
       - {"req_id": "SIP-6e56468d", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-5a456858", "keyword": "MUST", "axis": "x2", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-c3c127c6", "keyword": "MUST", "axis": "x2", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-3df137ab", "keyword": "MUST", "axis": "x2", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-759a00a4", "keyword": "MUST", "axis": "x2", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-4c2de81a", "keyword": "MUST", "axis": "x2", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-c2aff711", "keyword": "SHOULD", "axis": "x2", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-5a456858", "keyword": "MUST", "axis": "x2", "step": 3, "excludes_re": "^(?!sips?:dave@|null$)", "note": "strict routing: the first Route URI becomes the Request-URI"}
+      - {"req_id": "SIP-c3c127c6", "keyword": "MUST", "axis": "x2", "step": 3, "excludes_re": "^(?!sips?:dave@|null$)", "note": "strict routing: the first Route URI becomes the Request-URI"}
+      - {"req_id": "SIP-3df137ab", "keyword": "MUST", "axis": "x2", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-759a00a4", "keyword": "MUST", "axis": "x2", "step": 3, "excludes_re": "^(?!sips?:dave@|null$)", "note": "strict routing: the first Route URI becomes the Request-URI"}
+      - {"req_id": "SIP-4c2de81a", "keyword": "MUST", "axis": "x2", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-c2aff711", "keyword": "SHOULD", "axis": "x2", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
       - {"req_id": "SIP-fbb94309", "keyword": "MUST", "axis": "x3", "step": 4, "allowed": [true]}
     steps:
       - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
@@ -514,11 +514,11 @@ fixtures:
       - {"req_id": "SIP-aa06cd58", "keyword": "MUST", "axis": "x2", "step": 3, "allowed": [[483]]}
       - {"req_id": "SIP-b1ffc4df", "keyword": "MUST", "axis": "x3", "step": 2, "allowed": [["INVITE"]]}
       - {"req_id": "SIP-b2e57f4c", "keyword": "MUST", "axis": "x3", "step": 2, "allowed": [["INVITE"]]}
-      - {"req_id": "SIP-10c4d908", "keyword": "MUST", "axis": "x3", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-10c4d908", "keyword": "MUST", "axis": "x3", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-f9e7ff85", "keyword": "MUST", "axis": "x4", "step": 2, "allowed": [true]}
       - {"req_id": "SIP-3612d184", "keyword": "MAY", "axis": "x4", "step": 2, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-33e9f998", "keyword": "SHOULD", "axis": "x4", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-8c98bab7", "keyword": "MUST", "axis": "x4", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-33e9f998", "keyword": "SHOULD", "axis": "x4", "step": 2, "basis": "option", "note": "several outcomes conform"}
+      - {"req_id": "SIP-8c98bab7", "keyword": "MUST", "axis": "x4", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-b2d2c2db", "keyword": "MUST", "axis": "x5", "step": 4, "allowed": [1]}
       - {"req_id": "SIP-3e663106", "keyword": "MUST", "axis": "x5", "step": 4, "allowed": [1]}
       - {"req_id": "SIP-a56d464e", "keyword": "MUST", "axis": "x6", "step": 4, "allowed": [true]}
@@ -526,7 +526,7 @@ fixtures:
       - {"req_id": "SIP-e6330b84", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [[]]}
       - {"req_id": "SIP-5ee483b8", "keyword": "MAY", "axis": "x3", "step": 2, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-3e029c3b", "keyword": "MAY", "axis": "x3", "step": 2, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-bd54ab63", "keyword": "MUST", "axis": "x3", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-bd54ab63", "keyword": "MUST", "axis": "x3", "step": 2, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
       - {"req_id": "SIP-605d1b9b", "keyword": "MAY", "axis": "x3", "step": 2, "note": "comparison only", "basis": "option"}
     steps:
       - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
@@ -543,12 +543,12 @@ fixtures:
       - {"req_id": "SIP-c1422ad2", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [true]}
       - {"req_id": "SIP-036ea8ab", "keyword": "MUST", "axis": "x2", "step": 3, "allowed": [true]}
       - {"req_id": "SIP-0259fe3b", "keyword": "MUST", "axis": "x2", "step": 3, "allowed": [true]}
-      - {"req_id": "SIP-51ac9e80", "keyword": "MUST", "axis": "x3", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-51ac9e80", "keyword": "MUST", "axis": "x3", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
       - {"req_id": "SIP-c1639d01", "keyword": "MUST", "axis": "x4", "step": 4, "allowed": [true, "null"]}
-      - {"req_id": "SIP-aa8001ff", "keyword": "MUST", "axis": "x4", "step": 4, "note": "comparison only"}
-      - {"req_id": "SIP-3b211696", "keyword": "MUST", "axis": "x5", "step": 4, "note": "comparison only"}
-      - {"req_id": "SIP-7a8ec869", "keyword": "MUST", "axis": "x5", "step": 4, "note": "comparison only"}
-      - {"req_id": "SIP-6c19abdd", "keyword": "MUST", "axis": "x5", "step": 4, "note": "comparison only"}
+      - {"req_id": "SIP-aa8001ff", "keyword": "MUST", "axis": "x4", "step": 4, "allowed": [true], "note": "a stateless proxy forwards CANCEL like any request"}
+      - {"req_id": "SIP-3b211696", "keyword": "MUST", "axis": "x5", "step": 4, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-7a8ec869", "keyword": "MUST", "axis": "x5", "step": 4, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-6c19abdd", "keyword": "MUST", "axis": "x5", "step": 4, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
       - {"req_id": "SIP-20164107", "keyword": "MUST", "axis": "x6", "step": 5, "allowed": [[]]}
     steps:
       - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
@@ -564,7 +564,7 @@ fixtures:
       - {"req_id": "SIP-b3dfac91", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [true]}
       - {"req_id": "SIP-a54956c7", "keyword": "MAY", "axis": "x2", "step": 2, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-44ebaf00", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [[302]]}
-      - {"req_id": "SIP-3bd6587d", "keyword": "SHOULD", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-3bd6587d", "keyword": "SHOULD", "axis": "x2", "step": 2, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
       - {"req_id": "SIP-cff27da4", "keyword": "MAY", "axis": "x2", "step": 2, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-e1ab85c5", "keyword": "SHOULD", "axis": "x4", "step": 2, "allowed": [true]}
       - {"req_id": "SIP-25cff394", "keyword": "MAY", "axis": "x2", "step": 2, "note": "comparison only", "basis": "option"}
@@ -653,7 +653,7 @@ fixtures:
     roles: ["proxy"]
     spec_refs:
       - {"req_id": "SIP-a1f3155a", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [[404], [403]]}
-      - {"req_id": "SIP-be2bb0be", "keyword": "SHOULD", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-be2bb0be", "keyword": "SHOULD", "axis": "x2", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-b3cb8dff", "keyword": "MAY", "axis": "x2", "step": 2, "note": "comparison only", "basis": "option"}
     steps:
       - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@pd-other.example>;tag={tag:rbob}\nTo: <sip:bob@pd-other.example>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:bob"}}
@@ -721,16 +721,16 @@ fixtures:
       - {"req_id": "SIP-cb4c39d2", "keyword": "SHOULD", "axis": "x7", "step": 1, "allowed": [[200]]}
       - {"req_id": "SIP-9f027663", "keyword": "SHOULD", "axis": "x8", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-e866c185", "keyword": "SHOULD", "axis": "x8", "step": 1, "allowed": [true]}
-      - {"req_id": "SIP-17c75fdc", "keyword": "MUST", "axis": "x7", "step": 1, "note": "same code as an INVITE would get; comparison only"}
+      - {"req_id": "SIP-17c75fdc", "keyword": "MUST", "axis": "x7", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-1dd65436", "keyword": "MAY", "axis": "x6", "step": 1, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-2e625a45", "keyword": "MAY", "axis": "x6", "step": 1, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-0feb1d36", "keyword": "MAY", "axis": "x8", "step": 1, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-695cf3bb", "keyword": "SHOULD", "axis": "x8", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-2caca8cd", "keyword": "SHOULD", "axis": "x8", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-c9ea4e1b", "keyword": "MUST", "axis": "x6", "step": 1, "note": "Allow lists ACK and CANCEL; comparison only"}
-      - {"req_id": "SIP-0949c2a7", "keyword": "MUST", "axis": "x6", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-ba71098f", "keyword": "MUST", "axis": "x6", "step": 1, "note": "option tags in Supported; comparison only"}
-      - {"req_id": "SIP-4581ad86", "keyword": "SHOULD", "axis": "x7", "step": 1, "note": "unknown header parameter ignored; comparison only"}
+      - {"req_id": "SIP-695cf3bb", "keyword": "SHOULD", "axis": "x8", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-2caca8cd", "keyword": "SHOULD", "axis": "x8", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-c9ea4e1b", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-0949c2a7", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-ba71098f", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-4581ad86", "keyword": "SHOULD", "axis": "x7", "step": 1, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
     steps:
       - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nX-Pd-Param: v;pdunknown=1\nAccept: application/sdp\nContent-Length: {clen}\n\n", "extract": {"x1": "same:alice/0/hdr/from,sent/alice/hdr/from", "x2": "same:alice/0/hdr/call-id,sent/alice/hdr/call-id", "x3": "same:alice/0/hdr/cseq,sent/alice/hdr/cseq", "x4": "same:alice/0/hdr/via,sent/alice/hdr/via", "x5": "re:alice/0/hdr/to/0=<sip:uas@{eut}>.*", "x6": "hasall:alice/0/hdr=[\"allow\", \"accept\", \"accept-encoding\", \"accept-language\", \"supported\"]", "x7": "codes:alice", "x8": "re:alice/0/body=(?s).*m=audio.*"}}
 
@@ -759,8 +759,8 @@ fixtures:
       - {"req_id": "SIP-0c5d0af4", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-60c7a181", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-d8fe7710", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
-      - {"req_id": "SIP-66d8715d", "keyword": "MUST", "axis": "x1", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-cebe6245", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-66d8715d", "keyword": "MUST", "axis": "x1", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-cebe6245", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
     steps:
       - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "PUBLISH sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 PUBLISH\nContact: <sip:alice@{lab}:{port:alice}>\nEvent: presence\nExpires: 60\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice", "x2": "has:alice/0/hdr/allow"}}
 
@@ -780,9 +780,9 @@ fixtures:
     kind: probe
     roles: ["uas"]
     spec_refs:
-      - {"req_id": "SIP-efb0937b", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-72ae9052", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-813aaddd", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-efb0937b", "keyword": "MUST", "axis": "x1", "step": 2, "excludes": [420], "note": "Require in a CANCEL is ignored"}
+      - {"req_id": "SIP-72ae9052", "keyword": "MUST", "axis": "x1", "step": 2, "excludes": [420], "note": "Require in a CANCEL is ignored"}
+      - {"req_id": "SIP-813aaddd", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
     steps:
       - {"op": "send", "from": "alice", "window_ms": 1200, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
       - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "CANCEL sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 CANCEL\nContact: <sip:alice@{lab}:{port:alice}>\nRequire: x-pd-unknown-ext\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
@@ -796,7 +796,7 @@ fixtures:
       - {"req_id": "SIP-42319eb0", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-3ffcb304", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-90044650", "keyword": "MUST", "axis": "x3", "step": 2, "allowed": [true, "null"]}
-      - {"req_id": "SIP-c5b1b4c4", "keyword": "MUST", "axis": "x4", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-c5b1b4c4", "keyword": "MUST", "axis": "x4", "step": 3, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
     steps:
       - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/x-pd-census\nContent-Length: {clen}\n\npd", "extract": {"x1": "codes:alice", "x2": "has:alice/0/hdr/accept"}}
       - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 2 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Encoding: x-pd-enc\nContent-Type: application/sdp\nContent-Length: {clen}\n\npd", "extract": {"x3": "has:alice/0/hdr/accept-encoding"}}
@@ -815,8 +815,8 @@ fixtures:
     roles: ["uas"]
     spec_refs:
       - {"req_id": "SIP-125e7717", "keyword": "SHOULD", "axis": "x1", "step": 1, "allowed": [[404]]}
-      - {"req_id": "SIP-2b982591", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-28959526", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-2b982591", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "option", "note": "several outcomes conform"}
+      - {"req_id": "SIP-28959526", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "option", "note": "several outcomes conform"}
     steps:
       - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "OPTIONS sip:pd-nobody@pd-elsewhere.example SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
 
@@ -826,14 +826,14 @@ fixtures:
     spec_refs:
       - {"req_id": "SIP-0f649f35", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-c1ef223d", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
-      - {"req_id": "SIP-833b2673", "keyword": "MUST", "axis": "x2", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-ac4b19e8", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-833b2673", "keyword": "MUST", "axis": "x2", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
+      - {"req_id": "SIP-ac4b19e8", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "option", "note": "several outcomes conform"}
       - {"req_id": "SIP-99af968f", "keyword": "MAY", "axis": "x2", "step": 1, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-c75cce62", "keyword": "MUST", "axis": "x2", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-b5bd83c2", "keyword": "MUST", "axis": "x2", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-3a570bc9", "keyword": "SHOULD", "axis": "x2", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-a4b666ce", "keyword": "SHOULD", "axis": "x2", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-762afc06", "keyword": "SHOULD", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-c75cce62", "keyword": "MUST", "axis": "x2", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
+      - {"req_id": "SIP-b5bd83c2", "keyword": "MUST", "axis": "x2", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
+      - {"req_id": "SIP-3a570bc9", "keyword": "SHOULD", "axis": "x2", "step": 1, "excludes": [421], "note": "no 421 when baseline service is possible"}
+      - {"req_id": "SIP-a4b666ce", "keyword": "SHOULD", "axis": "x2", "step": 1, "basis": "option", "note": "several outcomes conform"}
+      - {"req_id": "SIP-762afc06", "keyword": "SHOULD", "axis": "x2", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
     steps:
       - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nSupported:\nX-Pd-Broken: ;;;\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "nre:alice/-1/hdr/require/0=.+", "x2": "codes:alice"}}
       - {"op": "ack", "from": "alice", "window_ms": 800}
@@ -842,7 +842,7 @@ fixtures:
     kind: probe
     roles: ["uas"]
     spec_refs:
-      - {"req_id": "SIP-0ab9b990", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-0ab9b990", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-5d6ce1e1", "keyword": "SHOULD", "axis": "x1", "step": 2, "allowed": [[482]]}
     steps:
       - {"op": "send", "from": "alice", "window_ms": 200, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:first};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n"}
@@ -855,39 +855,39 @@ fixtures:
       - {"req_id": "SIP-82e87ed2", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-4fee8697", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-647a40fd", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
-      - {"req_id": "SIP-10831295", "keyword": "SHOULD", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-10831295", "keyword": "SHOULD", "axis": "x2", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-70a4cce9", "keyword": "MUST", "axis": "x3", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-1b6a1526", "keyword": "MUST", "axis": "x3", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-e3022da7", "keyword": "MUST", "axis": "x4", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-734331b0", "keyword": "MUST", "axis": "x4", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-9559f2bb", "keyword": "SHOULD", "axis": "x5", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-322499cf", "keyword": "MUST", "axis": "x6", "step": 1, "allowed": [true, "null"]}
-      - {"req_id": "SIP-a4452268", "keyword": "MUST", "axis": "x7", "step": 1, "note": "100 Trying unless a response comes within 200 ms; comparison only"}
-      - {"req_id": "SIP-c3f2d180", "keyword": "SHOULD", "axis": "x7", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-a4452268", "keyword": "MUST", "axis": "x7", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-c3f2d180", "keyword": "SHOULD", "axis": "x7", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-12fb2a6f", "keyword": "MUST", "axis": "x4", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-82e0c687", "keyword": "MUST", "axis": "x4", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-ffcda20c", "keyword": "MUST", "axis": "x4", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-a9751c57", "keyword": "MUST", "axis": "x8", "step": 3, "allowed": [[200]]}
       - {"req_id": "SIP-336a6816", "keyword": "MAY", "axis": "x7", "step": 1, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-835dae11", "keyword": "MUST", "axis": "x7", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-835dae11", "keyword": "MUST", "axis": "x7", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-27c57292", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
-      - {"req_id": "SIP-7f2c7e96", "keyword": "MUST", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-7f2c7e96", "keyword": "MUST", "axis": "x2", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-97a0e548", "keyword": "MUST", "axis": "x3", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-3ea4a557", "keyword": "MUST", "axis": "x8", "step": 3, "allowed": [[200]]}
       - {"req_id": "SIP-d15b8c28", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-f019db89", "keyword": "MUST", "axis": "x8", "step": 3, "allowed": [[200]]}
       - {"req_id": "SIP-ae906176", "keyword": "MUST", "axis": "x8", "step": 3, "allowed": [[200]]}
-      - {"req_id": "SIP-63ddbb25", "keyword": "MUST", "axis": "x8", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-63ddbb25", "keyword": "MUST", "axis": "x8", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-af5a6bc8", "keyword": "MUST", "axis": "x8", "step": 3, "allowed": [[200]]}
       - {"req_id": "SIP-74ef8975", "keyword": "MUST", "axis": "x8", "step": 3, "allowed": [[200]]}
       - {"req_id": "SIP-191474f0", "keyword": "MUST", "axis": "x8", "step": 3, "allowed": [[200]]}
       - {"req_id": "SIP-1ac13f9c", "keyword": "MUST", "axis": "x8", "step": 3, "allowed": [[200]]}
       - {"req_id": "SIP-46d0b4a0", "keyword": "MUST", "axis": "x8", "step": 3, "allowed": [[200]]}
-      - {"req_id": "SIP-c057ebcd", "keyword": "SHOULD", "axis": "x6", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-4685fe11", "keyword": "MUST", "axis": "x6", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-c057ebcd", "keyword": "SHOULD", "axis": "x6", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
+      - {"req_id": "SIP-4685fe11", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
       - {"req_id": "SIP-ff237f40", "keyword": "MUST", "axis": "x8", "step": 3, "allowed": [[200]]}
-      - {"req_id": "SIP-b29ee7b1", "keyword": "SHOULD", "axis": "x4", "step": 1, "note": "SDP without Content-Disposition is a session; comparison only"}
-      - {"req_id": "SIP-6e6abd28", "keyword": "SHOULD", "axis": "x4", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-b29ee7b1", "keyword": "SHOULD", "axis": "x4", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-6e6abd28", "keyword": "SHOULD", "axis": "x4", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
     steps:
       - {"op": "send", "from": "alice", "window_ms": 6000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nRecord-Route: <sip:{lab}:{port:dave};lr;pdrr=1>\nTimestamp: 54\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "re:alice/-1/hdr/record-route/0=.*pdrr=1.*", "x2": "re:alice/-1/hdr/contact/0=<?sips?:[^,]*", "x3": "re:alice/-1/hdr/to/0=.*;tag=.*", "x4": "re:alice/-1/body=(?s).*m=audio.*", "x5": "hasall:alice/-1/hdr=[\"allow\", \"supported\"]", "x6": "alice/0/hdr/timestamp/0", "x7": "codes:alice"}}
       - {"op": "ack", "from": "alice", "window_ms": 800}
@@ -899,9 +899,9 @@ fixtures:
     spec_refs:
       - {"req_id": "SIP-9b310f18", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-e06757a1", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
-      - {"req_id": "SIP-356e34ce", "keyword": "MUST", "axis": "x1", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-db54848c", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-f11256dd", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-356e34ce", "keyword": "MUST", "axis": "x1", "step": 1, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-db54848c", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "option", "note": "several outcomes conform"}
+      - {"req_id": "SIP-f11256dd", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "option", "note": "several outcomes conform"}
     steps:
       - {"op": "send", "from": "alice", "window_ms": 6000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "re:alice/-1/body=(?s).*m=audio.*"}}
       - {"op": "send", "from": "alice", "window_ms": 800, "msg": "ACK {lasturi:alice:Contact} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: {last:alice:To}\nCall-ID: {callid}\nCSeq: 1 ACK\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
@@ -921,8 +921,8 @@ fixtures:
     spec_refs:
       - {"req_id": "SIP-ee90e857", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [[500]]}
       - {"req_id": "SIP-594cd610", "keyword": "SHOULD", "axis": "x2", "step": 4, "allowed": [[200]]}
-      - {"req_id": "SIP-aca4bb29", "keyword": "MUST", "axis": "x2", "step": 4, "note": "comparison only"}
-      - {"req_id": "SIP-4ccfad95", "keyword": "MUST", "axis": "x2", "step": 4, "note": "comparison only"}
+      - {"req_id": "SIP-aca4bb29", "keyword": "MUST", "axis": "x2", "step": 4, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-4ccfad95", "keyword": "MUST", "axis": "x2", "step": 4, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-daefae6c", "keyword": "MAY", "axis": "x2", "step": 4, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-887514c8", "keyword": "MUST", "axis": "x3", "step": 5, "allowed": [[481]]}
       - {"req_id": "SIP-15df0bcb", "keyword": "SHOULD", "axis": "x3", "step": 5, "allowed": [[481]]}
@@ -939,13 +939,13 @@ fixtures:
     roles: ["uac"]
     spec_refs:
       - {"req_id": "SIP-ec294766", "keyword": "MUST", "axis": "x1", "step": 5, "allowed": [["BYE"]]}
-      - {"req_id": "SIP-bed224cc", "keyword": "MUST", "axis": "x2", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-bed224cc", "keyword": "MUST", "axis": "x2", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-ca363fe4", "keyword": "MAY", "axis": "x2", "step": 3, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-111a760b", "keyword": "MAY", "axis": "x2", "step": 3, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-bc969ee7", "keyword": "MAY", "axis": "x2", "step": 3, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-ec6a553c", "keyword": "MAY", "axis": "x2", "step": 3, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-b0fbc180", "keyword": "MUST", "axis": "x2", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-c230a09d", "keyword": "SHOULD", "axis": "x2", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-b0fbc180", "keyword": "MUST", "axis": "x2", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-c230a09d", "keyword": "SHOULD", "axis": "x2", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
     steps:
       - {"op": "send", "from": "alice", "window_ms": 6000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
       - {"op": "ack", "from": "alice", "window_ms": 800}
@@ -958,8 +958,8 @@ fixtures:
     roles: ["uas"]
     spec_refs:
       - {"req_id": "SIP-21bc9ebe", "keyword": "MUST", "axis": "x1", "step": 4, "allowed": [[500]]}
-      - {"req_id": "SIP-af6aac70", "keyword": "MUST", "axis": "x1", "step": 4, "note": "comparison only"}
-      - {"req_id": "SIP-e2fe95d5", "keyword": "SHOULD", "axis": "x1", "step": 4, "note": "comparison only"}
+      - {"req_id": "SIP-af6aac70", "keyword": "MUST", "axis": "x1", "step": 4, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-e2fe95d5", "keyword": "SHOULD", "axis": "x1", "step": 4, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
     steps:
       - {"op": "send", "from": "alice", "window_ms": 6000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
       - {"op": "ack", "from": "alice", "window_ms": 800}
@@ -972,7 +972,7 @@ fixtures:
     roles: ["uas"]
     spec_refs:
       - {"req_id": "SIP-94f79e7d", "keyword": "SHOULD", "axis": "x1", "step": 1, "allowed": [[481]]}
-      - {"req_id": "SIP-f67adc87", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-f67adc87", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
     steps:
       - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "CANCEL sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:none};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 CANCEL\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
 
@@ -985,13 +985,13 @@ fixtures:
       - {"req_id": "SIP-c55bcbfe", "keyword": "MUST", "axis": "x3", "step": 2, "allowed": [[180], [100, 180], [180, 180]]}
       - {"req_id": "SIP-332e4a83", "keyword": "MUST", "axis": "x3", "step": 2, "allowed": [[180], [100, 180], [180, 180]]}
       - {"req_id": "SIP-53a750da", "keyword": "MAY", "axis": "x3", "step": 2, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-a53270d1", "keyword": "MUST", "axis": "x3", "step": 2, "note": "a provisional every minute; not reached; comparison only"}
-      - {"req_id": "SIP-e902fa4f", "keyword": "SHOULD", "axis": "x3", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-a53270d1", "keyword": "MUST", "axis": "x3", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-e902fa4f", "keyword": "SHOULD", "axis": "x3", "step": 2, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
       - {"req_id": "SIP-5669801c", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [true]}
-      - {"req_id": "SIP-d58f53ab", "keyword": "MUST", "axis": "x4", "step": 4, "note": "comparison only"}
-      - {"req_id": "SIP-fc4d96a2", "keyword": "SHOULD", "axis": "x4", "step": 4, "note": "comparison only"}
-      - {"req_id": "SIP-ba004fd6", "keyword": "MUST", "axis": "x4", "step": 4, "note": "comparison only"}
-      - {"req_id": "SIP-3d49cb0e", "keyword": "MUST", "axis": "x4", "step": 4, "note": "comparison only"}
+      - {"req_id": "SIP-d58f53ab", "keyword": "MUST", "axis": "x4", "step": 4, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-fc4d96a2", "keyword": "SHOULD", "axis": "x4", "step": 4, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-ba004fd6", "keyword": "MUST", "axis": "x4", "step": 4, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-3d49cb0e", "keyword": "MUST", "axis": "x4", "step": 4, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
     steps:
       - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:inv};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
       - {"op": "send", "from": "alice", "window_ms": 800, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:inv};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x3": "codes:alice"}}
@@ -1003,9 +1003,9 @@ fixtures:
     roles: ["uas"]
     spec_refs:
       - {"req_id": "SIP-b6aaaa74", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [2, 3, 4, 5, 6]}
-      - {"req_id": "SIP-fec3e1f8", "keyword": "SHOULD", "axis": "x2", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-ff0abd55", "keyword": "SHOULD", "axis": "x2", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-2c770245", "keyword": "MUST", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-fec3e1f8", "keyword": "SHOULD", "axis": "x2", "step": 2, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-ff0abd55", "keyword": "SHOULD", "axis": "x2", "step": 2, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-2c770245", "keyword": "MUST", "axis": "x2", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
     steps:
       - {"op": "send", "from": "alice", "window_ms": 4000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "ncodes:alice=200"}}
       - {"op": "ack", "from": "alice", "window_ms": 800, "extract": {"x2": "codes:alice"}}
@@ -1015,15 +1015,15 @@ fixtures:
     roles: ["uas"]
     spec_refs:
       - {"req_id": "SIP-e713c84b", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [[200]]}
-      - {"req_id": "SIP-c2d35f1f", "keyword": "MUST", "axis": "x2", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-6708907f", "keyword": "MUST", "axis": "x2", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-11835b44", "keyword": "MUST", "axis": "x2", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-6bee34e6", "keyword": "MUST", "axis": "x2", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-1e8ac344", "keyword": "MUST", "axis": "x2", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-1b76dadc", "keyword": "MUST", "axis": "x2", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-6f72c1a6", "keyword": "MUST", "axis": "x2", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-3aeed68b", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-53af39bb", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-c2d35f1f", "keyword": "MUST", "axis": "x2", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-6708907f", "keyword": "MUST", "axis": "x2", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-11835b44", "keyword": "MUST", "axis": "x2", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-6bee34e6", "keyword": "MUST", "axis": "x2", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-1e8ac344", "keyword": "MUST", "axis": "x2", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-1b76dadc", "keyword": "MUST", "axis": "x2", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-6f72c1a6", "keyword": "MUST", "axis": "x2", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-3aeed68b", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-53af39bb", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
     steps:
       - {"op": "send", "from": "alice", "window_ms": 600, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:o};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x2": "codes:alice"}}
       - {"op": "send", "from": "alice", "window_ms": 600, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:o};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
@@ -1035,9 +1035,9 @@ fixtures:
       - {"req_id": "SIP-39b0bc14", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [[200]]}
       - {"req_id": "SIP-7c06bf89", "keyword": "MUST", "axis": "x2", "step": 2, "allowed": [[200]]}
       - {"req_id": "SIP-1dff6ca1", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [[200]]}
-      - {"req_id": "SIP-613a9068", "keyword": "SHOULD", "axis": "x3", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-cc8526bc", "keyword": "SHOULD", "axis": "x3", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-ff8f8032", "keyword": "SHOULD", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-613a9068", "keyword": "SHOULD", "axis": "x3", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-cc8526bc", "keyword": "SHOULD", "axis": "x3", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-ff8f8032", "keyword": "SHOULD", "axis": "x2", "step": 2, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
     steps:
       - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:dave};branch={branch}\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:dave"}}
       - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:dave};branch={branch};received={lab}\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 2 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x2": "codes:dave"}}
@@ -1055,19 +1055,19 @@ fixtures:
       - {"req_id": "SIP-27d9d9d8", "keyword": "MUST", "axis": "x5", "step": 3, "allowed": [true]}
       - {"req_id": "SIP-3d9c67f1", "keyword": "MUST", "axis": "x6", "step": 3, "allowed": [true]}
       - {"req_id": "SIP-4788825d", "keyword": "MUST", "axis": "x7", "step": 3, "allowed": [true]}
-      - {"req_id": "SIP-6a96b00b", "keyword": "MUST", "axis": "x6", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-e06c648b", "keyword": "MUST", "axis": "x7", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-90c4c344", "keyword": "MUST", "axis": "x7", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-b9bb6d33", "keyword": "MUST", "axis": "x5", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-ae7a19b7", "keyword": "MUST", "axis": "x5", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-7bb8841f", "keyword": "MUST", "axis": "x8", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-cfdaa7b7", "keyword": "MUST", "axis": "x8", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-4733ad85", "keyword": "MUST", "axis": "x8", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-69188367", "keyword": "MUST", "axis": "x2", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-6a96b00b", "keyword": "MUST", "axis": "x6", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-e06c648b", "keyword": "MUST", "axis": "x7", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-90c4c344", "keyword": "MUST", "axis": "x7", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-b9bb6d33", "keyword": "MUST", "axis": "x5", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-ae7a19b7", "keyword": "MUST", "axis": "x5", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-7bb8841f", "keyword": "MUST", "axis": "x8", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-cfdaa7b7", "keyword": "MUST", "axis": "x8", "step": 3, "basis": "option", "note": "several outcomes conform"}
+      - {"req_id": "SIP-4733ad85", "keyword": "MUST", "axis": "x8", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-69188367", "keyword": "MUST", "axis": "x2", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
       - {"req_id": "SIP-d08af2c8", "keyword": "MAY", "axis": "x5", "step": 3, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-b9c45532", "keyword": "MAY", "axis": "x5", "step": 3, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-f45f017f", "keyword": "MUST", "axis": "x5", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-e686a27e", "keyword": "SHOULD", "axis": "x5", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-f45f017f", "keyword": "MUST", "axis": "x5", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-e686a27e", "keyword": "SHOULD", "axis": "x5", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
     steps:
       - {"op": "send", "from": "alice", "window_ms": 6000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nRecord-Route: <sip:{lab}:{port:dave};lr>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
       - {"op": "ack", "from": "alice", "window_ms": 800}
@@ -1080,11 +1080,11 @@ fixtures:
     spec_refs:
       - {"req_id": "SIP-52dd8c4a", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [true]}
       - {"req_id": "SIP-867ab8ad", "keyword": "MUST", "axis": "x2", "step": 3, "allowed": [true]}
-      - {"req_id": "SIP-49a5277c", "keyword": "SHOULD", "axis": "x3", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-dad828af", "keyword": "MUST", "axis": "x3", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-cced168e", "keyword": "SHOULD", "axis": "x3", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-77d49680", "keyword": "SHOULD", "axis": "x3", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-12fb2a6f", "keyword": "MUST", "axis": "x3", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-49a5277c", "keyword": "SHOULD", "axis": "x3", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-dad828af", "keyword": "MUST", "axis": "x3", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-cced168e", "keyword": "SHOULD", "axis": "x3", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-77d49680", "keyword": "SHOULD", "axis": "x3", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-12fb2a6f", "keyword": "MUST", "axis": "x3", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
     steps:
       - {"op": "send", "from": "alice", "window_ms": 6000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nRecord-Route: <sip:{lab}:{port:dave}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
       - {"op": "ack", "from": "alice", "window_ms": 800}
@@ -1095,26 +1095,26 @@ fixtures:
     kind: probe
     roles: ["uas"]
     spec_refs:
-      - {"req_id": "SIP-64496d4d", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
-      - {"req_id": "SIP-2bc4b7e9", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
-      - {"req_id": "SIP-4e68c05c", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
-      - {"req_id": "SIP-479a9511", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
-      - {"req_id": "SIP-d1afe16c", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-64496d4d", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
+      - {"req_id": "SIP-2bc4b7e9", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
+      - {"req_id": "SIP-4e68c05c", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
+      - {"req_id": "SIP-479a9511", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
+      - {"req_id": "SIP-d1afe16c", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
       - {"req_id": "SIP-7b196f53", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only", "basis": "option"}
       - {"req_id": "SIP-3c5bb9a4", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only", "basis": "option"}
       - {"req_id": "SIP-d9066853", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only", "basis": "option"}
       - {"req_id": "SIP-35e3ffa1", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only", "basis": "option"}
-      - {"req_id": "SIP-665ff9b9", "keyword": "MUST", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
-      - {"req_id": "SIP-73029ec7", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-665ff9b9", "keyword": "MUST", "axis": "x1", "step": 1, "basis": "option", "note": "several outcomes conform"}
+      - {"req_id": "SIP-73029ec7", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-7fe54f4e", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only", "basis": "option"}
-      - {"req_id": "SIP-71fc27d4", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-71fc27d4", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
       - {"req_id": "SIP-0b4fd8c3", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only", "basis": "option"}
-      - {"req_id": "SIP-d38133c9", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-d38133c9", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-d0bdb471", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only", "basis": "option"}
-      - {"req_id": "SIP-11471e8c", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-11471e8c", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-b598828c", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only", "basis": "option"}
       - {"req_id": "SIP-7b3532bc", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only", "basis": "option"}
-      - {"req_id": "SIP-24a5bd39", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only"}
+      - {"req_id": "SIP-24a5bd39", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
       - {"req_id": "SIP-a7f99733", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only", "basis": "option"}
       - {"req_id": "SIP-3bbc630a", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only", "basis": "option"}
       - {"req_id": "SIP-4c009e7f", "keyword": "MAY", "axis": "x1", "step": 1, "note": "response codes the element chose; comparison only", "basis": "option"}
@@ -1153,34 +1153,34 @@ fixtures:
       - {"req_id": "SIP-40675006", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [false]}
       - {"req_id": "SIP-5631cbda", "keyword": "MUST", "axis": "x3", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-635450d5", "keyword": "MUST", "axis": "x4", "step": 1, "allowed": [true]}
-      - {"req_id": "SIP-460f0e5d", "keyword": "SHOULD", "axis": "x4", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-460f0e5d", "keyword": "SHOULD", "axis": "x4", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-4df136dc", "keyword": "MAY", "axis": "x4", "step": 1, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-51492add", "keyword": "MUST", "axis": "x5", "step": 1, "allowed": ["70"]}
       - {"req_id": "SIP-a883a6c0", "keyword": "MUST", "axis": "x6", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-334d38bf", "keyword": "MUST", "axis": "x6", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-2e9935a6", "keyword": "MUST", "axis": "x7", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-e78e2fd1", "keyword": "SHOULD", "axis": "x8", "step": 1, "allowed": [true]}
-      - {"req_id": "SIP-a1c18e5e", "keyword": "SHOULD", "axis": "x8", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-f7241491", "keyword": "SHOULD", "axis": "x8", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-a1c18e5e", "keyword": "SHOULD", "axis": "x8", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
+      - {"req_id": "SIP-f7241491", "keyword": "SHOULD", "axis": "x8", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-08b625e2", "keyword": "MAY", "axis": "x8", "step": 1, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-db24656a", "keyword": "MAY", "axis": "x8", "step": 1, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-3e2961a8", "keyword": "MAY", "axis": "x8", "step": 1, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-b58dd5c8", "keyword": "MAY", "axis": "x8", "step": 1, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-21f2f0cb", "keyword": "SHOULD", "axis": "x8", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-95b08b8e", "keyword": "MUST", "axis": "x8", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-0dc39f3c", "keyword": "MUST", "axis": "x8", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-28fc54cc", "keyword": "MUST", "axis": "x8", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-cee1392d", "keyword": "MUST", "axis": "x8", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-21f2f0cb", "keyword": "SHOULD", "axis": "x8", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
+      - {"req_id": "SIP-95b08b8e", "keyword": "MUST", "axis": "x8", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
+      - {"req_id": "SIP-0dc39f3c", "keyword": "MUST", "axis": "x8", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
+      - {"req_id": "SIP-28fc54cc", "keyword": "MUST", "axis": "x8", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-cee1392d", "keyword": "MUST", "axis": "x8", "step": 1, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
       - {"req_id": "SIP-14a28a45", "keyword": "MAY", "axis": "x8", "step": 1, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-7b1f4388", "keyword": "MUST", "axis": "x8", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-0199396b", "keyword": "SHOULD", "axis": "x8", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-df2991bf", "keyword": "MUST", "axis": "x8", "step": 1, "note": "request size under 1300 bytes; comparison only"}
-      - {"req_id": "SIP-bc14f8b4", "keyword": "MUST", "axis": "x8", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-1428db2e", "keyword": "SHOULD", "axis": "x8", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-b18f0342", "keyword": "SHOULD", "axis": "x8", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-430e9692", "keyword": "SHOULD", "axis": "x8", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-9172209d", "keyword": "SHOULD", "axis": "x8", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-23e226ce", "keyword": "MUST", "axis": "x8", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-7b1f4388", "keyword": "MUST", "axis": "x8", "step": 1, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-0199396b", "keyword": "SHOULD", "axis": "x8", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
+      - {"req_id": "SIP-df2991bf", "keyword": "MUST", "axis": "x8", "step": 1, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-bc14f8b4", "keyword": "MUST", "axis": "x8", "step": 1, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-1428db2e", "keyword": "SHOULD", "axis": "x8", "step": 1, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-b18f0342", "keyword": "SHOULD", "axis": "x8", "step": 1, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-430e9692", "keyword": "SHOULD", "axis": "x8", "step": 1, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-9172209d", "keyword": "SHOULD", "axis": "x8", "step": 1, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-23e226ce", "keyword": "MUST", "axis": "x8", "step": 1, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
     steps:
       - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 800, "extract": {"x1": "re:bob/0/ruri=sip:bob@{lab}:{port:bob}.*", "x2": "re:bob/0/hdr/to/0=.*;tag=.*", "x3": "re:bob/0/hdr/from/0=.*;tag=.+", "x4": "re:bob/0/hdr/call-id/0=.+", "x5": "bob/0/hdr/max-forwards/0", "x6": "re:bob/0/hdr/via/0=SIP/2.0/(UDP|TCP) [^;]+;.*branch=z9hG4bK.*", "x7": "re:bob/0/hdr/contact/0=.*<?sips?:.*", "x8": "has:bob/0/hdr/allow"}}
       - {"op": "reply", "from": "bob", "code": 486, "reason": "Busy Here", "window_ms": 1200}
@@ -1198,21 +1198,21 @@ fixtures:
       - {"req_id": "SIP-39a23923", "keyword": "MUST", "axis": "x7", "step": 3, "allowed": [true]}
       - {"req_id": "SIP-1563c13a", "keyword": "MUST", "axis": "x8", "step": 3, "allowed": [true]}
       - {"req_id": "SIP-f3f8905e", "keyword": "MUST", "axis": "x5", "step": 3, "allowed": [true]}
-      - {"req_id": "SIP-1b80911a", "keyword": "MUST", "axis": "x6", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-9f40d274", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-384874f1", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-664c47dc", "keyword": "MUST", "axis": "x3", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-879263af", "keyword": "MUST", "axis": "x2", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-6acbc2ef", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-1b80911a", "keyword": "MUST", "axis": "x6", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-9f40d274", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-384874f1", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-664c47dc", "keyword": "MUST", "axis": "x3", "step": 2, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-879263af", "keyword": "MUST", "axis": "x2", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-6acbc2ef", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-48de97dc", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-2dc25a84", "keyword": "MUST", "axis": "x5", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-2dc25a84", "keyword": "MUST", "axis": "x5", "step": 3, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
       - {"req_id": "SIP-9e1634f5", "keyword": "MAY", "axis": "x5", "step": 3, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-e4a63cf5", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-231af36d", "keyword": "MUST", "axis": "x2", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-c3d1bc7f", "keyword": "MUST", "axis": "x2", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-09b18229", "keyword": "SHOULD", "axis": "x2", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-3890468d", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-a12d8a5e", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-e4a63cf5", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-231af36d", "keyword": "MUST", "axis": "x2", "step": 2, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
+      - {"req_id": "SIP-c3d1bc7f", "keyword": "MUST", "axis": "x2", "step": 2, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-09b18229", "keyword": "SHOULD", "axis": "x2", "step": 2, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-3890468d", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-a12d8a5e", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
     steps:
       - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 600}
       - {"op": "reply", "from": "bob", "code": 200, "reason": "OK", "window_ms": 1500, "headers": {"Content-Type": "application/sdp", "Record-Route": ["<sip:{lab}:{port:carol};lr>", "<sip:{lab}:{port:dave};lr>"]}, "body": "v=0\no=bob 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40002 RTP/AVP 0\n", "extract": {"x1": "methods:dave", "x2": "re:dave/0/hdr/cseq/0=1 ACK", "x3": "re:dave/0/hdr/route/1=<sip:{lab}:{port:carol};lr>", "x4": "re:dave/0/ruri=sip:bob@{lab}:{port:bob}.*"}}
@@ -1251,7 +1251,7 @@ fixtures:
       - {"req_id": "SIP-b43143f4", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [3, 4]}
       - {"req_id": "SIP-f692bec7", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [3, 4]}
       - {"req_id": "SIP-8576917e", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [3, 4]}
-      - {"req_id": "SIP-44eab6ac", "keyword": "MUST", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-44eab6ac", "keyword": "MUST", "axis": "x1", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-69e583be", "keyword": "SHOULD", "axis": "x2", "step": 2, "allowed": [0]}
       - {"req_id": "SIP-91c71044", "keyword": "SHOULD", "axis": "x2", "step": 2, "allowed": [0]}
       - {"req_id": "SIP-f552f9e0", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [["ACK"]]}
@@ -1261,15 +1261,15 @@ fixtures:
       - {"req_id": "SIP-3ca225cd", "keyword": "MUST", "axis": "x5", "step": 3, "allowed": [true]}
       - {"req_id": "SIP-18726c0d", "keyword": "MUST", "axis": "x6", "step": 3, "allowed": [true]}
       - {"req_id": "SIP-d7ef8563", "keyword": "MUST", "axis": "x7", "step": 3, "allowed": [true]}
-      - {"req_id": "SIP-ddf9746a", "keyword": "MUST", "axis": "x3", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-ed8fc6c8", "keyword": "MUST", "axis": "x8", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-6eca6de4", "keyword": "SHOULD", "axis": "x8", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-ddf9746a", "keyword": "MUST", "axis": "x3", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-ed8fc6c8", "keyword": "MUST", "axis": "x8", "step": 3, "basis": "option", "note": "several outcomes conform"}
+      - {"req_id": "SIP-6eca6de4", "keyword": "SHOULD", "axis": "x8", "step": 3, "allowed": [0], "note": "no body in an ACK for a non-2xx"}
       - {"req_id": "SIP-88c9dc89", "keyword": "MAY", "axis": "x8", "step": 3, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-788a04af", "keyword": "MUST", "axis": "x3", "step": 4, "allowed": [["ACK"]]}
-      - {"req_id": "SIP-4445115a", "keyword": "SHOULD", "axis": "x3", "step": 4, "note": "comparison only"}
-      - {"req_id": "SIP-a70bf7d0", "keyword": "MUST", "axis": "x3", "step": 4, "note": "comparison only"}
-      - {"req_id": "SIP-a4f12b01", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-f48f9ece", "keyword": "MUST", "axis": "x8", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-4445115a", "keyword": "SHOULD", "axis": "x3", "step": 4, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-a70bf7d0", "keyword": "MUST", "axis": "x3", "step": 4, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-a4f12b01", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-f48f9ece", "keyword": "MUST", "axis": "x8", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
     steps:
       - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 3700, "extract": {"x1": "len:bob"}}
       - {"op": "reply", "from": "bob", "code": 180, "reason": "Ringing", "window_ms": 3000, "extract": {"x2": "len:bob"}}
@@ -1286,12 +1286,12 @@ fixtures:
       - {"req_id": "SIP-33c83428", "keyword": "MUST", "axis": "x4", "step": 3, "allowed": [true]}
       - {"req_id": "SIP-2fa43c15", "keyword": "MUST", "axis": "x5", "step": 3, "allowed": [false]}
       - {"req_id": "SIP-eb122562", "keyword": "MUST", "axis": "x6", "step": 3, "allowed": [true]}
-      - {"req_id": "SIP-5a40b50f", "keyword": "MUST", "axis": "x6", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-b8957039", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-cca027f3", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-5badd1ff", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-a9089877", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-d10188d7", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-5a40b50f", "keyword": "MUST", "axis": "x6", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-b8957039", "keyword": "SHOULD", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-cca027f3", "keyword": "SHOULD", "axis": "x1", "step": 2, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-5badd1ff", "keyword": "SHOULD", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-a9089877", "keyword": "SHOULD", "axis": "x1", "step": 2, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-d10188d7", "keyword": "SHOULD", "axis": "x1", "step": 2, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
     steps:
       - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 600}
       - {"op": "uac", "action": "hangup", "window_ms": 1200, "extract": {"x1": "methods:bob"}}
@@ -1307,20 +1307,20 @@ fixtures:
       - {"req_id": "SIP-f474d78d", "keyword": "MUST", "axis": "x2", "step": 2, "allowed": [true, "null"]}
       - {"req_id": "SIP-ec9a94a6", "keyword": "MUST", "axis": "x3", "step": 2, "allowed": [false, "null"]}
       - {"req_id": "SIP-fe18d4e4", "keyword": "SHOULD", "axis": "x4", "step": 2, "allowed": [true, "null"]}
-      - {"req_id": "SIP-b31d2b66", "keyword": "SHOULD", "axis": "x4", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-267e9f2d", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-b31d2b66", "keyword": "SHOULD", "axis": "x4", "step": 2, "allowed": [true], "note": "the redirected request re-uses the Call-ID"}
+      - {"req_id": "SIP-267e9f2d", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-2e206e9c", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-ee2052a0", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-27f014ad", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-3e2d4702", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-27f014ad", "keyword": "SHOULD", "axis": "x1", "step": 2, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
+      - {"req_id": "SIP-3e2d4702", "keyword": "SHOULD", "axis": "x1", "step": 2, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
       - {"req_id": "SIP-88821387", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-f709b8e3", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-a3893424", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-de5ff7f3", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-0e6bf01f", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-89835d82", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-0e6bf01f", "keyword": "SHOULD", "axis": "x1", "step": 2, "includes": ["INVITE"], "note": "the request is retried at the Contact of the 3xx"}
+      - {"req_id": "SIP-89835d82", "keyword": "SHOULD", "axis": "x1", "step": 2, "includes": ["INVITE"], "note": "the request is retried at the Contact of the 3xx"}
       - {"req_id": "SIP-1e8266ec", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-73316c25", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-73316c25", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-54078cee", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-f8fced28", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only", "basis": "option"}
     steps:
@@ -1332,7 +1332,7 @@ fixtures:
     kind: probe
     roles: ["uac"]
     spec_refs:
-      - {"req_id": "SIP-807632db", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-807632db", "keyword": "MUST", "axis": "x1", "step": 2, "includes": ["INVITE"], "note": "the request goes through the proxy named in the 305"}
     steps:
       - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 600}
       - {"op": "reply", "from": "bob", "code": 305, "reason": "Use Proxy", "window_ms": 2000, "headers": {"Contact": "<sip:{lab}:{port:dave}>"}, "extract": {"x1": "methods:dave"}}
@@ -1342,8 +1342,8 @@ fixtures:
     roles: ["uac"]
     spec_refs:
       - {"req_id": "SIP-bcdd6700", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [["ACK"]]}
-      - {"req_id": "SIP-64e2b17d", "keyword": "MUST", "axis": "x2", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-809f0664", "keyword": "MUST", "axis": "x1", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-64e2b17d", "keyword": "MUST", "axis": "x2", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-809f0664", "keyword": "MUST", "axis": "x1", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
     steps:
       - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 600}
       - {"op": "reply", "from": "bob", "code": 189, "reason": "Pd Progress", "window_ms": 600, "extract": {"x2": "methods:bob"}}
@@ -1353,16 +1353,16 @@ fixtures:
     kind: probe
     roles: ["uac"]
     spec_refs:
-      - {"req_id": "SIP-a38d992a", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "413: retry smaller; comparison only"}
-      - {"req_id": "SIP-b1f9272f", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "415: retry with Accept types; comparison only"}
-      - {"req_id": "SIP-7aa12096", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "420: retry without the extension; comparison only"}
-      - {"req_id": "SIP-ba54a25b", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "same Call-ID on retry; comparison only"}
-      - {"req_id": "SIP-b049a89c", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "4xx not retried unmodified; comparison only"}
-      - {"req_id": "SIP-64aed3e7", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "403 not repeated; comparison only"}
+      - {"req_id": "SIP-a38d992a", "keyword": "SHOULD", "axis": "x1", "step": 2, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-b1f9272f", "keyword": "SHOULD", "axis": "x1", "step": 2, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
+      - {"req_id": "SIP-7aa12096", "keyword": "SHOULD", "axis": "x1", "step": 2, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-ba54a25b", "keyword": "SHOULD", "axis": "x1", "step": 2, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
+      - {"req_id": "SIP-b049a89c", "keyword": "SHOULD", "axis": "x1", "step": 2, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-64aed3e7", "keyword": "SHOULD", "axis": "x1", "step": 2, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
       - {"req_id": "SIP-18e3d999", "keyword": "MAY", "axis": "x1", "step": 2, "note": "408: may repeat; comparison only", "basis": "option"}
-      - {"req_id": "SIP-ab025d67", "keyword": "MUST", "axis": "x1", "step": 2, "note": "503 without Retry-After acts as 500; comparison only"}
-      - {"req_id": "SIP-87752e3a", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "503: alternate server; comparison only"}
-      - {"req_id": "SIP-39630b41", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "503 Retry-After honoured; comparison only"}
+      - {"req_id": "SIP-ab025d67", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-87752e3a", "keyword": "SHOULD", "axis": "x1", "step": 2, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-39630b41", "keyword": "SHOULD", "axis": "x1", "step": 2, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
     steps:
       - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 600}
       - {"op": "reply", "from": "bob", "code": 415, "reason": "Unsupported Media Type", "window_ms": 2500, "headers": {"Accept": "application/sdp"}, "extract": {"x1": "methods:bob"}}
@@ -1372,9 +1372,9 @@ fixtures:
     kind: probe
     roles: ["uac"]
     spec_refs:
-      - {"req_id": "SIP-db7b84ce", "keyword": "MUST", "axis": "x1", "step": 1, "note": "timer B (32 s) to 408; comparison only"}
-      - {"req_id": "SIP-7986a878", "keyword": "MUST", "axis": "x1", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-3a05d515", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-db7b84ce", "keyword": "MUST", "axis": "x1", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-7986a878", "keyword": "MUST", "axis": "x1", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-3a05d515", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
     steps:
       - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 34000, "extract": {"x1": "len:bob"}}
 
@@ -1384,14 +1384,14 @@ fixtures:
     spec_refs:
       - {"req_id": "SIP-bbb8229a", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [2, 3]}
       - {"req_id": "SIP-2283739a", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [2, 3]}
-      - {"req_id": "SIP-9b909912", "keyword": "MUST", "axis": "x2", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-cd68663b", "keyword": "MUST", "axis": "x2", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-80f4fc88", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-9b909912", "keyword": "MUST", "axis": "x2", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-cd68663b", "keyword": "MUST", "axis": "x2", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-80f4fc88", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-9002bfd5", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [[]]}
       - {"req_id": "SIP-d97fe81a", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [[]]}
-      - {"req_id": "SIP-c9cc9fe3", "keyword": "MUST", "axis": "x3", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-7c2109ae", "keyword": "MUST", "axis": "x3", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-c0790545", "keyword": "MUST", "axis": "x3", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-c9cc9fe3", "keyword": "MUST", "axis": "x3", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-7c2109ae", "keyword": "MUST", "axis": "x3", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-c0790545", "keyword": "MUST", "axis": "x3", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
     steps:
       - {"op": "uac", "action": "message", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 1200, "extract": {"x1": "len:bob"}}
       - {"op": "reply", "from": "bob", "code": 100, "reason": "Trying", "window_ms": 1200, "extract": {"x2": "len:bob"}}
@@ -1402,13 +1402,13 @@ fixtures:
     roles: ["uac"]
     spec_refs:
       - {"req_id": "SIP-5338e92a", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [["ACK"]]}
-      - {"req_id": "SIP-524d7ee6", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-69f902f1", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-b5274fc3", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-d0ceb974", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-ab6abbf2", "keyword": "MUST", "axis": "x2", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-9aa3bbff", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-7133d596", "keyword": "MUST", "axis": "x2", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-524d7ee6", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-69f902f1", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-b5274fc3", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-d0ceb974", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-ab6abbf2", "keyword": "MUST", "axis": "x2", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-9aa3bbff", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-7133d596", "keyword": "MUST", "axis": "x2", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
     steps:
       - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 600}
       - {"op": "reply", "from": "bob", "code": 486, "reason": "Busy Here", "window_ms": 1000, "extract": {"x1": "methods:bob"}}
@@ -1421,15 +1421,15 @@ fixtures:
       - {"req_id": "SIP-17c61a69", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-3dc3cf6f", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-7559bf7a", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
-      - {"req_id": "SIP-4b1e97fd", "keyword": "MUST", "axis": "x2", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-03aa35ad", "keyword": "SHOULD", "axis": "x3", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-4b1e97fd", "keyword": "MUST", "axis": "x2", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-03aa35ad", "keyword": "SHOULD", "axis": "x3", "step": 1, "basis": "option", "note": "several outcomes conform"}
       - {"req_id": "SIP-dabf27c0", "keyword": "SHOULD", "axis": "x4", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-107e7a40", "keyword": "SHOULD", "axis": "x5", "step": 1, "allowed": [false]}
-      - {"req_id": "SIP-5b2ab3b1", "keyword": "SHOULD", "axis": "x3", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-b5142274", "keyword": "SHOULD", "axis": "x3", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-e616582b", "keyword": "MUST", "axis": "x3", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-6a4b16ed", "keyword": "SHOULD", "axis": "x3", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-4bfcb6b0", "keyword": "MUST", "axis": "x3", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-5b2ab3b1", "keyword": "SHOULD", "axis": "x3", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
+      - {"req_id": "SIP-b5142274", "keyword": "SHOULD", "axis": "x3", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-e616582b", "keyword": "MUST", "axis": "x3", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
+      - {"req_id": "SIP-6a4b16ed", "keyword": "SHOULD", "axis": "x3", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
+      - {"req_id": "SIP-4bfcb6b0", "keyword": "MUST", "axis": "x3", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
     steps:
       - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob};user=ip;pdparam=7;method=INVITE?Subject=pd&Call-ID=pd-evil&Route=%3Csip:192.0.2.9%3E", "window_ms": 800, "extract": {"x1": "re:bob/0/ruri=.*pdparam=7.*", "x2": "nre:bob/0/ruri=.*method=.*", "x3": "bob/0/hdr/subject", "x4": "ne:bob/0/hdr/call-id/0=pd-evil", "x5": "in:bob/0/hdr/route=<sip:192.0.2.9>"}}
       - {"op": "reply", "from": "bob", "code": 486, "reason": "Busy Here", "window_ms": 1200}
@@ -1440,13 +1440,13 @@ fixtures:
     spec_refs:
       - {"req_id": "SIP-3b6034e6", "keyword": "MAY", "axis": "x1", "step": 2, "note": "OPTIONS in a dialog; comparison only", "basis": "option"}
       - {"req_id": "SIP-73c3bca6", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-288ed374", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-288ed374", "keyword": "SHOULD", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-e6ee895b", "keyword": "MAY", "axis": "x1", "step": 2, "note": "re-INVITE without offer; comparison only", "basis": "option"}
       - {"req_id": "SIP-0ff5da14", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-fb1c9cc7", "keyword": "MUST", "axis": "x1", "step": 2, "note": "no overlapping INVITE transactions; comparison only"}
-      - {"req_id": "SIP-80a591b7", "keyword": "MUST", "axis": "x1", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-4874c3f5", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "491 back-off; comparison only"}
-      - {"req_id": "SIP-fcc9972a", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-fb1c9cc7", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-80a591b7", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-4874c3f5", "keyword": "SHOULD", "axis": "x1", "step": 2, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-fcc9972a", "keyword": "SHOULD", "axis": "x1", "step": 2, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
     steps:
       - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 600}
       - {"op": "reply", "from": "bob", "code": 200, "reason": "OK", "window_ms": 1500, "headers": {"Content-Type": "application/sdp"}, "body": "v=0\no=bob 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40002 RTP/AVP 0\n", "extract": {"x1": "methods:bob"}}
@@ -1463,21 +1463,21 @@ fixtures:
       - {"req_id": "SIP-5f58f621", "keyword": "MUST", "axis": "x4", "step": 3, "allowed": [false]}
       - {"req_id": "SIP-97f21ed0", "keyword": "SHOULD", "axis": "x5", "step": 3, "allowed": [true, "null"]}
       - {"req_id": "SIP-5ea43c66", "keyword": "SHOULD", "axis": "x5", "step": 3, "allowed": [true, "null"]}
-      - {"req_id": "SIP-152a22ee", "keyword": "SHOULD", "axis": "x5", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-6171afdb", "keyword": "SHOULD", "axis": "x6", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-a8294346", "keyword": "MUST", "axis": "x6", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-152a22ee", "keyword": "SHOULD", "axis": "x5", "step": 3, "allowed": [true], "note": "the same Call-ID in each registration"}
+      - {"req_id": "SIP-6171afdb", "keyword": "SHOULD", "axis": "x6", "step": 3, "includes": ["REGISTER"], "note": "the refresh goes to the same registrar"}
+      - {"req_id": "SIP-a8294346", "keyword": "MUST", "axis": "x6", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-fc4b7ef4", "keyword": "SHOULD", "axis": "x7", "step": 2, "allowed": [false]}
       - {"req_id": "SIP-99d9c078", "keyword": "MAY", "axis": "x7", "step": 2, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-3646979b", "keyword": "MAY", "axis": "x7", "step": 2, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-619c67d3", "keyword": "MAY", "axis": "x7", "step": 2, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-7f24b7a6", "keyword": "MAY", "axis": "x6", "step": 3, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-e6769d50", "keyword": "MAY", "axis": "x7", "step": 2, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-fc8d8528", "keyword": "SHOULD", "axis": "x6", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-04bc3bcd", "keyword": "MUST", "axis": "x6", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-02857d17", "keyword": "SHOULD", "axis": "x6", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-fc8d8528", "keyword": "SHOULD", "axis": "x6", "step": 3, "basis": "option", "note": "several outcomes conform"}
+      - {"req_id": "SIP-04bc3bcd", "keyword": "MUST", "axis": "x6", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-02857d17", "keyword": "SHOULD", "axis": "x6", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
       - {"req_id": "SIP-752c63f8", "keyword": "MAY", "axis": "x6", "step": 3, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-a03f809d", "keyword": "SHOULD", "axis": "x6", "step": 3, "note": "comparison only"}
-      - {"req_id": "SIP-026ef8fa", "keyword": "SHOULD", "axis": "x6", "step": 3, "note": "comparison only"}
+      - {"req_id": "SIP-a03f809d", "keyword": "SHOULD", "axis": "x6", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-026ef8fa", "keyword": "SHOULD", "axis": "x6", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
       - {"req_id": "SIP-093ffcaf", "keyword": "MAY", "axis": "x6", "step": 3, "note": "comparison only", "basis": "option"}
     steps:
       - {"op": "uac", "action": "register", "window_ms": 3000}
@@ -1503,10 +1503,10 @@ fixtures:
     spec_refs:
       - {"req_id": "SIP-51757879", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-4e71a90d", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
-      - {"req_id": "SIP-99635e62", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-be1eb690", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-28094a31", "keyword": "SHOULD", "axis": "x2", "step": 2, "note": "comparison only"}
-      - {"req_id": "SIP-f81fd16f", "keyword": "SHOULD", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "SIP-99635e62", "keyword": "SHOULD", "axis": "x1", "step": 1, "allowed": [true], "note": "a request over TCP to the default port is answered"}
+      - {"req_id": "SIP-be1eb690", "keyword": "SHOULD", "axis": "x1", "step": 1, "allowed": [true], "note": "a request over TCP to the default port is answered"}
+      - {"req_id": "SIP-28094a31", "keyword": "SHOULD", "axis": "x2", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-f81fd16f", "keyword": "SHOULD", "axis": "x2", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
     steps:
       - {"op": "send", "from": "alice", "transport": "tcp", "window_ms": 1200, "msg": "OPTIONS sip:{domain} SIP/2.0\nVia: SIP/2.0/TCP {lab}:{port:alice};branch={branch}\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContent-Length: {clen}\n\n", "extract": {"x1": "has:alice/0/code"}}
       - {"op": "send", "from": "alice", "transport": "tcp", "window_ms": 1200, "msg": "OPTIONS sip:{domain} SIP/2.0\nVia: SIP/2.0/TCP {lab}:{port:alice};branch={branch}\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:{domain}>\nCall-ID: {callid}\nCSeq: 2 OPTIONS\nContent-Length: {clen}\n\n", "extract": {"x2": "codes:alice"}}
@@ -1515,10 +1515,10 @@ fixtures:
     kind: probe
     roles: ["proxy", "uas"]
     spec_refs:
-      - {"req_id": "SIP-c9abcb71", "keyword": "MUST", "axis": "x1", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-97eefadb", "keyword": "MUST", "axis": "x1", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-5f32167b", "keyword": "MUST", "axis": "x1", "step": 1, "note": "comparison only"}
-      - {"req_id": "SIP-b175e6eb", "keyword": "MUST", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "SIP-c9abcb71", "keyword": "MUST", "axis": "x1", "step": 1, "basis": "option", "note": "several outcomes conform"}
+      - {"req_id": "SIP-97eefadb", "keyword": "MUST", "axis": "x1", "step": 1, "basis": "option", "note": "several outcomes conform"}
+      - {"req_id": "SIP-5f32167b", "keyword": "MUST", "axis": "x1", "step": 1, "basis": "option", "note": "several outcomes conform"}
+      - {"req_id": "SIP-b175e6eb", "keyword": "MUST", "axis": "x1", "step": 1, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
     steps:
       - {"op": "send", "from": "alice", "transport": "tcp", "window_ms": 1500, "msg": "OPTIONS sip:{domain} SIP/2.0\nVia: SIP/2.0/TCP {lab}:{port:alice};branch={branch}\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\n\n", "extract": {"x1": "codes:alice"}}
 

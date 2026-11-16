@@ -40,8 +40,8 @@ fixtures:
   mailbox_create_get_destroy:
     kind: stateful
     spec_refs:
-      - {req_id: JMAP-8b9e51f5, keyword: MUST, axis: method_names, step: 1}
-      - {req_id: JMAP-03421c3b, keyword: MUST, axis: method_names, step: 1}
+      - {req_id: JMAP-8b9e51f5, keyword: MUST, axis: method_names, step: 1, "order": ["Mailbox/set", "Mailbox/get"], "note": "processed in order"}
+      - {req_id: JMAP-03421c3b, keyword: MUST, axis: method_names, step: 1, "order": ["Mailbox/set", "Mailbox/get"], "note": "responses in the order processed"}
     steps:
       - {op: call, calls: [["Mailbox/set", {accountId: "{acct}", create: {m1: {name: "{U}a"}}}, c0],
                            ["Mailbox/get", {accountId: "{acct}", "#ids": {resultOf: c0, name: Mailbox/set, path: /created/m1/id}, properties: [name]}, c1]]}
@@ -76,7 +76,7 @@ fixtures:
   request_duplicate_json_member:
     kind: probe
     spec_refs:
-      - {req_id: JMAP-8db81e48, keyword: MUST, axis: decision_class, step: 1, note: "I-JSON forbids duplicate member names"}
+      - {req_id: JMAP-8db81e48, keyword: MUST, axis: decision_class, step: 1, "excludes": ["proceed"], "note": "a request that is not I-JSON is refused (RFC 8620 3.6.1 notJSON)"}
     steps:
       - {op: raw, body: "{\"using\": [\"urn:ietf:params:jmap:core\"], \"using\": [\"urn:ietf:params:jmap:core\"], \"methodCalls\": [[\"Core/echo\", {}, \"c0\"]]}", content_type: application/json}
 
@@ -140,35 +140,35 @@ fixtures:
   set_destroy_not_found:
     kind: probe
     spec_refs:
-      - {req_id: JMAP-8657ff73, keyword: MUST, axis: set_outcome, step: 1}
+      - {req_id: JMAP-8657ff73, keyword: MUST, axis: set_outcome, step: 1, "allowed": [[[["created", []], ["destroyed", 0], ["notCreated", []], ["notDestroyed", ["notFound"]], ["notUpdated", []], ["updated", 0]]]], "note": "rejected with a notFound SetError"}
     steps:
       - {op: call, calls: [["Mailbox/set", {accountId: "{acct}", destroy: [pdNoSuchId]}, c0]]}
 
   set_update_not_found:
     kind: probe
     spec_refs:
-      - {req_id: JMAP-8657ff73, keyword: MUST, axis: set_outcome, step: 1}
+      - {req_id: JMAP-8657ff73, keyword: MUST, axis: set_outcome, step: 1, "allowed": [[[["created", []], ["destroyed", 0], ["notCreated", []], ["notDestroyed", []], ["notUpdated", ["notFound"]], ["updated", 0]]]], "note": "rejected with a notFound SetError"}
     steps:
       - {op: call, calls: [["Mailbox/set", {accountId: "{acct}", update: {pdNoSuchId: {name: x}}}, c0]]}
 
   mailbox_sibling_same_name:
     kind: probe
     spec_refs:
-      - {req_id: JMAP-0ee2aaa8, keyword: MUST, axis: set_outcome, step: 1, note: "the second sibling with the same name is refused"}
+      - {req_id: JMAP-0ee2aaa8, keyword: MUST, axis: set_outcome, step: 1, "excludes": [[["created", ["m1", "m2"]], ["destroyed", 0], ["notCreated", []], ["notDestroyed", []], ["notUpdated", []], ["updated", 0]]], "note": "the second sibling with the same name is refused"}
     steps:
       - {op: call, calls: [["Mailbox/set", {accountId: "{acct}", create: {m1: {name: "{U}dup"}, m2: {name: "{U}dup"}}}, c0]]}
 
   mailbox_second_role:
     kind: probe
     spec_refs:
-      - {req_id: JMAP-dfdde9dd, keyword: MUST, axis: set_outcome, step: 1, note: "a second Mailbox with role inbox is refused"}
+      - {req_id: JMAP-dfdde9dd, keyword: MUST, axis: set_outcome, step: 1, "excludes": [[["created", ["m1"]], ["destroyed", 0], ["notCreated", []], ["notDestroyed", []], ["notUpdated", []], ["updated", 0]]], "note": "a second Mailbox with role inbox is refused"}
     steps:
       - {op: call, calls: [["Mailbox/set", {accountId: "{acct}", create: {m1: {name: "{U}inbox2", role: inbox}}}, c0]]}
 
   mailbox_sort_order_range:
     kind: probe
     spec_refs:
-      - {req_id: JMAP-20baa166, keyword: MUST, axis: set_outcome, step: 1, note: "sortOrder 2^31 is outside the range"}
+      - {req_id: JMAP-20baa166, keyword: MUST, axis: set_outcome, step: 1, "excludes": [[["created", ["m1"]], ["destroyed", 0], ["notCreated", []], ["notDestroyed", []], ["notUpdated", []], ["updated", 0]]], "note": "sortOrder 2^31 is outside the range and refused"}
     steps:
       - {op: call, calls: [["Mailbox/set", {accountId: "{acct}", create: {m1: {name: "{U}so", sortOrder: 2147483648}}}, c0]]}
 
@@ -190,7 +190,7 @@ fixtures:
   state_stable_without_change:
     kind: control
     spec_refs:
-      - {req_id: JMAP-3024085c, keyword: SHOULD, axis: state_present, step: 1}
+      - {req_id: JMAP-3024085c, keyword: SHOULD, axis: state_present, step: 1, "basis": "not-observable", "note": "the state value is not compared on this axis"}
     steps:
       - {op: call, calls: [["Mailbox/get", {accountId: "{acct}", ids: []}, c0], ["Mailbox/get", {accountId: "{acct}", ids: []}, c1]]}
 
@@ -217,8 +217,8 @@ fixtures:
       - {"req_id": "JMAP-08a9f4b2", "keyword": "MUST", "axis": "x6", "step": 1, "allowed": [true]}
       - {"req_id": "JMAP-b405886e", "keyword": "MUST", "axis": "x6", "step": 1, "allowed": [true]}
       - {"req_id": "JMAP-714ab938", "keyword": "MUST", "axis": "x7", "step": 1, "allowed": [true]}
-      - {"req_id": "JMAP-316df093", "keyword": "MAY", "axis": "x8", "step": 1, "note": "other Session properties; comparison only"}
-      - {"req_id": "JMAP-0d6267e3", "keyword": "MAY", "axis": "x8", "step": 1, "note": "vendor capabilities; comparison only"}
+      - {"req_id": "JMAP-316df093", "keyword": "MAY", "axis": "x8", "step": 1, "basis": "option"}
+      - {"req_id": "JMAP-0d6267e3", "keyword": "MAY", "axis": "x8", "step": 1, "basis": "option"}
     steps:
       - {"op": "session", "extract": {"x1": "hasall:body/capabilities/urn:ietf:params:jmap:core=[\"maxSizeUpload\", \"maxConcurrentUpload\", \"maxSizeRequest\", \"maxConcurrentRequests\", \"maxCallsInRequest\", \"maxObjectsInGet\", \"maxObjectsInSet\", \"collationAlgorithms\"]", "x2": "has:body/accounts/{acct}/accountCapabilities/urn:ietf:params:jmap:core", "x3": "re:body/downloadUrl=(?=.*\\{accountId\\})(?=.*\\{blobId\\})(?=.*\\{type\\})(?=.*\\{name\\}).*", "x4": "re:body/downloadUrl=.*\\?.*type.*", "x5": "re:body/uploadUrl=.*\\{accountId\\}.*", "x6": "re:body/eventSourceUrl=(?=.*\\{types\\})(?=.*\\{closeafter\\})(?=.*\\{ping\\}).*", "x7": "has:body/eventSourceUrl", "x8": "keys:body"}}
 
@@ -227,16 +227,16 @@ fixtures:
     spec_refs:
       - {"req_id": "JMAP-fe8a294a", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
       - {"req_id": "JMAP-0dbafb6e", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
-      - {"req_id": "JMAP-461ce6f4", "keyword": "MUST", "axis": "x2", "step": 1, "note": "capabilities the user cannot use are absent; comparison only"}
+      - {"req_id": "JMAP-461ce6f4", "keyword": "MUST", "axis": "x2", "step": 1, "basis": "conditional", "note": "binds only for capabilities the user cannot use"}
       - {"req_id": "JMAP-0a908289", "keyword": "MUST", "axis": "x3", "step": 1, "allowed": [true]}
       - {"req_id": "JMAP-2457628a", "keyword": "MUST", "axis": "x4", "step": 1, "allowed": [true]}
       - {"req_id": "JMAP-5f1d8b46", "keyword": "MUST", "axis": "x5", "step": 1, "allowed": [true]}
-      - {"req_id": "JMAP-300e892c", "keyword": "MAY", "axis": "x6", "step": 1, "note": "comparison only"}
-      - {"req_id": "JMAP-2a352e96", "keyword": "MAY", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "JMAP-300e892c", "keyword": "MAY", "axis": "x6", "step": 1, "basis": "option"}
+      - {"req_id": "JMAP-2a352e96", "keyword": "MAY", "axis": "x2", "step": 1, "basis": "option"}
       - {"req_id": "JMAP-c944e6b4", "keyword": "MUST", "axis": "x7", "step": 1, "allowed": [true, "null"]}
-      - {"req_id": "JMAP-4f8566c6", "keyword": "MAY", "axis": "x8", "step": 1, "note": "comparison only"}
-      - {"req_id": "JMAP-6dc58936", "keyword": "MAY", "axis": "x2", "step": 1, "note": "comparison only"}
-      - {"req_id": "JMAP-5b9d74a9", "keyword": "MUST", "axis": "x2", "step": 1, "note": "all properties of the mail types; comparison only"}
+      - {"req_id": "JMAP-4f8566c6", "keyword": "MAY", "axis": "x8", "step": 1, "basis": "option"}
+      - {"req_id": "JMAP-6dc58936", "keyword": "MAY", "axis": "x2", "step": 1, "basis": "option"}
+      - {"req_id": "JMAP-5b9d74a9", "keyword": "MUST", "axis": "x2", "step": 1, "basis": "not-observable", "note": "capability keys do not show property support"}
     steps:
       - {"op": "session", "extract": {"x1": "has:body/accounts/{acct}/accountCapabilities/urn:ietf:params:jmap:mail", "x2": "keys:body/accounts/{acct}/accountCapabilities", "x3": "hasall:body/accounts/{acct}/accountCapabilities/urn:ietf:params:jmap:mail=[\"maxMailboxesPerEmail\", \"maxMailboxDepth\", \"maxSizeMailboxName\", \"maxSizeAttachmentsPerEmail\", \"emailQuerySortOptions\", \"mayCreateTopLevelMailbox\"]", "x4": "nullorge:body/accounts/{acct}/accountCapabilities/urn:ietf:params:jmap:mail/maxMailboxesPerEmail=1", "x5": "ge:body/accounts/{acct}/accountCapabilities/urn:ietf:params:jmap:mail/maxSizeMailboxName=100", "x6": "body/accounts/{acct}/accountCapabilities/urn:ietf:params:jmap:mail/maxSizeAttachmentsPerEmail", "x7": "hasall:body/accounts/{acct}/accountCapabilities/urn:ietf:params:jmap:submission=[\"maxDelayedSend\", \"submissionExtensions\"]", "x8": "body/accounts/{acct}/accountCapabilities/urn:ietf:params:jmap:submission/submissionExtensions"}}
 
@@ -269,7 +269,7 @@ fixtures:
       - {"req_id": "JMAP-81de09b5", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [["Core/echo", "error", "Core/echo"]]}
       - {"req_id": "JMAP-58c49786", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [200]}
       - {"req_id": "JMAP-32c876e5", "keyword": "MUST", "axis": "x3", "step": 1, "allowed": [true]}
-      - {"req_id": "JMAP-d6777436", "keyword": "MAY", "axis": "x4", "step": 1, "note": "comparison only"}
+      - {"req_id": "JMAP-d6777436", "keyword": "MAY", "axis": "x4", "step": 1, "basis": "option"}
     steps:
       - {"op": "call", "calls": [["Core/echo", {"a": 1}, "c0"], ["Pd/noSuchMethod", {}, "c1"], ["Core/echo", {"b": 2}, "c2"]], "extract": {"x1": "m0", "x2": "http", "x3": "has:r1/type", "x4": "has:r1/description"}}
 
@@ -301,7 +301,7 @@ fixtures:
     kind: control
     spec_refs:
       - {"req_id": "JMAP-d85d18da", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
-      - {"req_id": "JMAP-7e40c109", "keyword": "MAY", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "JMAP-7e40c109", "keyword": "MAY", "axis": "x2", "step": 1, "basis": "option"}
     steps:
       - {"op": "call", "calls": [["Mailbox/get", {"accountId": "{acct}"}, "c0"]], "extract": {"x1": "has:r0/list/0/name", "x2": "keys:r0"}}
 
@@ -323,8 +323,8 @@ fixtures:
   census_language_headers:
     kind: probe
     spec_refs:
-      - {"req_id": "JMAP-4b9f6ecf", "keyword": "SHOULD", "axis": "x1", "step": 1, "note": "comparison only"}
-      - {"req_id": "JMAP-3b1ea762", "keyword": "SHOULD", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "JMAP-4b9f6ecf", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "option", "note": "the language chosen is the server's"}
+      - {"req_id": "JMAP-3b1ea762", "keyword": "SHOULD", "axis": "x2", "step": 1, "basis": "option", "note": "the language chosen is the server's"}
     steps:
       - {"op": "call", "calls": [["Pd/noSuchMethod", {}, "c0"]], "headers": {"Accept-Language": "de"}, "extract": {"x1": "r0/description", "x2": "has:hdr/content-language"}}
 
@@ -343,7 +343,7 @@ fixtures:
     kind: stateful
     spec_refs:
       - {"req_id": "JMAP-4ce4b891", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [true]}
-      - {"req_id": "JMAP-9424d71b", "keyword": "MAY", "axis": "x2", "step": 3, "note": "comparison only"}
+      - {"req_id": "JMAP-9424d71b", "keyword": "MAY", "axis": "x2", "step": 3, "basis": "option"}
     steps:
       - {"op": "call", "calls": [["Mailbox/get", {"accountId": "{acct}", "ids": []}, "c0"]], "key": "s1"}
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"sc": {"name": "pd{U}sc"}}}, "mc"]]}
@@ -385,7 +385,7 @@ fixtures:
     spec_refs:
       - {"req_id": "JMAP-89bbba62", "keyword": "SHOULD", "axis": "x1", "step": 4, "allowed": [false]}
       - {"req_id": "JMAP-5da2a432", "keyword": "MAY", "axis": "x2", "step": 4, "allowed": [true, false]}
-      - {"req_id": "JMAP-79d95d9d", "keyword": "MUST", "axis": "x3", "step": 4, "note": "comparison only"}
+      - {"req_id": "JMAP-79d95d9d", "keyword": "MUST", "axis": "x3", "step": 4, "basis": "not-observable", "note": "the response keys do not show the record's created/updated classification"}
     steps:
       - {"op": "call", "calls": [["Mailbox/get", {"accountId": "{acct}", "ids": []}, "c0"]], "key": "s1"}
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"cd": {"name": "pd{U}cd"}}}, "mc"]]}
@@ -398,7 +398,7 @@ fixtures:
       - {"req_id": "JMAP-c87443f9", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [0, 1]}
       - {"req_id": "JMAP-ad9daa2b", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [0, 1]}
       - {"req_id": "JMAP-9406f120", "keyword": "SHOULD", "axis": "x2", "step": 3, "allowed": [true]}
-      - {"req_id": "JMAP-e897fd8a", "keyword": "SHOULD", "axis": "x3", "step": 3, "note": "comparison only"}
+      - {"req_id": "JMAP-e897fd8a", "keyword": "SHOULD", "axis": "x3", "step": 3, "basis": "not-observable", "note": "a 30-day window is not exercised"}
     steps:
       - {"op": "call", "calls": [["Mailbox/get", {"accountId": "{acct}", "ids": []}, "c0"]], "key": "s1"}
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"m1": {"name": "pd{U}m1"}, "m2": {"name": "pd{U}m2"}, "m3": {"name": "pd{U}m3"}}}, "mc"]]}
@@ -425,7 +425,7 @@ fixtures:
     kind: stateful
     spec_refs:
       - {"req_id": "JMAP-71efd8f8", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [true]}
-      - {"req_id": "JMAP-f82fd013", "keyword": "MAY", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "JMAP-f82fd013", "keyword": "MAY", "axis": "x2", "step": 2, "basis": "option"}
       - {"req_id": "JMAP-e68b1b4c", "keyword": "SHOULD", "axis": "x3", "step": 2, "allowed": [true]}
       - {"req_id": "JMAP-e3a528eb", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [true]}
     steps:
@@ -452,10 +452,10 @@ fixtures:
     kind: stateful
     spec_refs:
       - {"req_id": "JMAP-5445e4a1", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [true]}
-      - {"req_id": "JMAP-eb974515", "keyword": "MAY", "axis": "x2", "step": 2, "note": "comparison only"}
-      - {"req_id": "JMAP-8766989b", "keyword": "MAY", "axis": "x2", "step": 2, "note": "comparison only"}
-      - {"req_id": "JMAP-ae814866", "keyword": "MAY", "axis": "x3", "step": 2, "note": "comparison only"}
-      - {"req_id": "JMAP-072fe9e3", "keyword": "MAY", "axis": "x2", "step": 3, "note": "willDestroy; comparison only"}
+      - {"req_id": "JMAP-eb974515", "keyword": "MAY", "axis": "x2", "step": 2, "basis": "option"}
+      - {"req_id": "JMAP-8766989b", "keyword": "MAY", "axis": "x2", "step": 2, "basis": "option"}
+      - {"req_id": "JMAP-ae814866", "keyword": "MAY", "axis": "x3", "step": 2, "basis": "option"}
+      - {"req_id": "JMAP-072fe9e3", "keyword": "MAY", "axis": "x2", "step": 3, "basis": "option"}
     steps:
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"sp": {"name": "pd{U}sp"}}}, "mc"], ["Mailbox/set", {"accountId": "{acct}", "create": {"spc": {"name": "pd{U}spc", "parentId": "#sp"}}}, "c1"]]}
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "destroy": ["{id:sp}"]}, "c0"]], "extract": {"x1": "eq:r0/notDestroyed/{id:sp}/type=\"mailboxHasChild\"", "x2": "r0/notDestroyed/{id:sp}/type", "x3": "keys:r0/notDestroyed/{id:sp}"}}
@@ -464,10 +464,10 @@ fixtures:
   census_copy_single_account:
     kind: probe
     spec_refs:
-      - {"req_id": "JMAP-3c44fa85", "keyword": "MUST", "axis": "x1", "step": 1, "note": "needs a second account; comparison only"}
-      - {"req_id": "JMAP-2b774e5d", "keyword": "MUST", "axis": "x1", "step": 1, "note": "comparison only"}
-      - {"req_id": "JMAP-148194cd", "keyword": "MAY", "axis": "x1", "step": 1, "note": "comparison only"}
-      - {"req_id": "JMAP-d1152554", "keyword": "MUST", "axis": "x1", "step": 1, "note": "comparison only"}
+      - {"req_id": "JMAP-3c44fa85", "keyword": "MUST", "axis": "x1", "step": 1, "basis": "not-applicable", "note": "single-account lab"}
+      - {"req_id": "JMAP-2b774e5d", "keyword": "MUST", "axis": "x1", "step": 1, "basis": "not-applicable", "note": "single-account lab"}
+      - {"req_id": "JMAP-148194cd", "keyword": "MAY", "axis": "x1", "step": 1, "basis": "option"}
+      - {"req_id": "JMAP-d1152554", "keyword": "MUST", "axis": "x1", "step": 1, "basis": "not-applicable", "note": "single-account lab"}
     steps:
       - {"op": "call", "calls": [["Email/copy", {"fromAccountId": "{acct}", "accountId": "{acct}", "create": {}}, "c0"]], "extract": {"x1": "m0"}}
 
@@ -479,8 +479,8 @@ fixtures:
       - {"req_id": "JMAP-58e7dd58", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [false]}
       - {"req_id": "JMAP-14eac012", "keyword": "MUST", "axis": "x4", "step": 4, "allowed": [true]}
       - {"req_id": "JMAP-f8c351be", "keyword": "MUST", "axis": "x5", "step": 5, "allowed": [true]}
-      - {"req_id": "JMAP-35b6b0f5", "keyword": "MAY", "axis": "x6", "step": 6, "note": "comparison only"}
-      - {"req_id": "JMAP-d43e7bde", "keyword": "MAY", "axis": "x7", "step": 2, "note": "comparison only"}
+      - {"req_id": "JMAP-35b6b0f5", "keyword": "MAY", "axis": "x6", "step": 6, "basis": "option"}
+      - {"req_id": "JMAP-d43e7bde", "keyword": "MAY", "axis": "x7", "step": 2, "basis": "option"}
     steps:
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"qa": {"name": "pd{U}qa"}, "qb": {"name": "pd{U}qb"}, "qc": {"name": "pd{U}qc"}}}, "mc"]]}
       - {"op": "call", "calls": [["Mailbox/query", {"accountId": "{acct}", "limit": -1}, "c0"]], "extract": {"x1": "eq:r0/type=\"invalidArguments\"", "x7": "m0"}}
@@ -493,7 +493,7 @@ fixtures:
     kind: stateful
     spec_refs:
       - {"req_id": "JMAP-3698c9f7", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [true]}
-      - {"req_id": "JMAP-5269345c", "keyword": "MAY", "axis": "x2", "step": 3, "note": "comparison only"}
+      - {"req_id": "JMAP-5269345c", "keyword": "MAY", "axis": "x2", "step": 3, "basis": "option"}
     steps:
       - {"op": "call", "calls": [["Mailbox/query", {"accountId": "{acct}"}, "c0"]], "key": "q1"}
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"qs": {"name": "pd{U}qs"}}}, "mc"]]}
@@ -504,7 +504,7 @@ fixtures:
     spec_refs:
       - {"req_id": "JMAP-c13727e1", "keyword": "MUST", "axis": "x1", "step": 2, "note": "unicode-aware collation; comparison only"}
       - {"req_id": "JMAP-d8b2e847", "keyword": "MUST", "axis": "x2", "step": 3, "note": "same comparators: server order, stable; comparison only"}
-      - {"req_id": "JMAP-5bfe3ec9", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only"}
+      - {"req_id": "JMAP-5bfe3ec9", "keyword": "MAY", "axis": "x1", "step": 2, "basis": "option"}
       - {"req_id": "JMAP-9010c574", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
       - {"req_id": "JMAP-2b5b2ad2", "keyword": "SHOULD", "axis": "x1", "step": 2, "note": "comparison only"}
       - {"req_id": "JMAP-ce900c53", "keyword": "MUST", "axis": "x3", "step": 4, "allowed": [false]}
@@ -520,7 +520,7 @@ fixtures:
       - {"req_id": "JMAP-177a25f7", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [false, "null"]}
       - {"req_id": "JMAP-6981e203", "keyword": "MUST", "axis": "x2", "step": 3, "allowed": [true, "null"]}
       - {"req_id": "JMAP-480c43f5", "keyword": "MUST", "axis": "x3", "step": 3, "note": "comparison only"}
-      - {"req_id": "JMAP-e69e676f", "keyword": "MAY", "axis": "x3", "step": 3, "note": "comparison only"}
+      - {"req_id": "JMAP-e69e676f", "keyword": "MAY", "axis": "x3", "step": 3, "basis": "option"}
       - {"req_id": "JMAP-e0274016", "keyword": "SHOULD", "axis": "x3", "step": 3, "note": "comparison only"}
       - {"req_id": "JMAP-2711011b", "keyword": "SHOULD", "axis": "x3", "step": 3, "note": "comparison only"}
     steps:
@@ -532,11 +532,11 @@ fixtures:
     kind: control
     spec_refs:
       - {"req_id": "JMAP-fbb95be7", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
-      - {"req_id": "JMAP-e49f959d", "keyword": "MAY", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "JMAP-e49f959d", "keyword": "MAY", "axis": "x2", "step": 2, "basis": "option"}
       - {"req_id": "JMAP-943caf35", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [true, "null"]}
       - {"req_id": "JMAP-8d2e7214", "keyword": "MUST", "axis": "x4", "step": 3, "note": "single user lab; comparison only"}
       - {"req_id": "JMAP-5b295d5c", "keyword": "SHOULD", "axis": "x5", "step": 1, "note": "comparison only"}
-      - {"req_id": "JMAP-e5f5bff9", "keyword": "MAY", "axis": "x5", "step": 1, "note": "comparison only"}
+      - {"req_id": "JMAP-e5f5bff9", "keyword": "MAY", "axis": "x5", "step": 1, "basis": "option"}
       - {"req_id": "JMAP-469ea7d6", "keyword": "MUST", "axis": "x5", "step": 1, "note": "quota-driven deletion; comparison only"}
       - {"req_id": "JMAP-eb10830e", "keyword": "MUST", "axis": "x5", "step": 1, "note": "comparison only"}
       - {"req_id": "JMAP-1721872b", "keyword": "MUST", "axis": "x5", "step": 1, "note": "comparison only"}
@@ -557,7 +557,7 @@ fixtures:
   census_blob_reassigned:
     kind: stateful
     spec_refs:
-      - {"req_id": "JMAP-bb57817d", "keyword": "MAY", "axis": "x1", "step": 3, "note": "comparison only"}
+      - {"req_id": "JMAP-bb57817d", "keyword": "MAY", "axis": "x1", "step": 3, "basis": "option"}
       - {"req_id": "JMAP-a76b2377", "keyword": "MUST", "axis": "x2", "step": 3, "allowed": [true]}
     steps:
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"box": {"name": "pd{U}box"}}}, "mc"]]}
@@ -587,7 +587,7 @@ fixtures:
       - {"req_id": "JMAP-bebf704a", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
       - {"req_id": "JMAP-d1afdc31", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [true]}
       - {"req_id": "JMAP-9375762d", "keyword": "MUST", "axis": "x3", "step": 1, "allowed": [true, "null"]}
-      - {"req_id": "JMAP-ad3829b7", "keyword": "MAY", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "JMAP-ad3829b7", "keyword": "MAY", "axis": "x2", "step": 1, "basis": "option"}
       - {"req_id": "JMAP-08c3a6f8", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
     steps:
       - {"op": "eventsource", "types": "*", "closeafter": "no", "ping": 30, "seconds": 40, "extract": {"x1": "ge:events/0/data/interval=1", "x2": "has:events/0/data/interval", "x3": "eq:events/0/id=null"}}
@@ -600,23 +600,23 @@ fixtures:
       - {"req_id": "JMAP-a17c61ca", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [true]}
       - {"req_id": "JMAP-e4d7b72d", "keyword": "SHOULD", "axis": "x4", "step": 1, "allowed": [true]}
       - {"req_id": "JMAP-f352ecc4", "keyword": "MUST", "axis": "x5", "step": 4, "allowed": [true]}
-      - {"req_id": "JMAP-79cef567", "keyword": "MAY", "axis": "x6", "step": 1, "note": "comparison only"}
-      - {"req_id": "JMAP-b0f18fea", "keyword": "MAY", "axis": "x6", "step": 1, "note": "comparison only"}
+      - {"req_id": "JMAP-79cef567", "keyword": "MAY", "axis": "x6", "step": 1, "basis": "option"}
+      - {"req_id": "JMAP-b0f18fea", "keyword": "MAY", "axis": "x6", "step": 1, "basis": "option"}
       - {"req_id": "JMAP-86648395", "keyword": "MUST", "axis": "x6", "step": 1, "note": "maximum expiry at least 48 h; comparison only"}
-      - {"req_id": "JMAP-2a52558f", "keyword": "MUST", "axis": "x6", "step": 1, "note": "needs a push endpoint the server can reach; comparison only"}
-      - {"req_id": "JMAP-5b5a9148", "keyword": "MAY", "axis": "x6", "step": 1, "note": "needs a push endpoint the server can reach; comparison only"}
-      - {"req_id": "JMAP-d6327422", "keyword": "MUST", "axis": "x7", "step": 2, "note": "comparison only"}
-      - {"req_id": "JMAP-53e08a71", "keyword": "MUST", "axis": "x6", "step": 1, "note": "needs a push endpoint the server can reach; comparison only"}
-      - {"req_id": "JMAP-648a4737", "keyword": "MUST", "axis": "x6", "step": 1, "note": "needs a push endpoint the server can reach; comparison only"}
-      - {"req_id": "JMAP-383a6704", "keyword": "MUST", "axis": "x6", "step": 1, "note": "needs a push endpoint the server can reach; comparison only"}
-      - {"req_id": "JMAP-12f4ab63", "keyword": "MUST", "axis": "x6", "step": 1, "note": "needs a push endpoint the server can reach; comparison only"}
-      - {"req_id": "JMAP-a8a5d014", "keyword": "MUST", "axis": "x6", "step": 1, "note": "needs a push endpoint the server can reach; comparison only"}
-      - {"req_id": "JMAP-c298b929", "keyword": "MUST", "axis": "x6", "step": 1, "note": "needs a push endpoint the server can reach; comparison only"}
-      - {"req_id": "JMAP-ab3a7336", "keyword": "MUST", "axis": "x6", "step": 1, "note": "needs a push endpoint the server can reach; comparison only"}
-      - {"req_id": "JMAP-68345c1b", "keyword": "MUST", "axis": "x6", "step": 1, "note": "needs a push endpoint the server can reach; comparison only"}
-      - {"req_id": "JMAP-4e40f46c", "keyword": "MUST", "axis": "x6", "step": 1, "note": "needs a push endpoint the server can reach; comparison only"}
-      - {"req_id": "JMAP-9b2317ec", "keyword": "MUST", "axis": "x6", "step": 1, "note": "needs a push endpoint the server can reach; comparison only"}
-      - {"req_id": "JMAP-9b91073a", "keyword": "SHOULD", "axis": "x6", "step": 1, "note": "needs a push endpoint the server can reach; comparison only"}
+      - {"req_id": "JMAP-2a52558f", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
+      - {"req_id": "JMAP-5b5a9148", "keyword": "MAY", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
+      - {"req_id": "JMAP-d6327422", "keyword": "MUST", "axis": "x7", "step": 2, "basis": "not-applicable", "note": "single set of credentials in the lab"}
+      - {"req_id": "JMAP-53e08a71", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
+      - {"req_id": "JMAP-648a4737", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
+      - {"req_id": "JMAP-383a6704", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
+      - {"req_id": "JMAP-12f4ab63", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
+      - {"req_id": "JMAP-a8a5d014", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
+      - {"req_id": "JMAP-c298b929", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
+      - {"req_id": "JMAP-ab3a7336", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
+      - {"req_id": "JMAP-68345c1b", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
+      - {"req_id": "JMAP-4e40f46c", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
+      - {"req_id": "JMAP-9b2317ec", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
+      - {"req_id": "JMAP-9b91073a", "keyword": "SHOULD", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
     steps:
       - {"op": "call", "calls": [["PushSubscription/set", {"create": {"p": {"deviceClientId": "pd{U}dev", "url": "https://pd-push.example.invalid/jmap", "types": null}}}, "c0"]], "extract": {"x4": "has:r0/created/p/expires", "x6": "r0/created/p"}}
       - {"op": "call", "calls": [["PushSubscription/get", {"ids": null}, "c0"]], "extract": {"x1": "has:r0/list/0/url", "x2": "has:r0/list/0/keys", "x7": "len:r0/list"}}
@@ -634,12 +634,12 @@ fixtures:
     kind: stateful
     spec_refs:
       - {"req_id": "JMAP-81ece503", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
-      - {"req_id": "JMAP-a2a7a0b9", "keyword": "MAY", "axis": "x2", "step": 1, "note": "comparison only"}
+      - {"req_id": "JMAP-a2a7a0b9", "keyword": "MAY", "axis": "x2", "step": 1, "basis": "option"}
       - {"req_id": "JMAP-bee3967b", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [true]}
       - {"req_id": "JMAP-715e509d", "keyword": "MUST", "axis": "x4", "step": 4, "allowed": [true]}
       - {"req_id": "JMAP-2fcb9094", "keyword": "SHOULD", "axis": "x5", "step": 3, "allowed": [true]}
       - {"req_id": "JMAP-9f2c83e1", "keyword": "SHOULD", "axis": "x6", "step": 4, "note": "comparison only"}
-      - {"req_id": "JMAP-b33aff88", "keyword": "MUST", "axis": "x5", "step": 3, "note": "per-user subscription in shared mailboxes; comparison only"}
+      - {"req_id": "JMAP-b33aff88", "keyword": "MUST", "axis": "x5", "step": 3, "basis": "not-applicable", "note": "no shared mailboxes in the lab"}
     steps:
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"empty": {"name": ""}, "slash": {"name": "pd{U}a/b"}}}, "c0"]], "extract": {"x1": "has:r0/notCreated/empty", "x2": "has:r0/created/slash"}}
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"lp": {"name": "pd{U}lp"}}}, "mc"]]}
@@ -668,7 +668,7 @@ fixtures:
       - {"req_id": "JMAP-371d64d1", "keyword": "MUST", "axis": "x5", "step": 6, "allowed": [true]}
       - {"req_id": "JMAP-d018967a", "keyword": "MUST", "axis": "x6", "step": 7, "allowed": [true]}
       - {"req_id": "JMAP-0022cf27", "keyword": "MUST", "axis": "x7", "step": 7, "note": "$deleted handling; comparison only"}
-      - {"req_id": "JMAP-c9955d84", "keyword": "MUST", "axis": "x4", "step": 5, "note": "comparison only"}
+      - {"req_id": "JMAP-c9955d84", "keyword": "MUST", "axis": "x4", "step": 5, "basis": "not-observable", "note": "thread merging is not induced"}
       - {"req_id": "JMAP-55eacd2e", "keyword": "MUST", "axis": "x8", "step": 8, "note": "stable order for equal dates; comparison only"}
     steps:
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"box": {"name": "pd{U}box"}}}, "mc"]]}
@@ -686,13 +686,13 @@ fixtures:
       - {"req_id": "JMAP-351dac5e", "keyword": "MUST", "axis": "x1", "step": 4, "allowed": [false]}
       - {"req_id": "JMAP-711dc890", "keyword": "SHOULD", "axis": "x2", "step": 4, "allowed": [true]}
       - {"req_id": "JMAP-94f45102", "keyword": "MUST", "axis": "x3", "step": 4, "allowed": [true]}
-      - {"req_id": "JMAP-341f3574", "keyword": "SHOULD", "axis": "x4", "step": 4, "note": "comparison only"}
+      - {"req_id": "JMAP-341f3574", "keyword": "SHOULD", "axis": "x4", "step": 4, "basis": "option", "note": "best-effort decoding"}
       - {"req_id": "JMAP-0caca256", "keyword": "SHOULD", "axis": "x5", "step": 4, "allowed": [true]}
       - {"req_id": "JMAP-4b62c6d6", "keyword": "MUST", "axis": "x6", "step": 4, "allowed": [true]}
-      - {"req_id": "JMAP-77485003", "keyword": "SHOULD", "axis": "x7", "step": 4, "note": "comparison only"}
-      - {"req_id": "JMAP-ad7ce569", "keyword": "MAY", "axis": "x7", "step": 4, "note": "comparison only"}
+      - {"req_id": "JMAP-77485003", "keyword": "SHOULD", "axis": "x7", "step": 4, "basis": "option", "note": "best-effort parsing"}
+      - {"req_id": "JMAP-ad7ce569", "keyword": "MAY", "axis": "x7", "step": 4, "basis": "option"}
       - {"req_id": "JMAP-420b6b33", "keyword": "MUST", "axis": "x8", "step": 4, "allowed": [true]}
-      - {"req_id": "JMAP-079465a8", "keyword": "SHOULD", "axis": "x8", "step": 4, "note": "comparison only"}
+      - {"req_id": "JMAP-079465a8", "keyword": "SHOULD", "axis": "x8", "step": 4, "basis": "option", "note": "best-effort parsing"}
     steps:
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"box": {"name": "pd{U}box"}}}, "mc"]]}
       - {"op": "upload", "key": "m", "data": "From: alice@example.invalid (Alice Comment)\r\nTo: =?UTF-8?Q?J=C3=BCrgen?= <j@example.invalid>\r\nSubject: pd nul\u0000here and bad ÿ byte =?UTF-8?Q?not encoded?= x=?UTF-8?Q?glued?=\r\nX-Pd-List: <https://a.example>, <https://b.example>\r\nX-Pd-Enc: =?UTF-8?B?w6TDtsO8?=\r\nDate: Thu, 12 Nov 2026 10:00:00 +0000\r\nMessage-ID: <pd-forms-{U}@example.invalid>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nbody\r\n", "content_type": "message/rfc822"}
@@ -706,13 +706,13 @@ fixtures:
       - {"req_id": "JMAP-83142522", "keyword": "MUST", "axis": "x2", "step": 4, "allowed": [true]}
       - {"req_id": "JMAP-a08748e2", "keyword": "SHOULD", "axis": "x3", "step": 7, "note": "comparison only"}
       - {"req_id": "JMAP-64b7bac4", "keyword": "MUST", "axis": "x4", "step": 4, "allowed": [true]}
-      - {"req_id": "JMAP-c8b4b180", "keyword": "MUST", "axis": "x4", "step": 4, "note": "comparison only"}
-      - {"req_id": "JMAP-09328e41", "keyword": "SHOULD", "axis": "x4", "step": 4, "note": "comparison only"}
+      - {"req_id": "JMAP-c8b4b180", "keyword": "MUST", "axis": "x4", "step": 4, "basis": "option", "note": "a second fetch may differ"}
+      - {"req_id": "JMAP-09328e41", "keyword": "SHOULD", "axis": "x4", "step": 4, "basis": "not-observable", "note": "a changed derived value is not induced"}
       - {"req_id": "JMAP-5b99d432", "keyword": "MUST", "axis": "x5", "step": 7, "allowed": [true]}
       - {"req_id": "JMAP-a60e3d0b", "keyword": "MUST", "axis": "x6", "step": 8, "allowed": [true]}
       - {"req_id": "JMAP-09f537d6", "keyword": "MUST", "axis": "x7", "step": 9, "allowed": [true]}
-      - {"req_id": "JMAP-2e841ff0", "keyword": "MAY", "axis": "x8", "step": 4, "note": "comparison only"}
-      - {"req_id": "JMAP-d1bdbacd", "keyword": "SHOULD", "axis": "x8", "step": 4, "note": "comparison only"}
+      - {"req_id": "JMAP-2e841ff0", "keyword": "MAY", "axis": "x8", "step": 4, "basis": "option"}
+      - {"req_id": "JMAP-d1bdbacd", "keyword": "SHOULD", "axis": "x8", "step": 4, "basis": "option", "note": "best-effort decoding"}
     steps:
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"box": {"name": "pd{U}box"}}}, "mc"]]}
       - {"op": "upload", "key": "m", "data": "From: Alice <alice@example.invalid>\r\nTo: user@lab.test\r\nSubject: pd census\r\nDate: Thu, 12 Nov 2026 10:00:00 +0000\r\nMessage-ID: <pd-{U}@example.invalid>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nääääääääääääääääääääääääääääää word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word \r\n", "content_type": "message/rfc822"}
@@ -728,8 +728,8 @@ fixtures:
     kind: stateful
     spec_refs:
       - {"req_id": "JMAP-c9584dd9", "keyword": "SHOULD", "axis": "x1", "step": 4, "allowed": [true]}
-      - {"req_id": "JMAP-a5b8b00c", "keyword": "MAY", "axis": "x2", "step": 4, "note": "comparison only"}
-      - {"req_id": "JMAP-51e6cea7", "keyword": "MAY", "axis": "x2", "step": 4, "note": "comparison only"}
+      - {"req_id": "JMAP-a5b8b00c", "keyword": "MAY", "axis": "x2", "step": 4, "basis": "option"}
+      - {"req_id": "JMAP-51e6cea7", "keyword": "MAY", "axis": "x2", "step": 4, "basis": "option"}
     steps:
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"box": {"name": "pd{U}box"}}}, "mc"]]}
       - {"op": "upload", "key": "m", "data": "From: a@example.invalid\r\nTo: user@lab.test\r\nSubject: att\r\nMessage-ID: <pd-att-{U}@example.invalid>\r\nDate: Thu, 12 Nov 2026 10:00:00 +0000\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=pdb\r\n\r\n--pdb\r\nContent-Type: text/plain\r\n\r\nsee file\r\n--pdb\r\nContent-Type: application/pdf\r\nContent-Disposition: attachment; filename=pd.pdf\r\nContent-Transfer-Encoding: base64\r\n\r\nJVBERi0xLjQK\r\n--pdb--\r\n", "content_type": "message/rfc822"}
@@ -748,9 +748,9 @@ fixtures:
       - {"req_id": "JMAP-e5a38efb", "keyword": "MUST", "axis": "x1", "step": 10, "allowed": [1]}
       - {"req_id": "JMAP-5f08c359", "keyword": "MUST", "axis": "x1", "step": 11, "note": "escaped quote inside a phrase; comparison only"}
       - {"req_id": "JMAP-967a95b0", "keyword": "MUST", "axis": "x1", "step": 12, "allowed": [1]}
-      - {"req_id": "JMAP-8037797e", "keyword": "MAY", "axis": "x1", "step": 4, "note": "comparison only"}
-      - {"req_id": "JMAP-9435a2aa", "keyword": "MAY", "axis": "x1", "step": 4, "note": "comparison only"}
-      - {"req_id": "JMAP-1af64337", "keyword": "MAY", "axis": "x1", "step": 4, "note": "comparison only"}
+      - {"req_id": "JMAP-8037797e", "keyword": "MAY", "axis": "x1", "step": 4, "basis": "option"}
+      - {"req_id": "JMAP-9435a2aa", "keyword": "MAY", "axis": "x1", "step": 4, "basis": "option"}
+      - {"req_id": "JMAP-1af64337", "keyword": "MAY", "axis": "x1", "step": 4, "basis": "option"}
     steps:
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"box": {"name": "pd{U}box"}}}, "mc"]]}
       - {"op": "upload", "key": "m", "data": "From: Alice <alice@example.invalid>\r\nTo: user@lab.test\r\nSubject: =?UTF-8?Q?Gr=C3=BC=C3=9Fe?= pdcase pd phrase here\r\nMessage-ID: <pd-search-{U}@example.invalid>\r\nDate: Thu, 12 Nov 2026 10:00:00 +0000\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<p title=\"pdtitle\"><a href=\"https://pdhref.example\">x</a><img alt=\"pdalt\"> pdtokena middle pdtokenb</p>\r\n", "content_type": "message/rfc822"}
@@ -773,7 +773,7 @@ fixtures:
       - {"req_id": "JMAP-9119a625", "keyword": "MUST", "axis": "x3", "step": 4, "note": "hasKeyword ordering; comparison only"}
       - {"req_id": "JMAP-b01c6674", "keyword": "MUST", "axis": "x3", "step": 5, "note": "comparison only"}
       - {"req_id": "JMAP-d46d8627", "keyword": "MUST", "axis": "x3", "step": 6, "note": "comparison only"}
-      - {"req_id": "JMAP-b63904af", "keyword": "MAY", "axis": "x3", "step": 4, "note": "comparison only"}
+      - {"req_id": "JMAP-b63904af", "keyword": "MAY", "axis": "x3", "step": 4, "basis": "option"}
     steps:
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"box": {"name": "pd{U}box"}}}, "mc"]]}
       - {"op": "call", "calls": [["Email/query", {"accountId": "{acct}", "sort": [{"property": "receivedAt", "isAscending": false}]}, "c0"]], "extract": {"x1": "eq:m0=error"}}
@@ -788,7 +788,7 @@ fixtures:
       - {"req_id": "JMAP-f243d240", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [1]}
       - {"req_id": "JMAP-f243d240", "keyword": "MUST", "axis": "x2", "step": 3, "allowed": [true]}
       - {"req_id": "JMAP-c10e7ec2", "keyword": "SHOULD", "axis": "x3", "step": 4, "allowed": [true]}
-      - {"req_id": "JMAP-dffb0b1c", "keyword": "MAY", "axis": "x4", "step": 3, "note": "comparison only"}
+      - {"req_id": "JMAP-dffb0b1c", "keyword": "MAY", "axis": "x4", "step": 3, "basis": "option"}
       - {"req_id": "JMAP-69eae311", "keyword": "MUST", "axis": "x5", "step": 5, "allowed": [true]}
     steps:
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"box": {"name": "pd{U}box"}}}, "mc"]]}
@@ -804,11 +804,11 @@ fixtures:
       - {"req_id": "JMAP-789409cf", "keyword": "MUST", "axis": "x7", "step": 4, "allowed": ["null", "alreadyExists"]}
       - {"req_id": "JMAP-fa943453", "keyword": "MUST", "axis": "x3", "step": 4, "allowed": ["null", ["existingId", "type"], ["description", "existingId", "type"]]}
       - {"req_id": "JMAP-ed73c459", "keyword": "MUST", "axis": "x2", "step": 4, "allowed": [true]}
-      - {"req_id": "JMAP-39a13b2d", "keyword": "MAY", "axis": "x2", "step": 4, "note": "comparison only"}
+      - {"req_id": "JMAP-39a13b2d", "keyword": "MAY", "axis": "x2", "step": 4, "basis": "option"}
       - {"req_id": "JMAP-16caa28f", "keyword": "MUST", "axis": "x4", "step": 5, "allowed": [true]}
-      - {"req_id": "JMAP-7d800faa", "keyword": "MAY", "axis": "x5", "step": 7, "note": "comparison only"}
+      - {"req_id": "JMAP-7d800faa", "keyword": "MAY", "axis": "x5", "step": 7, "basis": "option"}
       - {"req_id": "JMAP-a255fedd", "keyword": "MUST", "axis": "x6", "step": 7, "note": "a new blobId only if the server modified the message; comparison only"}
-      - {"req_id": "JMAP-c8928377", "keyword": "MAY", "axis": "x5", "step": 7, "note": "comparison only"}
+      - {"req_id": "JMAP-c8928377", "keyword": "MAY", "axis": "x5", "step": 7, "basis": "option"}
     steps:
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"box": {"name": "pd{U}box"}}}, "mc"]]}
       - {"op": "upload", "key": "eai", "data": "From: Jürgen <jürgen@bücher.example>\r\nTo: user@lab.test\r\nSubject: EAI ü\r\nMessage-ID: <pd-eai-{U}@example.invalid>\r\nDate: Thu, 12 Nov 2026 10:00:00 +0000\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nEAI body\r\n", "content_type": "message/rfc822"}
@@ -822,7 +822,7 @@ fixtures:
     kind: stateful
     spec_refs:
       - {"req_id": "JMAP-60e031af", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [true]}
-      - {"req_id": "JMAP-4fd3713d", "keyword": "MAY", "axis": "x2", "step": 2, "note": "comparison only"}
+      - {"req_id": "JMAP-4fd3713d", "keyword": "MAY", "axis": "x2", "step": 2, "basis": "option"}
     steps:
       - {"op": "upload", "key": "eai", "data": "From: Jürgen <jürgen@bücher.example>\r\nTo: user@lab.test\r\nSubject: EAI parse\r\nMessage-ID: <pd-parse-{U}@example.invalid>\r\nDate: Thu, 12 Nov 2026 10:00:00 +0000\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nx\r\n", "content_type": "message/rfc822"}
       - {"op": "call", "calls": [["Email/parse", {"accountId": "{acct}", "blobIds": ["{blob:eai}"], "properties": ["from", "threadId"]}, "c0"]], "extract": {"x1": "has:r0/parsed/{blob:eai}", "x2": "has:r0/parsed/{blob:eai}/threadId"}}

@@ -85,6 +85,7 @@ class Party:
         self.last_req: dict | None = None
         self.last_req_src: tuple | None = None
         self.last_resp: dict | None = None
+        self.aside = None  # set by Lab: is a received message a probe or a stray (see set_aside)
 
     def socks(self) -> list[socket.socket]:
         return [self.udp, self.tcp_listen, *self.conns]
@@ -132,6 +133,10 @@ class Party:
             return  # keep-alive CRLF
         m = parse(data, transport)
         self.inbox.append(m)
+        if self.aside is not None and self.aside(m):
+            # a probe or a stray (another fixture's late retransmission) is recorded but never becomes the message
+            # a later reply, ack or {last:...} template answers: answering it would adopt its Call-ID as the lab's
+            return
         if m["kind"] == "req":
             self.last_req, self.last_req_src = m, src
         else:
@@ -152,6 +157,12 @@ class Lab:
         self.creds: dict[str, str] = req.get("creds") or {}
         self.ctl: dict = req.get("ctl") or {}
         self.own_callids: set[str] = set()  # every Call-ID the lab sent in this fixture (see is_probe)
+        for p in self.parties.values():
+            p.aside = self.is_aside
+
+    def is_aside(self, m: dict) -> bool:
+        opened = opened_callids(x for q in self.parties.values() for x in q.inbox)
+        return set_aside(m, self.own_callids, opened) is not None
 
     # ---------- templates ----------
     def fill(self, text: str, party: str) -> str:

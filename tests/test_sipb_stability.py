@@ -123,3 +123,34 @@ def test_cyrus_mailbox_names_modified_utf7():
     assert run.mutf7_encode("Archive") == "Archive"
     for s in ("Bücher", "日本語", "A&B", "Ünïcödé.sub", "plain"):
         assert run.mutf7_decode(run.mutf7_encode(s)) == s
+
+
+def _party_without_sockets(aside):
+    p = object.__new__(driver.Party)
+    p.name, p.port, p.inbox = "bob", 5070, []
+    p.last_req = p.last_req_src = p.last_resp = None
+    p.aside = aside
+    return p
+
+
+def _wire(method, callid):
+    return (f"{method} sip:bob@lab.test SIP/2.0\r\nVia: SIP/2.0/UDP 10.0.0.2:5060;branch=z9hG4bKx1\r\n"
+            f"From: <sip:alice@lab.test>;tag=a1\r\nTo: <sip:bob@lab.test>\r\nCall-ID: {callid}\r\n"
+            f"CSeq: 1 {method}\r\nContent-Length: 0\r\n\r\n").encode()
+
+
+def test_stray_is_recorded_but_never_becomes_the_request_a_reply_answers():
+    # 16 Nov x5: a late PDCENSUS retransmission from px_unknown_method_forwarded reached bob inside
+    # px_fork_two_contacts; bob's next `reply` step answered it instead of the fixture's INVITE.
+    own = {"pd5636dd9dff-1d2b6a49e0@10.0.0.9"}
+    p = _party_without_sockets(lambda m: driver.set_aside(m, own) is not None)
+    p._got(_wire("INVITE", "pd5636dd9dff-1d2b6a49e0@10.0.0.9"), "udp", ("udp", ("10.0.0.2", 5060), None))
+    p._got(_wire("PDCENSUS", "pda362439e7c-a6401d47af@10.0.0.9"), "udp", ("udp", ("10.0.0.2", 5060), None))
+    assert [m["method"] for m in p.inbox] == ["INVITE", "PDCENSUS"]
+    assert p.last_req["method"] == "INVITE"
+
+
+def test_party_without_aside_keeps_old_behaviour():
+    p = _party_without_sockets(None)
+    p._got(_wire("INVITE", "x@y"), "udp", ("udp", ("10.0.0.2", 5060), None))
+    assert p.last_req["method"] == "INVITE"

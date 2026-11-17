@@ -40,7 +40,30 @@ def _attr_map(v: Any) -> Any:
     return None if v is None else tuple(sorted((k, tuple(sorted(x))) for k, x in dict(v).items()))
 
 
-KAPPA: dict[str, Callable[[Any], Any]] = {"identity": identity, "dn_set": _dn_set, "attr_map": _attr_map}
+_SEARCH_ITEMS = ("SearchResultEntry", "SearchResultReference")
+
+
+def _search_runs_sorted(v: Any) -> Any:
+    """Response operations with each run of consecutive SearchResultEntry/SearchResultReference messages put in a
+    fixed order (entries, then references). RFC 4511 4.5.2 lets a server return entries and continuation references
+    in any order, so their interleaving is not behaviour; every other message keeps its position."""
+    if v is None:
+        return None
+    out: list[Any] = []
+    run: list[Any] = []
+    for op in v:
+        if op in _SEARCH_ITEMS:
+            run.append(op)
+            continue
+        out.extend(sorted(run, key=_SEARCH_ITEMS.index))
+        run = []
+        out.append(op)
+    out.extend(sorted(run, key=_SEARCH_ITEMS.index))
+    return tuple(out)
+
+
+KAPPA: dict[str, Callable[[Any], Any]] = {"identity": identity, "dn_set": _dn_set, "attr_map": _attr_map,
+                                          "search_runs_sorted": _search_runs_sorted}
 
 
 def load_spec() -> CellSpec:

@@ -10,8 +10,8 @@ axes:
     clause: "T1: the client's next action follows the result class (classes.py)"
   response_ops:
     tier: 2
-    kappa: identity
-    clause: "T2: which response messages the client receives, in order, decides what the library returns"
+    kappa: search_runs_sorted
+    clause: "T2: which response messages the client receives, in order, decides what the library returns; entries and continuation references within one result set may come in any order (RFC 4511 4.5.2), so their interleaving is canonicalised"
   entries:
     tier: 2
     kappa: dn_set

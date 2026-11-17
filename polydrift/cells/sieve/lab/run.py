@@ -851,7 +851,7 @@ def _st_start(log) -> "subprocess.Popen":
     env = {**os.environ, "STALWART_RECOVERY_ADMIN": f"{ST_ADMIN[0]}:{ST_ADMIN[1]}"}
     p = subprocess.Popen(["stalwart", "--config", str(ST / "config.json")], cwd=str(ST), env=env, stdout=log,
                          stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL)
-    for _ in range(300):
+    for _ in range(900):  # 90 s: three of 1,380 x5 starts (16 Nov, Testbed B under load) needed more than 30 s
         if p.poll() is not None:
             raise RuntimeError(f"stalwart exited {p.returncode}")
         try:
@@ -861,7 +861,7 @@ def _st_start(log) -> "subprocess.Popen":
             pass
         time.sleep(0.1)
     p.kill()
-    raise RuntimeError("stalwart http not up in 30 s")
+    raise RuntimeError("stalwart http not up in 90 s")
 
 
 def _st_stop(p) -> None:

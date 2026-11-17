@@ -27,6 +27,7 @@ fixtures:
 
         extract: {x1: "codes:bob", x2: "has:bob/0/hdr/contact"}
       - op: send
+        window_ms: 1200
         from: alice
         msg: |
           INVITE sip:bob@{domain} SIP/2.0
@@ -85,6 +86,7 @@ fixtures:
     roles: [proxy]
     steps:
       - op: send
+        window_ms: 1200
         msg: |
           INVITE sip:nobody-{U}@{domain} SIP/2.0
           Via: SIP/2.0/UDP {lab}:{port:alice};branch={branch:i};rport

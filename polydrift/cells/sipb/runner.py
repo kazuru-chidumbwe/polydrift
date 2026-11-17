@@ -113,7 +113,9 @@ def canary(domain: str) -> bool:
 
 def lab_up(lab: str, t: dict[str, Any]) -> None:
     if sh(["docker", "network", "inspect", NET]).returncode != 0:
-        sh(["docker", "network", "create", "--internal", "--subnet", SUBNET, NET])
+        nc = sh(["docker", "network", "create", "--internal", "--subnet", SUBNET, NET])
+        if nc.returncode != 0:  # e.g. another network already holds the subnet: fail here, not in every lookup
+            raise RuntimeError(f"network {NET} ({SUBNET}): {nc.stderr.strip()[-200:]}")
     lab_down()
     args = ["docker", "run", "-d", "--name", "psipb-eut", "--network", NET, "--ip", EUT_IP, "--cpus=2", "--memory=2g"]
     if t.get("config"):

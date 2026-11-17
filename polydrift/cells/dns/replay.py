@@ -103,7 +103,9 @@ def sh(a: list[str], timeout: int = 120, stdin: str | None = None) -> subprocess
 
 def lab_up(lab: str) -> dict[str, str]:
     if sh(["docker", "network", "inspect", NET]).returncode != 0:
-        sh(["docker", "network", "create", "--internal", "--subnet", SUBNET, NET])
+        nc = sh(["docker", "network", "create", "--internal", "--subnet", SUBNET, NET])
+        if nc.returncode != 0:  # e.g. another network already holds the subnet: fail here, not in every lookup
+            raise RuntimeError(f"network {NET} ({SUBNET}): {nc.stderr.strip()[-200:]}")
     sh(["docker", "rm", "-f", "pdr-server", *[c for c, _ in CONSUMERS.values()]])
     r = sh(["docker", "run", "-d", "--name", "pdr-server", "--network", NET, "--ip", SERVER_IP, "-v",
             f"{lab}:/lab:ro", LAB_IMAGE, "python3", "/lab/replay_server.py"])

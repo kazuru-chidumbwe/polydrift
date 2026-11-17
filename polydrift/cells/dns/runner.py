@@ -83,7 +83,9 @@ def mark_crashed(obs: list[dict]) -> list[dict]:
 
 def lab_up(lab: str, zones: dict) -> None:
     if sh(["docker", "network", "inspect", NET]).returncode != 0:
-        sh(["docker", "network", "create", "--internal", "--subnet", SUBNET, NET])
+        nc = sh(["docker", "network", "create", "--internal", "--subnet", SUBNET, NET])
+        if nc.returncode != 0:  # e.g. another network already holds the subnet: fail here, not in every lookup
+            raise RuntimeError(f"network {NET} ({SUBNET}): {nc.stderr.strip()[-200:]}")
     for name, cfg in zones["servers"].items():
         c = f"pdns-auth-{name}"
         sh(["docker", "rm", "-f", c])

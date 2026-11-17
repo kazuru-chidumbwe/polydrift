@@ -218,21 +218,44 @@ def upstream(match: str) -> dict:
 
 def parallel(server: str, qs: list[dict], timeout: float) -> dict:
     t0 = time.time()
-    done: list[tuple[float, str, str]] = []
+    done: list[tuple[float, str, str, float]] = []
     lock = threading.Lock()
 
-    def one(item: dict) -> None:
+    def stalled(item: dict) -> str:
+        # a TCP client that announces a 64-octet message, sends 3 octets and then waits (RFC 1035 4.2.2: the server
+        # should not block other activities waiting for TCP data); "held" if the connection stays open for hold_ms,
+        # "closed" if the server closes it first
+        s = socket.create_connection((server, 53), timeout=timeout)
         try:
-            q = make_query(item)
-            r = (dns.query.tcp(q, server, timeout=timeout) if item.get("tcp")
-                 else dns.query.udp(q, server, timeout=timeout, ignore_unexpected=True))
-            rc = dns.rcode.to_text(r.rcode())
+            s.sendall(struct.pack("!H", 64) + b"\x12\x34\x01")
+            s.settimeout(float(item.get("hold_ms", 4000)) / 1000)
+            try:
+                return "closed" if not s.recv(2) else "answered"
+            except socket.timeout:
+                return "held"
+            except OSError:
+                return "closed"
+        finally:
+            s.close()
+
+    def one(item: dict) -> None:
+        time.sleep(float(item.get("delay_ms", 0)) / 1000)
+        t1 = time.time()
+        try:
+            if item.get("stall"):
+                rc = stalled(item)
+            else:
+                q = make_query(item)
+                r = (dns.query.tcp(q, server, timeout=timeout) if item.get("tcp")
+                     else dns.query.udp(q, server, timeout=timeout, ignore_unexpected=True))
+                rc = dns.rcode.to_text(r.rcode())
         except dns.exception.Timeout:
             rc = "timeout"
         except Exception as e:  # noqa: BLE001
             rc = f"error:{e.__class__.__name__}"
         with lock:
-            done.append((time.time() - t0, item["label"], rc))
+            now = time.time()
+            done.append((now - t0, item["label"], rc, now - t1))
 
     th = [threading.Thread(target=one, args=(x,)) for x in qs]
     for t in th:
@@ -241,7 +264,8 @@ def parallel(server: str, qs: list[dict], timeout: float) -> dict:
         t.join(timeout + 2)
     done.sort()
     bucket = lambda s: "<0.5s" if s < 0.5 else ("<2s" if s < 2 else ">=2s")  # noqa: E731
-    return {"rcode": "NOERROR", "order": [d[1] for d in done], "latency": {d[1]: bucket(d[0]) for d in done},
+    # order: by completion time; latency: from each query's own start (after its delay_ms)
+    return {"rcode": "NOERROR", "order": [d[1] for d in done], "latency": {d[1]: bucket(d[3]) for d in done},
             "rcodes": {d[1]: d[2] for d in done}, "error": None}
 
 

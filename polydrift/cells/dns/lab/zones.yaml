@@ -105,6 +105,8 @@ servers:
     behaviours:
       formerr: {kind: rcode, rcode: FORMERR}
       servfail: {kind: rcode, rcode: SERVFAIL}
+      # census_servfail_caching only: a name no other fixture asks, so no failure state from auth_servfail carries over
+      servfailc: {kind: rcode, rcode: SERVFAIL}
       refused: {kind: rcode, rcode: REFUSED, aa: false}
       notimp: {kind: rcode, rcode: NOTIMP}
       trunc: {kind: truncate_udp}

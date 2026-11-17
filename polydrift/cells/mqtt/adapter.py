@@ -59,10 +59,18 @@ def _sorted_tuple(value: Any) -> Any:
     return None if value is None else tuple(sorted(value))
 
 
+def _expiry10(value: Any) -> Any:
+    # a received Message Expiry Interval counts whole seconds down while the broker holds the message, so the exact
+    # value depends on when the broker's clock ticks; the canonical value is the 10-second floor (57 and 58 agree,
+    # an undecremented 60 still differs from 50 to 59)
+    return value if not isinstance(value, int) or isinstance(value, bool) else (value // 10) * 10
+
+
 def _publish_meta(value: Any) -> Any:
     if value is None:
         return None
-    return tuple(sorted((c, tuple(sorted(tuple(m) for m in v))) for c, v in dict(value).items()))
+    return tuple(sorted((c, tuple(sorted(tuple(m[:3]) + (_expiry10(m[3]),) + tuple(m[4:]) for m in v)))
+                        for c, v in dict(value).items()))
 
 
 KAPPA: dict[str, Callable[[Any], Any]] = {

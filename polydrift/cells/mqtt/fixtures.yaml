@@ -970,7 +970,7 @@ fixtures:
   census_message_expiry_decremented:
     kind: stateful
     spec_refs:
-      - {"native": "MQTT-3.3.2-6", "keyword": "MUST", "axis": "publish_meta", "step": 7, "allowed": [[["b", [["x", 0, [], 50, false]]]], [["b", [["x", 0, [], 51, false]]]], [["b", [["x", 0, [], 52, false]]]], [["b", [["x", 0, [], 53, false]]]], [["b", [["x", 0, [], 54, false]]]], [["b", [["x", 0, [], 55, false]]]], [["b", [["x", 0, [], 56, false]]]], [["b", [["x", 0, [], 57, false]]]], [["b", [["x", 0, [], 58, false]]]], [["b", [["x", 0, [], 59, false]]]]]}
+      - {"native": "MQTT-3.3.2-6", "keyword": "MUST", "axis": "publish_meta", "step": 7, "allowed": [[["b", [["x", 0, [], 50, false]]]]], "note": "received expiry floored to 10 s (50 means 50 to 59)"}
     steps:
       - {"client": "b", "op": "connect", "args": {"client_id": "{C}b", "clean_start": true, "properties": {"session_expiry_interval": 300}}}
       - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x", "qos": 1}]}}
@@ -1079,9 +1079,9 @@ fixtures:
       - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}, "auto_ack": false}
       - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x", "qos": 2}]}}
       - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
-      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "ex", "qos": 2, "packet_id": 3, "properties": {"message_expiry_interval": 1}}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "ex", "qos": 2, "packet_id": 3, "properties": {"message_expiry_interval": 2}}}
       - {"client": "a", "op": "pubrel", "args": {"packet_id": 3}}
-      - {"client": "b", "op": "sleep", "window_ms": 2000}
+      - {"client": "b", "op": "sleep", "window_ms": 3000}
       - {"client": "b", "op": "pubrec", "args": {"packet_id": "last"}}
 
   census_expiry_receiver_qos2:

@@ -611,10 +611,10 @@ fixtures:
       - {"req_id": "DNS-891f1d63", "keyword": "MAY", "axis": "upstream_count", "step": 4, "note": "comparison only", "basis": "option"}
       - {"req_id": "DNS-a78bd3e2", "keyword": "MUST", "axis": "upstream_count", "step": 4, "note": "SERVFAIL cached at most 5 minutes, per query tuple; comparison only", "basis": "not-observable"}
     steps:
-      - {"op": "upstream", "match": "servfail.pd", "id": "up1"}
-      - {"qname": "servfail.pd.pdlab", "qtype": "A", "id": "q1"}
-      - {"qname": "servfail.pd.pdlab", "qtype": "A", "id": "q2"}
-      - {"op": "upstream", "match": "servfail.pd", "id": "up2"}
+      - {"op": "upstream", "match": "servfailc.pd", "id": "up1"}
+      - {"qname": "servfailc.pd.pdlab", "qtype": "A", "id": "q1"}
+      - {"qname": "servfailc.pd.pdlab", "qtype": "A", "id": "q2"}
+      - {"op": "upstream", "match": "servfailc.pd", "id": "up2"}
 
   census_edns_fallback:
     kind: probe
@@ -697,13 +697,13 @@ fixtures:
     spec_refs:
       - {"req_id": "DNS-46bc0bec", "keyword": "SHOULD", "axis": "tcp_rcodes", "step": 1, "allowed": [["NOERROR", "NOERROR", "NOERROR"]]}
       - {"req_id": "DNS-ce69a697", "keyword": "SHOULD", "axis": "tcp_open_after", "step": 1, "allowed": [true]}
-      - {"req_id": "DNS-cdcc98f5", "keyword": "SHOULD", "axis": "parallel_rcodes", "step": 2, "allowed": [[["t1", "NOERROR"], ["t2", "NOERROR"]]]}
-      - {"req_id": "DNS-d26ebe1e", "keyword": "SHOULD", "axis": "parallel_order", "step": 2, "note": "comparison only", "basis": "option"}
+      - {"req_id": "DNS-cdcc98f5", "keyword": "SHOULD", "axis": "parallel_rcodes", "step": 2, "allowed": [[["t1", "held"], ["t2", "NOERROR"]], [["t1", "closed"], ["t2", "NOERROR"]]], "note": "a second connection is answered while t1 is open"}
+      - {"req_id": "DNS-d26ebe1e", "keyword": "SHOULD", "axis": "parallel_order", "step": 2, "allowed": [["t2", "t1"]], "note": "t1 stalls mid-message for 4 s; t2, sent 0.3 s later, is answered before t1 ends"}
       - {"req_id": "DNS-54fea357", "keyword": "SHOULD", "axis": "tcp_rcodes", "step": 1, "note": "comparison only", "basis": "not-applicable"}
       - {"req_id": "DNS-7d16e70b", "keyword": "MAY", "axis": "tcp_open_after", "step": 1, "note": "comparison only", "basis": "option"}
     steps:
-      - {"op": "tcp_session", "timeout": 8, "queries": [{"qname": "tcpa.pd.pdlab"}, {"qname": "tcpb.pd.pdlab", "idle_ms": 10000}, {"qname": "tcpc.pd.pdlab"}]}
-      - {"op": "parallel", "timeout": 8, "queries": [{"label": "t1", "qname": "tcpa.pd.pdlab", "tcp": true}, {"label": "t2", "qname": "tcpb.pd.pdlab", "tcp": true}]}
+      - {"op": "tcp_session", "timeout": 8, "queries": [{"qname": "tcpa.pd.pdlab"}, {"qname": "tcpb.pd.pdlab", "idle_ms": 15000}, {"qname": "tcpc.pd.pdlab"}]}
+      - {"op": "parallel", "timeout": 8, "queries": [{"label": "t1", "stall": true, "hold_ms": 4000}, {"label": "t2", "qname": "tcpb.pd.pdlab", "tcp": true, "delay_ms": 300}]}
 
   census_additional_processing:
     kind: control

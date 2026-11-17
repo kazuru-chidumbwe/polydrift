@@ -8,7 +8,8 @@ failed attempt is kept). Containers are removed after each repeat, so no registr
 over between repeats.
 
 Target fields: key, impl, version, role (proxy | registrar | uas | uac), image, config (file under lab/elements),
-config_dst (mount point), cmd (optional), ready (seconds).
+config_dst (mount point), cmd (optional), ready (seconds), ready_exec (optional commands run in the EUT that must
+exit 0 before the fixtures; ejabberd defaults to check_account for each user in creds).
 
 Usage (lab host, detached):
   python -m polydrift.cells.sipb.runner --targets sipb_targets.json --lab DIR --out DIR [--repeats 3] [--only k,..]
@@ -111,6 +112,29 @@ def canary(domain: str) -> bool:
     return bool(o and (o[0].get("extract") or {}).get("x1"))
 
 
+def ready_checks(t: dict[str, Any], domain: str) -> list[list[str]]:
+    """Commands run in the EUT that must all exit 0 before the fixtures start (target field ready_exec).
+
+    ejabberd answers SIP before CTL_ON_START has created the lab users, so a canary alone let the first fixture of a
+    repeat meet 401 on bob's REGISTER (RQ5 SIP recall, 17 Nov): its default is check_account for every user in creds.
+    """
+    if "ready_exec" in t:
+        return [list(c) for c in t["ready_exec"] or []]
+    if t.get("impl") == "ejabberd":
+        return [["ejabberdctl", "check_account", u, domain] for u in sorted(t.get("creds") or {})]
+    return []
+
+
+def eut_ready(checks: list[list[str]]) -> bool:
+    for c in checks:
+        try:
+            if sh(["docker", "exec", "psipb-eut", *c], timeout=30).returncode != 0:
+                return False
+        except subprocess.TimeoutExpired:
+            return False
+    return True
+
+
 def lab_up(lab: str, t: dict[str, Any]) -> None:
     if sh(["docker", "network", "inspect", NET]).returncode != 0:
         nc = sh(["docker", "network", "create", "--internal", "--subnet", SUBNET, NET])
@@ -177,9 +201,9 @@ def main() -> int:
                     log(f"{t['key']} repeat {r}: {e}")
                     lab_down()
                     break
-                t0, ok_start = time.time(), False
+                t0, ok_start, checks = time.time(), False, ready_checks(t, domain)
                 while time.time() - t0 < t.get("ready", 60):
-                    if canary(domain):
+                    if canary(domain) and eut_ready(checks):
                         ok_start = True
                         break
                     time.sleep(2)

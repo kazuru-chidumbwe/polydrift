@@ -5,8 +5,10 @@ from polydrift.cells.sipb import runner
 
 def test_ejabberd_waits_for_every_lab_user():
     t = {"impl": "ejabberd", "creds": {"bob": "p", "alice": "p"}}
-    assert runner.ready_checks(t, "lab.test") == [["ejabberdctl", "check_account", "alice", "lab.test"],
-                                                  ["ejabberdctl", "check_account", "bob", "lab.test"]]
+    assert runner.ready_checks(t, "lab.test") == [["sh", "-c", runner.EJABBERD_USERS_READY, "sh", "lab.test",
+                                                   "alice", "bob"]]
+    assert "registered_users" in runner.EJABBERD_USERS_READY
+    assert runner.ready_checks({"impl": "ejabberd"}, "lab.test") == []
 
 
 def test_explicit_ready_exec_wins_and_others_have_none():

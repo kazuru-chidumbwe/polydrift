@@ -9,7 +9,7 @@ over between repeats.
 
 Target fields: key, impl, version, role (proxy | registrar | uas | uac), image, config (file under lab/elements),
 config_dst (mount point), cmd (optional), ready (seconds), ready_exec (optional commands run in the EUT that must
-exit 0 before the fixtures; ejabberd defaults to check_account for each user in creds).
+exit 0 before the fixtures; ejabberd defaults to every user in creds listed by registered_users).
 
 Usage (lab host, detached):
   python -m polydrift.cells.sipb.runner --targets sipb_targets.json --lab DIR --out DIR [--repeats 3] [--only k,..]
@@ -116,13 +116,19 @@ def ready_checks(t: dict[str, Any], domain: str) -> list[list[str]]:
     """Commands run in the EUT that must all exit 0 before the fixtures start (target field ready_exec).
 
     ejabberd answers SIP before CTL_ON_START has created the lab users, so a canary alone let the first fixture of a
-    repeat meet 401 on bob's REGISTER (RQ5 SIP recall, 17 Nov): its default is check_account for every user in creds.
+    repeat meet 401 on bob's REGISTER (RQ5 SIP recall, 17 Nov): its default is that every user in creds appears in
+    registered_users (a core command; check_account needs mod_admin_extra, which the lab configuration does not load).
     """
     if "ready_exec" in t:
         return [list(c) for c in t["ready_exec"] or []]
-    if t.get("impl") == "ejabberd":
-        return [["ejabberdctl", "check_account", u, domain] for u in sorted(t.get("creds") or {})]
+    users = sorted(t.get("creds") or {})
+    if t.get("impl") == "ejabberd" and users:
+        return [["sh", "-c", EJABBERD_USERS_READY, "sh", domain, *users]]
     return []
+
+
+EJABBERD_USERS_READY = ('u=$(ejabberdctl registered_users "$1") || exit 1; shift; '
+                        'for x in "$@"; do printf "%s\\n" "$u" | grep -qx "$x" || exit 1; done')
 
 
 def eut_ready(checks: list[list[str]]) -> bool:

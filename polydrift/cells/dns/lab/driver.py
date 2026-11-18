@@ -227,7 +227,11 @@ def parallel(server: str, qs: list[dict], timeout: float) -> dict:
         # "closed" if the server closes it first
         s = socket.create_connection((server, 53), timeout=timeout)
         try:
-            s.sendall(struct.pack("!H", 64) + b"\x12\x34\x01")
+            try:
+                s.sendall(struct.pack("!H", 64) + b"\x12\x34\x01")
+            except OSError:
+                # the server closed or reset before the partial message went out (Linux: BrokenPipeError)
+                return "closed"
             s.settimeout(float(item.get("hold_ms", 4000)) / 1000)
             try:
                 return "closed" if not s.recv(2) else "answered"

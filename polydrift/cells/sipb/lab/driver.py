@@ -10,8 +10,10 @@ Steps:
          is filled in for "{clen}". Placeholders: {eut} {lab} {domain} {U} {port:party} {branch} (a new branch per
          send) {branch:k} (named, stable within the fixture) {callid} {tag:k} {last:party:header} (a header of the
          last message the party received, e.g. {last:bob:Via}).
-  reply  {from: bob, code, reason="", headers: {...}, body="", window_ms}: a response to the last request the party
-         received, copying Via, From, To (adding a To tag unless the request had one), Call-ID and CSeq (RFC 3261 8.2.6).
+  reply  {from: bob, code, reason="", headers: {...}, body="", window_ms, answers=METHOD}: a response to the last
+         request the party received (with answers: the last request of that method, so a retransmission of another
+         request arriving late cannot become the one answered), copying Via, From, To (adding a To tag unless the
+         request had one), Call-ID and CSeq (RFC 3261 8.2.6).
   ack    {from: alice, window_ms}: ACK for the last INVITE alice sent and the last final response she received
          (non-2xx: same branch, RFC 3261 17.1.1.3; 2xx: new branch, to the Contact or the Record-Route set).
   wait   {ms}
@@ -84,6 +86,7 @@ class Party:
         self.inbox: list[dict] = []
         self.last_req: dict | None = None
         self.last_req_src: tuple | None = None
+        self.last_req_by: dict[str, tuple[dict, tuple]] = {}  # method -> (last request of that method, its source)
         self.last_resp: dict | None = None
         self.aside = None  # set by Lab: is a received message a probe or a stray (see set_aside)
 
@@ -139,6 +142,7 @@ class Party:
             return
         if m["kind"] == "req":
             self.last_req, self.last_req_src = m, src
+            self.last_req_by[str(m.get("method"))] = (m, src)
         else:
             self.last_resp = m
 
@@ -268,9 +272,11 @@ class Lab:
 
     def step_reply(self, st: dict) -> str | None:
         p = self.parties[st.get("from", "bob")]
-        req = p.last_req
+        req, req_src = p.last_req, p.last_req_src
+        if st.get("answers"):
+            req, req_src = p.last_req_by.get(str(st["answers"]), (None, None))
         if req is None:
-            return "reply: no request received"
+            return "reply: no request received" + (f" ({st['answers']})" if st.get("answers") else "")
         code = int(st["code"])
         lines = [f"SIP/2.0 {code} {st.get('reason', 'OK' if code == 200 else 'Reason')}"]
         for v in req["hdr"].get("via", []):
@@ -294,7 +300,7 @@ class Lab:
         body = self.fill(st.get("body", ""), p.name)
         lines.append("Content-Length: {clen}")
         data = self.finish("\n".join(lines) + "\n\n" + body)
-        kind, src, conn = p.last_req_src
+        kind, src, conn = req_src
         return self.send_bytes(p.name, data, kind, src if kind == "udp" else None, via_conn=conn)
 
     def step_uac(self, st: dict) -> str | None:

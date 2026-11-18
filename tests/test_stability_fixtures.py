@@ -102,3 +102,65 @@ def test_sip_ringing_cancel_487_counted_in_either_window():
 def test_sip_reinvite_overlap_first_reinvite_does_not_listen():
     steps = _sip_fixtures()["uas_reinvite_overlap"]["steps"]
     assert steps[2]["window_ms"] == 0 and "INVITE" in steps[2]["msg"] and "INVITE" in steps[3]["msg"]
+
+
+def test_jmap_submission_extensions_mask_the_server_clock():
+    from polydrift.cells.jmap.driver import evaluate
+    x8 = None
+    fx = yaml.safe_load((ROOT / "polydrift/cells/jmap/fixtures.yaml").read_text(encoding="utf-8"))
+    for st in fx.get("fixtures", fx)["census_session_mail_capability"]["steps"]:
+        x8 = (st.get("extract") or {}).get("x8", x8)
+    assert x8.startswith("nodate:")
+    expr = x8.replace("{acct}", "a1")
+
+    def ctx(ext):
+        caps = {"urn:ietf:params:jmap:submission": {"submissionExtensions": ext}}
+        return {"body": {"accounts": {"a1": {"accountCapabilities": caps}}}}
+
+    one = evaluate(expr, ctx({"FUTURERELEASE": ["86400", "2026-11-19T06:51:59.936358331Z"], "SIZE": ["1000"]}))
+    two = evaluate(expr, ctx({"FUTURERELEASE": ["86400", "2026-11-19T06:53:17.576325789Z"], "SIZE": ["1000"]}))
+    assert one == two == {"FUTURERELEASE": ["86400", "<date-time>"], "SIZE": ["1000"]}
+    assert evaluate(expr, ctx({"FUTURERELEASE": ["3600", "2026-11-19T06:51:59Z"]})) != one
+    assert evaluate(expr, {"body": {"accounts": {}}}) is None
+
+
+def _reply_lab(drv, bob):
+    from types import SimpleNamespace
+    sent = []
+    lab = SimpleNamespace(parties={"bob": bob}, named={}, host="127.0.0.1", fill=lambda t, _p: t,
+                          finish=drv.Lab.finish,
+                          send_bytes=lambda party, data, kind, dest=None, via_conn=None: sent.append(data) or None)
+    return lab, sent
+
+
+def _sip_req(method, cseq):
+    head = [f"{method} sip:bob@lab.test SIP/2.0", f"Via: SIP/2.0/UDP 172.31.60.10:5060;branch=z9hG4bK{cseq}",
+            "From: <sip:alice@lab.test>;tag=a1", "To: <sip:bob@lab.test>", "Call-ID: c1",
+            f"CSeq: {cseq} {method}", "Content-Length: 0"]
+    return ("\r\n".join(head) + "\r\n\r\n").encode()
+
+
+def test_sip_reply_answers_the_named_method_when_a_retransmission_lands_last():
+    drv = _sip_driver()
+    bob = drv.Party("bob", "127.0.0.1", 0)
+    try:
+        src = ("udp", ("172.31.60.10", 5060), None)
+        for m, n in (("MESSAGE", 2), ("INVITE", 1), ("MESSAGE", 2)):  # repeat 3 of D x5: MESSAGE retransmitted last
+            bob._got(_sip_req(m, n), "udp", src)
+        lab, sent = _reply_lab(drv, bob)
+        assert drv.Lab.step_reply(lab, {"from": "bob", "code": 200, "answers": "INVITE"}) is None
+        assert drv.Lab.step_reply(lab, {"from": "bob", "code": 200, "answers": "MESSAGE"}) is None
+        assert drv.Lab.step_reply(lab, {"from": "bob", "code": 200}) is None
+        assert [b"CSeq: 1 INVITE" in x for x in sent] == [True, False, False]
+        assert b"CSeq: 2 MESSAGE" in sent[1] and b"CSeq: 2 MESSAGE" in sent[2]
+        assert "no request received (BYE)" in drv.Lab.step_reply(lab, {"from": "bob", "code": 200, "answers": "BYE"})
+    finally:
+        bob.udp.close()
+        bob.tcp_listen.close()
+
+
+def test_sip_record_route_replies_name_their_requests():
+    steps = _sip_fixtures()["px_record_route"]["steps"]
+    replies = [s for s in steps if s["op"] == "reply"]
+    assert [s.get("answers") for s in replies] == ["INVITE", "MESSAGE"]
+    assert replies[0]["extract"]["x6"] == "alice/0/hdr/record-route"

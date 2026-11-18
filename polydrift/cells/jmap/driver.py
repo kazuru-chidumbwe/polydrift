@@ -20,7 +20,8 @@ known) and returned as ``extract``; the adapter maps them to the generic axes x1
 ``fn:path`` / ``fn:path=literal``. Paths are ``/``-separated from a root: ``rN`` (arguments of method response N),
 ``mN`` (its name), ``body``, ``session``, ``http``, ``ctype``, ``hdr`` (response headers, lower-case names),
 ``events``. Functions: ``len``, ``keys``, ``type``, ``has``, ``eq``, ``ne``, ``in`` (literal in value), ``re``
-(regex match), ``allre`` (every element matches), ``sorted``, ``lower``, ``ge`` (number >= literal).
+(regex match), ``allre`` (every element matches), ``sorted``, ``lower``, ``ge`` (number >= literal), ``nodate`` (the
+value with every RFC 3339 date-time string replaced by ``<date-time>``, for values that carry the server's clock).
 """
 
 from __future__ import annotations
@@ -130,6 +131,20 @@ def _walk(root: Any, parts: list[str]) -> Any:
 _MISSING = object()
 
 
+_DATETIME = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})", re.I)
+
+
+def _nodate(v: Any) -> Any:
+    """The value with every RFC 3339 date-time string replaced by "<date-time>" (keys and other values kept)."""
+    if isinstance(v, str):
+        return "<date-time>" if _DATETIME.fullmatch(v) else v
+    if isinstance(v, list):
+        return [_nodate(x) for x in v]
+    if isinstance(v, dict):
+        return {k: _nodate(x) for k, x in v.items()}
+    return v
+
+
 def _path(ctx: dict[str, Any], path: str) -> Any:
     parts = [p for p in path.split("/") if p != ""]
     if not parts:
@@ -148,7 +163,7 @@ def _path(ctx: dict[str, Any], path: str) -> Any:
     return _MISSING
 
 
-FN = r"^(len|keys|type|has|eq|ne|in|re|allre|allin|sorted|lower|ge|hasall|nullorge|lensum|sortedby|allvals|count):"
+FN = r"^(len|keys|type|has|eq|ne|in|re|allre|allin|sorted|lower|ge|hasall|nullorge|lensum|sortedby|allvals|count|nodate):"
 
 
 def evaluate(expr: str, ctx: dict[str, Any]) -> Any:
@@ -210,6 +225,8 @@ def evaluate(expr: str, ctx: dict[str, Any]) -> Any:
         return isinstance(v, dict) and all(x == _lit(lit) for x in v.values())
     if fn == "count":
         return v.count(_lit(lit)) if isinstance(v, list) else None
+    if fn == "nodate":
+        return _nodate(v)
     if fn == "ge":
         return isinstance(v, (int, float)) and not isinstance(v, bool) and v >= float(lit)
     return None

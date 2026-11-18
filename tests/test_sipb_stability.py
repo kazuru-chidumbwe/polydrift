@@ -129,6 +129,7 @@ def _party_without_sockets(aside):
     p = object.__new__(driver.Party)
     p.name, p.port, p.inbox = "bob", 5070, []
     p.last_req = p.last_req_src = p.last_resp = None
+    p.last_req_by = {}
     p.aside = aside
     return p
 
@@ -148,6 +149,7 @@ def test_stray_is_recorded_but_never_becomes_the_request_a_reply_answers():
     p._got(_wire("PDCENSUS", "pda362439e7c-a6401d47af@10.0.0.9"), "udp", ("udp", ("10.0.0.2", 5060), None))
     assert [m["method"] for m in p.inbox] == ["INVITE", "PDCENSUS"]
     assert p.last_req["method"] == "INVITE"
+    assert sorted(p.last_req_by) == ["INVITE"]
 
 
 def test_party_without_aside_keeps_old_behaviour():

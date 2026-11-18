@@ -41,4 +41,4 @@ def test_clones_change_only_version_image_key():
                 continue
             src = ts[t["cloned_from"]]
             diff = {k for k in set(t) | set(src) if t.get(k) != src.get(k)}
-            assert diff <= {"version", "image", "key", "cloned_from"}, (t["key"], diff)
+            assert diff <= {"version", "image", "key", "cloned_from", "tag"}, (t["key"], diff)

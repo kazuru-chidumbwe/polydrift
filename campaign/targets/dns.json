@@ -1,16 +1,15 @@
 [
  {
-  "key": "bind-9.16",
+  "key": "bind-9.16.50",
   "impl": "bind",
-  "version": "9.16",
-  "image": "internetsystemsconsortium/bind9:9.16",
+  "version": "9.16.50",
+  "image": "pd-bind:9.16.50",
   "ready": 60,
   "mounts": {
    "named.conf": "/etc/bind/named.conf"
   },
   "entrypoint": null,
   "cmd": null,
-  "tag": "internetsystemsconsortium/bind9:9.20",
   "cloned_from": "bind-9.20.30"
  },
  {

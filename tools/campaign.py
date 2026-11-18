@@ -57,6 +57,7 @@ def build_cell(spec: dict) -> list[dict]:
                 c["image"] = image or retag(e["image"], rule["from"], ver)
                 c["key"] = e["key"].replace(rule["from"], ver)
                 c["cloned_from"] = e["key"]
+                c.pop("tag", None)  # the source's upstream tag does not describe the clone
                 if c["key"] not in seen:
                     seen[c["key"]] = c
                     out.append(c)
@@ -185,12 +186,16 @@ bash ~/labtools/stability3.sh {cell} campaign/targets/{tag}.json $TAR {c} {fixtu
 """
 
 PULL = """#!/bin/bash
-# Pull every public image the campaign plan names that is missing on this host (harness {c}).
-# Locally built pd-* images are never pulled; a missing one is listed for the image job.
-# Flag ~/polydrift/campaign-{c}-PULL-DONE (lists what failed).
+# Images for the campaign plan (harness {c}): first build the recipe images listed under "build" in
+# campaign/sources.json (through the host proxy), then pull every public image that is missing.
+# Locally built pd-* images are never pulled; a missing one is listed. Idempotent.
+# Flag ~/polydrift/campaign-{c}-PULL-DONE (lists what was built, pulled or failed).
 set -u
 TAR=~/polydrift/harness-{c}.tar
 F=~/polydrift/campaign-{c}-PULL-DONE; : > $F.tmp
+PX="--network host --build-arg http_proxy=http://127.0.0.1:8118 --build-arg https_proxy=http://127.0.0.1:8118 --build-arg HTTP_PROXY=http://127.0.0.1:8118 --build-arg HTTPS_PROXY=http://127.0.0.1:8118"
+BH=~/polydrift/campaign-{c}-build; rm -rf $BH; mkdir -p $BH; tar -xf $TAR -C $BH
+{builds}
 for t in $(tar -tf $TAR | grep '^campaign/targets/.*\\.json$'); do tar -xOf $TAR $t; done > /tmp/pd-campaign-all.json.txt
 python3 - <<'P' > /tmp/pd-campaign-images.txt
 import json,re
@@ -240,7 +245,17 @@ def cmd_jobs(a) -> int:
         written.append(p.name)
 
     if a.pull:
-        w(f"D-{n:03d}-polydrift-campaign-pull-{a.commit}.sh", PULL.format(c=a.commit))
+        src = json.loads((CAMP / "sources.json").read_text())
+        lines = []
+        for tag, b in src.get("build", {}).items():
+            args = " ".join(f"--build-arg {k}={v}" for k, v in b.get("args", {}).items())
+            log = "$BH/build-" + re.sub(r"[:/]", "_", tag) + ".log"
+            lines.append(
+                f'if docker image inspect {tag} >/dev/null 2>&1; then echo "PRESENT {tag}" >> $F.tmp; '
+                f'elif nice -n 5 docker build $PX -f $BH/{b["dockerfile"]} {args} -t {tag} $BH/{b["context"]} > {log} 2>&1; '
+                f'then echo "BUILT {tag} $(grep -m1 -o "TARBALL-SHA256 [0-9a-f]*" {log})" >> $F.tmp; '
+                f'else echo "BUILD-FAILED {tag} (log {log})" >> $F.tmp; fi')
+        w(f"D-{n:03d}-polydrift-campaign-pull-{a.commit}.sh", PULL.format(c=a.commit, builds="\n".join(lines)))
         n += 1
     for c in m["cells"]:
         w(f"D-{n:03d}-polydrift-{prefix}-{c['tag']}-{a.commit}.sh", JOB_HEAD.format(

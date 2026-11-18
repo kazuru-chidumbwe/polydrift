@@ -381,7 +381,7 @@ def _walk(cur, parts):
     return cur
 
 
-FN = r"^(len|keys|type|has|eq|ne|in|re|allre|allin|sorted|lower|ge|le|hasall|count|codes|methods|same|nre|ncodes):"
+FN = r"^(len|keys|type|has|eq|ne|in|re|allre|allin|sorted|lower|ge|le|hasall|count|codes|methods|same|nre|ncodes|hascode):"
 
 
 def _lit(s):
@@ -414,6 +414,9 @@ def evaluate(expr: str, ctx: dict):
     if fn == "ncodes":
         # ncodes:party=code: how many responses with that status code the party received (retransmissions)
         return sum(1 for m in v or [] if m.get("kind") == "resp" and m.get("code") == int(lit))
+    if fn == "hascode":
+        # hascode:party=code: the party received a response with that status code (any step so far when given hist/)
+        return any(m.get("kind") == "resp" and m.get("code") == int(lit) for m in v or [])
     if fn == "methods":
         return [m.get("method") for m in v or [] if m.get("kind") == "req"]
     if fn == "keys":

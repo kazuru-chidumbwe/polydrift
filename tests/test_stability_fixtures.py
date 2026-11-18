@@ -63,3 +63,42 @@ def test_servfail_caching_has_its_own_name():
     assert "servfailc.pd.pdlab" not in others
     assert "servfailc: {kind: rcode" in (ROOT / "polydrift/cells/dns/lab/zones.yaml").read_text(encoding="utf-8")
     assert zones
+
+
+def _sip_driver():
+    spec = importlib.util.spec_from_file_location("pd_sip_driver", ROOT / "polydrift/cells/sipb/lab/driver.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _sip_fixtures():
+    fx = yaml.safe_load((ROOT / "polydrift/cells/sipb/fixtures.yaml").read_text(encoding="utf-8"))
+    return fx.get("fixtures", fx)
+
+
+def test_sip_hascode_looks_at_every_step_so_far():
+    drv = _sip_driver()
+    ctx = {"hist": {"alice": [{"kind": "resp", "code": 180}, {"kind": "resp", "code": 200}, {"kind": "resp", "code": 487}]},
+           "alice": []}
+    assert drv.evaluate("hascode:hist/alice=487", ctx) is True
+    assert drv.evaluate("hascode:alice=487", ctx) is False
+    assert drv.evaluate("hascode:hist/bob=487", ctx) is False
+
+
+def test_sip_bye_cseq_compares_method_not_the_ua_chosen_number():
+    drv = _sip_driver()
+    x8 = _sip_fixtures()["ua_bye_from_callee_route_set"]["steps"][-2]["extract"]["x8"]
+    for n in ("1", "31496", "63100"):
+        assert drv.evaluate(x8, {"dave": [{"hdr": {"cseq": [f"{n} BYE"]}}]}) is True
+    assert drv.evaluate(x8, {"dave": [{"hdr": {"cseq": ["2 INVITE"]}}]}) is False
+
+
+def test_sip_ringing_cancel_487_counted_in_either_window():
+    steps = _sip_fixtures()["uas_ringing_cancel"]["steps"]
+    assert steps[-1]["extract"]["x4"] == "hascode:hist/alice=487"
+
+
+def test_sip_reinvite_overlap_first_reinvite_does_not_listen():
+    steps = _sip_fixtures()["uas_reinvite_overlap"]["steps"]
+    assert steps[2]["window_ms"] == 0 and "INVITE" in steps[2]["msg"] and "INVITE" in steps[3]["msg"]

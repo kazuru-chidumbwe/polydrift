@@ -1,0 +1,227 @@
+[
+ {
+  "key": "ejabberd-26.04",
+  "impl": "ejabberd",
+  "version": "26.04",
+  "role": "proxy",
+  "image": "ejabberd/ecs:26.04",
+  "config": "ejabberd.yml",
+  "config_dst": "/home/ejabberd/conf/ejabberd.yml",
+  "env": {
+   "CTL_ON_START": "register alice lab.test pdpass ; register bob lab.test pdpass ; register carol lab.test pdpass ; register dave lab.test pdpass"
+  },
+  "creds": {
+   "alice": "pdpass",
+   "bob": "pdpass",
+   "carol": "pdpass",
+   "dave": "pdpass"
+  },
+  "ready": 120
+ },
+ {
+  "key": "ejabberd-26.07",
+  "impl": "ejabberd",
+  "version": "26.07",
+  "role": "proxy",
+  "image": "ejabberd/ecs:26.07",
+  "config": "ejabberd.yml",
+  "config_dst": "/home/ejabberd/conf/ejabberd.yml",
+  "env": {
+   "CTL_ON_START": "register alice lab.test pdpass ; register bob lab.test pdpass ; register carol lab.test pdpass ; register dave lab.test pdpass"
+  },
+  "creds": {
+   "alice": "pdpass",
+   "bob": "pdpass",
+   "carol": "pdpass",
+   "dave": "pdpass"
+  },
+  "ready": 120
+ },
+ {
+  "key": "ejabberd-26.09",
+  "impl": "ejabberd",
+  "version": "26.09",
+  "role": "proxy",
+  "image": "ejabberd/ecs:26.09",
+  "config": "ejabberd.yml",
+  "config_dst": "/home/ejabberd/conf/ejabberd.yml",
+  "env": {
+   "CTL_ON_START": "register alice lab.test pdpass ; register bob lab.test pdpass ; register carol lab.test pdpass ; register dave lab.test pdpass"
+  },
+  "creds": {
+   "alice": "pdpass",
+   "bob": "pdpass",
+   "carol": "pdpass",
+   "dave": "pdpass"
+  },
+  "ready": 120
+ },
+ {
+  "key": "kamailio-5.8",
+  "impl": "kamailio",
+  "version": "5.8",
+  "role": "proxy",
+  "image": "pd-sipb-kamailio:5.8",
+  "config": "kamailio.cfg",
+  "config_dst": "/etc/kamailio/kamailio.cfg",
+  "ready": 40
+ },
+ {
+  "key": "kamailio-6.0",
+  "impl": "kamailio",
+  "version": "6.0",
+  "role": "proxy",
+  "image": "pd-sipb-kamailio:6.0",
+  "config": "kamailio.cfg",
+  "config_dst": "/etc/kamailio/kamailio.cfg",
+  "ready": 40
+ },
+ {
+  "key": "kamailio-6.1",
+  "impl": "kamailio",
+  "version": "6.1",
+  "role": "proxy",
+  "image": "pd-sipb-kamailio:6.1",
+  "config": "kamailio.cfg",
+  "config_dst": "/etc/kamailio/kamailio.cfg",
+  "ready": 40
+ },
+ {
+  "key": "kamailio-5.8-redirect",
+  "impl": "kamailio",
+  "version": "5.8",
+  "role": "redirect",
+  "image": "pd-sipb-kamailio:5.8",
+  "config": "kamailio-redirect.cfg",
+  "config_dst": "/etc/kamailio/kamailio.cfg",
+  "ready": 40
+ },
+ {
+  "key": "kamailio-6.0-redirect",
+  "impl": "kamailio",
+  "version": "6.0",
+  "role": "redirect",
+  "image": "pd-sipb-kamailio:6.0",
+  "config": "kamailio-redirect.cfg",
+  "config_dst": "/etc/kamailio/kamailio.cfg",
+  "ready": 40
+ },
+ {
+  "key": "kamailio-6.1-redirect",
+  "impl": "kamailio",
+  "version": "6.1",
+  "role": "redirect",
+  "image": "pd-sipb-kamailio:6.1",
+  "config": "kamailio-redirect.cfg",
+  "config_dst": "/etc/kamailio/kamailio.cfg",
+  "ready": 40
+ },
+ {
+  "key": "kamailio-5.8-stateless",
+  "impl": "kamailio",
+  "version": "5.8",
+  "role": "stateless",
+  "image": "pd-sipb-kamailio:5.8",
+  "config": "kamailio-stateless.cfg",
+  "config_dst": "/etc/kamailio/kamailio.cfg",
+  "ready": 40
+ },
+ {
+  "key": "kamailio-6.0-stateless",
+  "impl": "kamailio",
+  "version": "6.0",
+  "role": "stateless",
+  "image": "pd-sipb-kamailio:6.0",
+  "config": "kamailio-stateless.cfg",
+  "config_dst": "/etc/kamailio/kamailio.cfg",
+  "ready": 40
+ },
+ {
+  "key": "kamailio-6.1-stateless",
+  "impl": "kamailio",
+  "version": "6.1",
+  "role": "stateless",
+  "image": "pd-sipb-kamailio:6.1",
+  "config": "kamailio-stateless.cfg",
+  "config_dst": "/etc/kamailio/kamailio.cfg",
+  "ready": 40
+ },
+ {
+  "key": "opensips-3.5",
+  "impl": "opensips",
+  "version": "3.5",
+  "role": "proxy",
+  "image": "opensips/opensips:3.5",
+  "config": "opensips.cfg",
+  "config_dst": "/etc/opensips/opensips.cfg",
+  "entrypoint": "opensips",
+  "cmd": [
+   "-F",
+   "-f",
+   "/etc/opensips/opensips.cfg"
+  ],
+  "ready": 40
+ },
+ {
+  "key": "opensips-3.6",
+  "impl": "opensips",
+  "version": "3.6",
+  "role": "proxy",
+  "image": "opensips/opensips:3.6",
+  "config": "opensips.cfg",
+  "config_dst": "/etc/opensips/opensips.cfg",
+  "entrypoint": "opensips",
+  "cmd": [
+   "-F",
+   "-f",
+   "/etc/opensips/opensips.cfg"
+  ],
+  "ready": 40
+ },
+ {
+  "key": "opensips-4.0",
+  "impl": "opensips",
+  "version": "4.0",
+  "role": "proxy",
+  "image": "opensips/opensips:4.0",
+  "config": "opensips.cfg",
+  "config_dst": "/etc/opensips/opensips.cfg",
+  "entrypoint": "opensips",
+  "cmd": [
+   "-F",
+   "-f",
+   "/etc/opensips/opensips.cfg"
+  ],
+  "ready": 40
+ },
+ {
+  "key": "repro-1.12.0",
+  "impl": "repro",
+  "version": "1.12.0",
+  "role": "proxy",
+  "image": "pd-sipb-repro:1.12.0",
+  "config": "repro.config",
+  "config_dst": "/etc/repro/repro.config",
+  "ready": 40
+ },
+ {
+  "key": "repro-1.13.2",
+  "impl": "repro",
+  "version": "1.13.2",
+  "role": "proxy",
+  "image": "pd-sipb-repro:1.13.2",
+  "config": "repro.config",
+  "config_dst": "/etc/repro/repro.config",
+  "ready": 40
+ },
+ {
+  "key": "repro-1.14.0",
+  "impl": "repro",
+  "version": "1.14.0",
+  "role": "proxy",
+  "image": "pd-sipb-repro:1.14.0",
+  "config": "repro.config",
+  "config_dst": "/etc/repro/repro.config",
+  "ready": 40
+ }
+]

@@ -1,0 +1,32 @@
+[
+ {
+  "key": "repro-1.14.0",
+  "impl": "repro",
+  "version": "1.14.0",
+  "role": "proxy",
+  "image": "pd-sipb-repro:1.14.0",
+  "config": "repro.config",
+  "config_dst": "/etc/repro/repro.config",
+  "ready": 40
+ },
+ {
+  "key": "repro-1.13.2",
+  "impl": "repro",
+  "version": "1.13.2",
+  "role": "proxy",
+  "image": "pd-sipb-repro:1.13.2",
+  "config": "repro.config",
+  "config_dst": "/etc/repro/repro.config",
+  "ready": 40
+ },
+ {
+  "key": "repro-1.12.0",
+  "impl": "repro",
+  "version": "1.12.0",
+  "role": "proxy",
+  "image": "pd-sipb-repro:1.12.0",
+  "config": "repro.config",
+  "config_dst": "/etc/repro/repro.config",
+  "ready": 40
+ }
+]

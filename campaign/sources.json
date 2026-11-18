@@ -1,0 +1,42 @@
+{
+  "about": "Campaign plan sources. tools/campaign.py build turns this into campaign/targets/<tag>.json and campaign/manifest.json. Version rule (manuscript 4.6, RQ4): the latest release and the two preceding minor releases at the freeze; where an implementation has no minor-release structure, releases spanning the preceding 24 months. Base files come first-wins: an entry whose key is already present is skipped, so the validated current-version entries (smoke files) take precedence over older drift files.",
+  "repeats": 3,
+  "cells": [
+    {"tag": "dns", "cell": "dns", "fixtures": "all", "lab": true,
+     "base": ["dns.json"],
+     "clone": {"bind": {"from": "9.20.30", "to": [["9.16", "internetsystemsconsortium/bind9:9.16"]]}}},
+    {"tag": "mqtt", "cell": "mqtt", "fixtures": "all", "lab": false,
+     "base": ["mqtt_smoke.json", "mqtt_drift.json"]},
+    {"tag": "ldap", "cell": "ldap", "fixtures": "all", "lab": false,
+     "base": ["ldap_smoke.json", "ldap_drift.json"],
+     "clone": {"openldap": {"from": "2.7.2", "to": ["2.6.16", "2.5.20"]},
+               "apacheds": {"from": "2.0.0.AM27", "to": ["2.0.0.AM26", "2.0.0.AM25"]},
+               "samba-ad": {"from": "4.25.1", "to": ["4.24.8", "4.23.13"]}}},
+    {"tag": "jmap", "cell": "jmap", "fixtures": "all", "lab": false,
+     "base": ["jmap_smoke.json", "jmap_drift.json"],
+     "rewrite": {"/home/test/polydrift/harness/polydrift/cells/jmap": "{celldir}"},
+     "clone": {"james": {"from": "3.9.1", "to": ["3.8.2", "3.7.6"]},
+               "cyrus": {"from": "3.12.4", "to": ["3.10.4", "3.8.8"]}}},
+    {"tag": "sieve-mail", "cell": "sieve", "fixtures": "all", "lab": true,
+     "base": ["sieve_mail.json"],
+     "clone": {"pigeonhole": {"from": "2.4.5", "to": ["2.3.21.1"]},
+               "mailutils": {"from": "3.21", "to": ["3.20", "3.19"]},
+               "exim": {"from": "4.100.1", "to": ["4.99.5", "4.98.2"]},
+               "sieve-rs": {"from": "0.7.3", "to": ["0.6.0", "0.5.3"]},
+               "jsieve": {"from": "0.8", "to": ["0.7", "0.6"]}}},
+    {"tag": "sieve-stalwart", "cell": "sieve", "fixtures": "all", "lab": true,
+     "base": ["sieve_stalwart.json"]},
+    {"tag": "sipb-proxy", "cell": "sipb", "fixtures": "all", "lab": true,
+     "base": ["sipb_proxy_latest.json", "sipb_proxy_versions.json"]},
+    {"tag": "sipb-repro", "cell": "sipb", "fixtures": "all", "lab": true,
+     "base": ["sipb_repro.json"]},
+    {"tag": "sipb-ua", "cell": "sipb", "fixtures": "ua_,uas_,uac_,r_", "lab": true,
+     "base": ["sipb_ua.json"],
+     "clone": {"pjsip": {"from": "2.15.1", "to": ["2.17", "2.16"]}}}
+  ],
+  "exceptions": {
+    "pigeonhole": "Two lines built (2.4.5, 2.3.21.1); the third (2.2 line or a 24-month span) is not decided yet (open gap, tasklist).",
+    "baresip": "Debian trixie package only so far; older releases need source builds (open gap, tasklist).",
+    "linphone": "Debian trixie package only so far; older releases need source builds (open gap, tasklist)."
+  }
+}

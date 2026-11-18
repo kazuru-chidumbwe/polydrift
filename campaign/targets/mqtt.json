@@ -1,0 +1,186 @@
+[
+ {
+  "key": "emqx-6.1.5",
+  "impl": "emqx",
+  "version": "6.1.5",
+  "image": "emqx/emqx:6.1.5",
+  "port": 1883,
+  "extra": [],
+  "cmd": null,
+  "ready": 180
+ },
+ {
+  "key": "emqx-6.2.3",
+  "impl": "emqx",
+  "version": "6.2.3",
+  "image": "emqx/emqx:6.2.3",
+  "port": 1883,
+  "extra": [],
+  "cmd": null,
+  "ready": 180
+ },
+ {
+  "key": "emqx-6.3.2",
+  "impl": "emqx",
+  "version": "6.3.2",
+  "image": "emqx/emqx:6.3.2",
+  "port": 1883,
+  "extra": [],
+  "cmd": null,
+  "ready": 180
+ },
+ {
+  "key": "hivemq-ce-2025.4",
+  "impl": "hivemq-ce",
+  "version": "2025.4",
+  "image": "hivemq/hivemq-ce:2025.4",
+  "port": 1883,
+  "extra": [],
+  "cmd": null,
+  "ready": 180
+ },
+ {
+  "key": "hivemq-ce-2025.5",
+  "impl": "hivemq-ce",
+  "version": "2025.5",
+  "image": "hivemq/hivemq-ce:2025.5",
+  "port": 1883,
+  "extra": [],
+  "cmd": null,
+  "ready": 180
+ },
+ {
+  "key": "hivemq-ce-2026.5",
+  "impl": "hivemq-ce",
+  "version": "2026.5",
+  "image": "hivemq/hivemq-ce:2026.5",
+  "port": 1883,
+  "extra": [],
+  "cmd": null,
+  "ready": 180
+ },
+ {
+  "key": "mosquitto-1.5.11",
+  "impl": "mosquitto",
+  "version": "1.5.11",
+  "image": "eclipse-mosquitto:1.5.11",
+  "port": 1883,
+  "extra": [],
+  "cmd": [
+   "sh",
+   "-c",
+   "printf 'listener 1883\\nallow_anonymous true\\n' > /tmp/m.conf && exec mosquitto -c /tmp/m.conf"
+  ],
+  "ready": 60,
+  "canary_version": 4
+ },
+ {
+  "key": "mosquitto-1.6.15",
+  "impl": "mosquitto",
+  "version": "1.6.15",
+  "image": "eclipse-mosquitto:1.6.15",
+  "port": 1883,
+  "extra": [],
+  "cmd": [
+   "sh",
+   "-c",
+   "printf 'listener 1883\\nallow_anonymous true\\n' > /tmp/m.conf && exec mosquitto -c /tmp/m.conf"
+  ],
+  "ready": 60
+ },
+ {
+  "key": "mosquitto-2.0.22",
+  "impl": "mosquitto",
+  "version": "2.0.22",
+  "image": "eclipse-mosquitto:2.0.22",
+  "port": 1883,
+  "extra": [],
+  "cmd": [
+   "sh",
+   "-c",
+   "printf 'listener 1883\nallow_anonymous true\n' > /tmp/m.conf && exec mosquitto -c /tmp/m.conf"
+  ],
+  "ready": 60
+ },
+ {
+  "key": "nanomq-0.23.10",
+  "impl": "nanomq",
+  "version": "0.23.10",
+  "image": "emqx/nanomq:0.23.10",
+  "port": 1883,
+  "extra": [],
+  "cmd": null,
+  "ready": 60
+ },
+ {
+  "key": "nanomq-0.24.14",
+  "impl": "nanomq",
+  "version": "0.24.14",
+  "image": "emqx/nanomq:0.24.14",
+  "port": 1883,
+  "extra": [],
+  "cmd": null,
+  "ready": 60
+ },
+ {
+  "key": "nanomq-0.25.7",
+  "impl": "nanomq",
+  "version": "0.25.7",
+  "image": "emqx/nanomq:0.25.7",
+  "port": 1883,
+  "extra": [],
+  "cmd": null,
+  "ready": 60
+ },
+ {
+  "key": "vernemq-2.0.1",
+  "impl": "vernemq",
+  "version": "2.0.1",
+  "image": "vernemq/vernemq:2.0.1",
+  "port": 1883,
+  "extra": [
+   "-e",
+   "DOCKER_VERNEMQ_ACCEPT_EULA=yes",
+   "-e",
+   "DOCKER_VERNEMQ_ALLOW_ANONYMOUS=on",
+   "-e",
+   "DOCKER_VERNEMQ_LISTENER__TCP__ALLOWED_PROTOCOL_VERSIONS=3,4,5"
+  ],
+  "cmd": null,
+  "ready": 180
+ },
+ {
+  "key": "vernemq-2.1.2",
+  "impl": "vernemq",
+  "version": "2.1.2",
+  "image": "vernemq/vernemq:2.1.2",
+  "port": 1883,
+  "extra": [
+   "-e",
+   "DOCKER_VERNEMQ_ACCEPT_EULA=yes",
+   "-e",
+   "DOCKER_VERNEMQ_ALLOW_ANONYMOUS=on",
+   "-e",
+   "DOCKER_VERNEMQ_LISTENER__TCP__ALLOWED_PROTOCOL_VERSIONS=3,4,5"
+  ],
+  "cmd": null,
+  "ready": 180
+ },
+ {
+  "key": "vernemq-2.2.1",
+  "impl": "vernemq",
+  "version": "2.2.1",
+  "image": "vernemq/vernemq:2.2.1",
+  "port": 1883,
+  "extra": [
+   "-e",
+   "DOCKER_VERNEMQ_ACCEPT_EULA=yes",
+   "-e",
+   "DOCKER_VERNEMQ_ALLOW_ANONYMOUS=on",
+   "-e",
+   "DOCKER_VERNEMQ_LISTENER__TCP__ALLOWED_PROTOCOL_VERSIONS=3,4,5"
+  ],
+  "cmd": null,
+  "ready": 180
+ }
+]

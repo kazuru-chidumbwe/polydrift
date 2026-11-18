@@ -1,0 +1,355 @@
+[
+ {
+  "impl": "baresip",
+  "version": "Debian trixie",
+  "image": "pd-sipb-baresip:trixie",
+  "ctl": {
+   "kind": "baresip",
+   "port": 4444
+  },
+  "ready": 40,
+  "key": "baresip-trixie",
+  "roles": [
+   "uas",
+   "uac"
+  ],
+  "mounts": {
+   "baresip": "/pd/baresip"
+  }
+ },
+ {
+  "impl": "baresip",
+  "version": "Debian trixie",
+  "image": "pd-sipb-baresip:trixie",
+  "ctl": {
+   "kind": "baresip",
+   "port": 4444
+  },
+  "ready": 40,
+  "key": "baresip-trixie-ring",
+  "roles": [
+   "uas-ring"
+  ],
+  "mounts": {
+   "baresip-ring": "/pd/baresip"
+  }
+ },
+ {
+  "impl": "baresip",
+  "version": "Debian trixie",
+  "image": "pd-sipb-baresip:trixie",
+  "ctl": {
+   "kind": "baresip",
+   "port": 4444
+  },
+  "ready": 40,
+  "key": "baresip-trixie-reg",
+  "roles": [
+   "uac-reg"
+  ],
+  "mounts": {
+   "baresip-reg": "/pd/baresip"
+  }
+ },
+ {
+  "impl": "linphone",
+  "version": "Debian trixie",
+  "image": "pd-sipb-linphone:trixie",
+  "ctl": {
+   "kind": "linphone",
+   "port": 4444
+  },
+  "ready": 60,
+  "key": "linphone-trixie",
+  "roles": [
+   "uas",
+   "uac"
+  ],
+  "config": "linphonerc",
+  "config_dst": "/etc/linphone/linphonerc"
+ },
+ {
+  "impl": "linphone",
+  "version": "Debian trixie",
+  "image": "pd-sipb-linphone:trixie",
+  "ctl": {
+   "kind": "linphone",
+   "port": 4444
+  },
+  "ready": 60,
+  "key": "linphone-trixie-ring",
+  "roles": [
+   "uas-ring"
+  ],
+  "config": "linphonerc",
+  "config_dst": "/etc/linphone/linphonerc",
+  "env": {
+   "AUTO": "0"
+  }
+ },
+ {
+  "impl": "linphone",
+  "version": "Debian trixie",
+  "image": "pd-sipb-linphone:trixie",
+  "ctl": {
+   "kind": "linphone",
+   "port": 4444
+  },
+  "ready": 60,
+  "key": "linphone-trixie-reg",
+  "roles": [
+   "uac-reg"
+  ],
+  "config": "linphonerc-reg",
+  "config_dst": "/etc/linphone/linphonerc"
+ },
+ {
+  "impl": "pjsip",
+  "version": "2.15.1",
+  "image": "pd-sipb-pjsua:2.15.1",
+  "ctl": {
+   "kind": "pjsua",
+   "port": 2323
+  },
+  "ready": 40,
+  "key": "pjsua-2.15.1",
+  "roles": [
+   "uas",
+   "uac"
+  ],
+  "cmd": [
+   "--null-audio",
+   "--ip-addr=172.31.60.10",
+   "--local-port=5060",
+   "--max-calls=4",
+   "--use-cli",
+   "--cli-telnet-port=2323",
+   "--no-cli-console",
+   "--log-level=4",
+   "--app-log-level=3",
+   "--auto-answer=200"
+  ]
+ },
+ {
+  "impl": "pjsip",
+  "version": "2.15.1",
+  "image": "pd-sipb-pjsua:2.15.1",
+  "ctl": {
+   "kind": "pjsua",
+   "port": 2323
+  },
+  "ready": 40,
+  "key": "pjsua-2.15.1-ring",
+  "roles": [
+   "uas-ring"
+  ],
+  "cmd": [
+   "--null-audio",
+   "--ip-addr=172.31.60.10",
+   "--local-port=5060",
+   "--max-calls=4",
+   "--use-cli",
+   "--cli-telnet-port=2323",
+   "--no-cli-console",
+   "--log-level=4",
+   "--app-log-level=3"
+  ]
+ },
+ {
+  "impl": "pjsip",
+  "version": "2.15.1",
+  "image": "pd-sipb-pjsua:2.15.1",
+  "ctl": {
+   "kind": "pjsua",
+   "port": 2323
+  },
+  "ready": 40,
+  "key": "pjsua-2.15.1-reg",
+  "roles": [
+   "uac-reg"
+  ],
+  "cmd": [
+   "--null-audio",
+   "--ip-addr=172.31.60.10",
+   "--local-port=5060",
+   "--max-calls=4",
+   "--use-cli",
+   "--cli-telnet-port=2323",
+   "--no-cli-console",
+   "--log-level=4",
+   "--app-log-level=3",
+   "--auto-answer=200",
+   "--id=sip:uas@lab.test",
+   "--registrar=sip:172.31.60.99:5073",
+   "--reg-timeout=3600"
+  ]
+ },
+ {
+  "impl": "pjsip",
+  "version": "2.16",
+  "image": "pd-sipb-pjsua:2.16",
+  "ctl": {
+   "kind": "pjsua",
+   "port": 2323
+  },
+  "ready": 40,
+  "key": "pjsua-2.16",
+  "roles": [
+   "uas",
+   "uac"
+  ],
+  "cmd": [
+   "--null-audio",
+   "--ip-addr=172.31.60.10",
+   "--local-port=5060",
+   "--max-calls=4",
+   "--use-cli",
+   "--cli-telnet-port=2323",
+   "--no-cli-console",
+   "--log-level=4",
+   "--app-log-level=3",
+   "--auto-answer=200"
+  ],
+  "cloned_from": "pjsua-2.15.1"
+ },
+ {
+  "impl": "pjsip",
+  "version": "2.16",
+  "image": "pd-sipb-pjsua:2.16",
+  "ctl": {
+   "kind": "pjsua",
+   "port": 2323
+  },
+  "ready": 40,
+  "key": "pjsua-2.16-ring",
+  "roles": [
+   "uas-ring"
+  ],
+  "cmd": [
+   "--null-audio",
+   "--ip-addr=172.31.60.10",
+   "--local-port=5060",
+   "--max-calls=4",
+   "--use-cli",
+   "--cli-telnet-port=2323",
+   "--no-cli-console",
+   "--log-level=4",
+   "--app-log-level=3"
+  ],
+  "cloned_from": "pjsua-2.15.1-ring"
+ },
+ {
+  "impl": "pjsip",
+  "version": "2.16",
+  "image": "pd-sipb-pjsua:2.16",
+  "ctl": {
+   "kind": "pjsua",
+   "port": 2323
+  },
+  "ready": 40,
+  "key": "pjsua-2.16-reg",
+  "roles": [
+   "uac-reg"
+  ],
+  "cmd": [
+   "--null-audio",
+   "--ip-addr=172.31.60.10",
+   "--local-port=5060",
+   "--max-calls=4",
+   "--use-cli",
+   "--cli-telnet-port=2323",
+   "--no-cli-console",
+   "--log-level=4",
+   "--app-log-level=3",
+   "--auto-answer=200",
+   "--id=sip:uas@lab.test",
+   "--registrar=sip:172.31.60.99:5073",
+   "--reg-timeout=3600"
+  ],
+  "cloned_from": "pjsua-2.15.1-reg"
+ },
+ {
+  "impl": "pjsip",
+  "version": "2.17",
+  "image": "pd-sipb-pjsua:2.17",
+  "ctl": {
+   "kind": "pjsua",
+   "port": 2323
+  },
+  "ready": 40,
+  "key": "pjsua-2.17",
+  "roles": [
+   "uas",
+   "uac"
+  ],
+  "cmd": [
+   "--null-audio",
+   "--ip-addr=172.31.60.10",
+   "--local-port=5060",
+   "--max-calls=4",
+   "--use-cli",
+   "--cli-telnet-port=2323",
+   "--no-cli-console",
+   "--log-level=4",
+   "--app-log-level=3",
+   "--auto-answer=200"
+  ],
+  "cloned_from": "pjsua-2.15.1"
+ },
+ {
+  "impl": "pjsip",
+  "version": "2.17",
+  "image": "pd-sipb-pjsua:2.17",
+  "ctl": {
+   "kind": "pjsua",
+   "port": 2323
+  },
+  "ready": 40,
+  "key": "pjsua-2.17-ring",
+  "roles": [
+   "uas-ring"
+  ],
+  "cmd": [
+   "--null-audio",
+   "--ip-addr=172.31.60.10",
+   "--local-port=5060",
+   "--max-calls=4",
+   "--use-cli",
+   "--cli-telnet-port=2323",
+   "--no-cli-console",
+   "--log-level=4",
+   "--app-log-level=3"
+  ],
+  "cloned_from": "pjsua-2.15.1-ring"
+ },
+ {
+  "impl": "pjsip",
+  "version": "2.17",
+  "image": "pd-sipb-pjsua:2.17",
+  "ctl": {
+   "kind": "pjsua",
+   "port": 2323
+  },
+  "ready": 40,
+  "key": "pjsua-2.17-reg",
+  "roles": [
+   "uac-reg"
+  ],
+  "cmd": [
+   "--null-audio",
+   "--ip-addr=172.31.60.10",
+   "--local-port=5060",
+   "--max-calls=4",
+   "--use-cli",
+   "--cli-telnet-port=2323",
+   "--no-cli-console",
+   "--log-level=4",
+   "--app-log-level=3",
+   "--auto-answer=200",
+   "--id=sip:uas@lab.test",
+   "--registrar=sip:172.31.60.99:5073",
+   "--reg-timeout=3600"
+  ],
+  "cloned_from": "pjsua-2.15.1-reg"
+ }
+]

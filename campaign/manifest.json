@@ -1,0 +1,252 @@
+{
+ "repeats": 3,
+ "cells": [
+  {
+   "tag": "dns",
+   "cell": "dns",
+   "fixtures": "all",
+   "lab": true,
+   "targets": "campaign/targets/dns.json",
+   "n_targets": 13,
+   "versions": {
+    "bind": [
+     "9.20.30",
+     "9.18.50",
+     "9.16"
+    ],
+    "knot": [
+     "6.5.1",
+     "6.4.2",
+     "6.3.0",
+     "5.7.9"
+    ],
+    "pdns-recursor": [
+     "5.3.14",
+     "5.2.13",
+     "5.1.10"
+    ],
+    "unbound": [
+     "1.26.0",
+     "1.25.1",
+     "1.24.2"
+    ]
+   }
+  },
+  {
+   "tag": "mqtt",
+   "cell": "mqtt",
+   "fixtures": "all",
+   "lab": false,
+   "targets": "campaign/targets/mqtt.json",
+   "n_targets": 15,
+   "versions": {
+    "emqx": [
+     "6.3.2",
+     "6.2.3",
+     "6.1.5"
+    ],
+    "hivemq-ce": [
+     "2026.5",
+     "2025.5",
+     "2025.4"
+    ],
+    "mosquitto": [
+     "2.0.22",
+     "1.6.15",
+     "1.5.11"
+    ],
+    "nanomq": [
+     "0.25.7",
+     "0.24.14",
+     "0.23.10"
+    ],
+    "vernemq": [
+     "2.2.1",
+     "2.1.2",
+     "2.0.1"
+    ]
+   }
+  },
+  {
+   "tag": "ldap",
+   "cell": "ldap",
+   "fixtures": "all",
+   "lab": false,
+   "targets": "campaign/targets/ldap.json",
+   "n_targets": 16,
+   "versions": {
+    "389ds": [
+     "3.1",
+     "3.0",
+     "2.4"
+    ],
+    "apacheds": [
+     "2.0.0.AM27",
+     "2.0.0.AM26",
+     "2.0.0.AM25"
+    ],
+    "lldap": [
+     "0.6.3",
+     "0.6.2",
+     "0.6.1",
+     "0.6.0"
+    ],
+    "openldap": [
+     "2.7.2",
+     "2.6.16",
+     "2.5.20"
+    ],
+    "samba-ad": [
+     "4.25.1",
+     "4.24.8",
+     "4.23.13"
+    ]
+   }
+  },
+  {
+   "tag": "jmap",
+   "cell": "jmap",
+   "fixtures": "all",
+   "lab": false,
+   "targets": "campaign/targets/jmap.json",
+   "n_targets": 9,
+   "versions": {
+    "cyrus": [
+     "3.12.4",
+     "3.10.4",
+     "3.8.8"
+    ],
+    "james": [
+     "3.9.1",
+     "3.8.2",
+     "3.7.6"
+    ],
+    "stalwart": [
+     "1.1.0",
+     "1.0.3",
+     "0.16.27"
+    ]
+   }
+  },
+  {
+   "tag": "sieve-mail",
+   "cell": "sieve",
+   "fixtures": "all",
+   "lab": true,
+   "targets": "campaign/targets/sieve-mail.json",
+   "n_targets": 14,
+   "versions": {
+    "exim": [
+     "4.100.1",
+     "4.99.5",
+     "4.98.2"
+    ],
+    "jsieve": [
+     "0.8",
+     "0.7",
+     "0.6"
+    ],
+    "mailutils": [
+     "3.21",
+     "3.20",
+     "3.19"
+    ],
+    "pigeonhole": [
+     "2.4.5",
+     "2.3.21.1"
+    ],
+    "sieve-rs": [
+     "0.7.3",
+     "0.6.0",
+     "0.5.3"
+    ]
+   }
+  },
+  {
+   "tag": "sieve-stalwart",
+   "cell": "sieve",
+   "fixtures": "all",
+   "lab": true,
+   "targets": "campaign/targets/sieve-stalwart.json",
+   "n_targets": 3,
+   "versions": {
+    "stalwart": [
+     "1.1.0",
+     "1.0.3",
+     "0.16.27"
+    ]
+   }
+  },
+  {
+   "tag": "sipb-proxy",
+   "cell": "sipb",
+   "fixtures": "all",
+   "lab": true,
+   "targets": "campaign/targets/sipb-proxy.json",
+   "n_targets": 18,
+   "versions": {
+    "ejabberd": [
+     "26.09",
+     "26.07",
+     "26.04"
+    ],
+    "kamailio": [
+     "6.1",
+     "6.0",
+     "5.8"
+    ],
+    "opensips": [
+     "4.0",
+     "3.6",
+     "3.5"
+    ],
+    "repro": [
+     "1.14.0",
+     "1.13.2",
+     "1.12.0"
+    ]
+   }
+  },
+  {
+   "tag": "sipb-repro",
+   "cell": "sipb",
+   "fixtures": "all",
+   "lab": true,
+   "targets": "campaign/targets/sipb-repro.json",
+   "n_targets": 3,
+   "versions": {
+    "repro": [
+     "1.14.0",
+     "1.13.2",
+     "1.12.0"
+    ]
+   }
+  },
+  {
+   "tag": "sipb-ua",
+   "cell": "sipb",
+   "fixtures": "ua_,uas_,uac_,r_",
+   "lab": true,
+   "targets": "campaign/targets/sipb-ua.json",
+   "n_targets": 15,
+   "versions": {
+    "baresip": [
+     "Debian trixie"
+    ],
+    "linphone": [
+     "Debian trixie"
+    ],
+    "pjsip": [
+     "2.17",
+     "2.16",
+     "2.15.1"
+    ]
+   }
+  }
+ ],
+ "exceptions": {
+  "pigeonhole": "Two lines built (2.4.5, 2.3.21.1); the third (2.2 line or a 24-month span) is not decided yet (open gap, tasklist).",
+  "baresip": "Debian trixie package only so far; older releases need source builds (open gap, tasklist).",
+  "linphone": "Debian trixie package only so far; older releases need source builds (open gap, tasklist)."
+ }
+}

@@ -1,0 +1,5 @@
+[
+ {"key": "mosquitto-2.0.22", "impl": "mosquitto", "version": "2.0.22", "image": "eclipse-mosquitto:2.0.22", "port": 1883, "extra": [],
+  "cmd": ["sh", "-c", "printf 'listener 1883\nallow_anonymous true\n' > /tmp/m.conf && exec mosquitto -c /tmp/m.conf"], "ready": 60},
+ {"key": "nanomq-0.25.7", "impl": "nanomq", "version": "0.25.7", "image": "emqx/nanomq:0.25.7", "port": 1883, "extra": [], "cmd": null, "ready": 60}
+]

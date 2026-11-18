@@ -1,0 +1,183 @@
+[
+ {
+  "key": "bind-9.16",
+  "impl": "bind",
+  "version": "9.16",
+  "image": "internetsystemsconsortium/bind9:9.16",
+  "ready": 60,
+  "mounts": {
+   "named.conf": "/etc/bind/named.conf"
+  },
+  "entrypoint": null,
+  "cmd": null,
+  "tag": "internetsystemsconsortium/bind9:9.20",
+  "cloned_from": "bind-9.20.30"
+ },
+ {
+  "key": "bind-9.18.50",
+  "impl": "bind",
+  "version": "9.18.50",
+  "image": "internetsystemsconsortium/bind9@sha256:1ffb29c718ee2540c5643c1e8166629a07bbd505f99107baae535e9f86eb7eef",
+  "ready": 60,
+  "mounts": {
+   "named.conf": "/etc/bind/named.conf"
+  },
+  "entrypoint": null,
+  "cmd": null,
+  "tag": "internetsystemsconsortium/bind9:9.18"
+ },
+ {
+  "key": "bind-9.20.30",
+  "impl": "bind",
+  "version": "9.20.30",
+  "image": "internetsystemsconsortium/bind9@sha256:66092edb53c081fa11b1fa8219e99065b0f497cb38f568ba789702a4c10e2590",
+  "ready": 60,
+  "mounts": {
+   "named.conf": "/etc/bind/named.conf"
+  },
+  "entrypoint": null,
+  "cmd": null,
+  "tag": "internetsystemsconsortium/bind9:9.20"
+ },
+ {
+  "key": "knot-5.7.9",
+  "impl": "knot",
+  "version": "5.7.9",
+  "image": "pd-knot:5.7.9",
+  "ready": 90,
+  "mounts": {},
+  "entrypoint": "/usr/sbin/kresd",
+  "cmd": [
+   "-n",
+   "-c",
+   "/conf/knot5.lua"
+  ],
+  "build": "lab/images/knot.Dockerfile PKG=knot-resolver VER=5.7.9-cznic.1~trixie"
+ },
+ {
+  "key": "knot-6.3.0",
+  "impl": "knot",
+  "version": "6.3.0",
+  "image": "pd-knot:6.3.0",
+  "ready": 90,
+  "mounts": {},
+  "entrypoint": "/usr/bin/knot-resolver",
+  "cmd": [
+   "-c",
+   "/conf/knot6.yaml"
+  ],
+  "build": "lab/images/knot.Dockerfile PKG=knot-resolver6 VER=6.3.0-cznic.1~trixie"
+ },
+ {
+  "key": "knot-6.4.2",
+  "impl": "knot",
+  "version": "6.4.2",
+  "image": "pd-knot:6.4.2",
+  "ready": 90,
+  "mounts": {},
+  "entrypoint": "/usr/bin/knot-resolver",
+  "cmd": [
+   "-c",
+   "/conf/knot6.yaml"
+  ],
+  "build": "lab/images/knot.Dockerfile PKG=knot-resolver6 VER=6.4.2-cznic.1~trixie"
+ },
+ {
+  "key": "knot-6.5.1",
+  "impl": "knot",
+  "version": "6.5.1",
+  "image": "pd-knot:6.5.1",
+  "ready": 90,
+  "mounts": {},
+  "entrypoint": "/usr/bin/knot-resolver",
+  "cmd": [
+   "-c",
+   "/conf/knot6.yaml"
+  ],
+  "build": "lab/images/knot.Dockerfile PKG=knot-resolver6 VER=6.5.1-cznic.1~trixie"
+ },
+ {
+  "key": "pdns-recursor-5.1.10",
+  "impl": "pdns-recursor",
+  "version": "5.1.10",
+  "image": "powerdns/pdns-recursor-51@sha256:8b726b17f97c4bf3cf1c7b357951e2552cd8a813e1de39aa5e10db5a9753c61b",
+  "ready": 60,
+  "mounts": {
+   "recursor.yml": "/etc/powerdns/recursor.d/lab.yml"
+  },
+  "entrypoint": null,
+  "cmd": null,
+  "tag": "powerdns/pdns-recursor-51:5.1.10"
+ },
+ {
+  "key": "pdns-recursor-5.2.13",
+  "impl": "pdns-recursor",
+  "version": "5.2.13",
+  "image": "powerdns/pdns-recursor-52@sha256:81c49604b3afdd0f7f3e8e5d3119d0fdcc4dcf7f80401d1bc2469692f2949be6",
+  "ready": 60,
+  "mounts": {
+   "recursor.yml": "/etc/powerdns/recursor.d/lab.yml"
+  },
+  "entrypoint": null,
+  "cmd": null,
+  "tag": "powerdns/pdns-recursor-52:5.2.13"
+ },
+ {
+  "key": "pdns-recursor-5.3.14",
+  "impl": "pdns-recursor",
+  "version": "5.3.14",
+  "image": "powerdns/pdns-recursor-53@sha256:87d7766f156df1af123de4087317178120725ec3141745256166d17e4cb9fe6e",
+  "ready": 60,
+  "mounts": {
+   "recursor.yml": "/etc/powerdns/recursor.d/lab.yml"
+  },
+  "entrypoint": null,
+  "cmd": null,
+  "tag": "powerdns/pdns-recursor-53:5.3.14"
+ },
+ {
+  "key": "unbound-1.24.2",
+  "impl": "unbound",
+  "version": "1.24.2",
+  "image": "pd-unbound:1.24.2",
+  "ready": 60,
+  "mounts": {},
+  "entrypoint": "/usr/local/sbin/unbound",
+  "cmd": [
+   "-d",
+   "-c",
+   "/conf/unbound.conf"
+  ],
+  "build": "lab/images/unbound.Dockerfile VER=1.24.2 (NLnet Labs tarball, sha256 checked)"
+ },
+ {
+  "key": "unbound-1.25.1",
+  "impl": "unbound",
+  "version": "1.25.1",
+  "image": "pd-unbound:1.25.1",
+  "ready": 60,
+  "mounts": {},
+  "entrypoint": "/usr/local/sbin/unbound",
+  "cmd": [
+   "-d",
+   "-c",
+   "/conf/unbound.conf"
+  ],
+  "build": "lab/images/unbound.Dockerfile VER=1.25.1 (NLnet Labs tarball, sha256 checked)"
+ },
+ {
+  "key": "unbound-1.26.0",
+  "impl": "unbound",
+  "version": "1.26.0",
+  "image": "pd-unbound:1.26.0",
+  "ready": 60,
+  "mounts": {},
+  "entrypoint": "/usr/local/sbin/unbound",
+  "cmd": [
+   "-d",
+   "-c",
+   "/conf/unbound.conf"
+  ],
+  "build": "lab/images/unbound.Dockerfile VER=1.26.0 (NLnet Labs tarball, sha256 checked)"
+ }
+]

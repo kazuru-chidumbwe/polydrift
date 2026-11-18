@@ -1,0 +1,82 @@
+[
+ {
+  "key": "openldap-2.7.2",
+  "impl": "openldap",
+  "version": "2.7.2",
+  "image": "pd-openldap:2.7.2",
+  "port": 389,
+  "extra": [],
+  "cmd": null,
+  "ready": 90,
+  "base": "dc=lab,dc=test",
+  "admin": "cn=admin,dc=lab,dc=test",
+  "password": "labpass"
+ },
+ {
+  "key": "apacheds-2.0.0.AM27",
+  "impl": "apacheds",
+  "version": "2.0.0.AM27",
+  "image": "pd-apacheds:2.0.0.AM27",
+  "port": 10389,
+  "extra": [],
+  "cmd": null,
+  "ready": 180,
+  "base": "dc=example,dc=com",
+  "admin": "uid=admin,ou=system",
+  "password": "secret"
+ },
+ {
+  "key": "samba-ad-4.25.1",
+  "impl": "samba-ad",
+  "version": "4.25.1",
+  "image": "pd-samba-ad:4.25.1",
+  "port": 389,
+  "extra": [
+   "--cap-add",
+   "SYS_ADMIN"
+  ],
+  "cmd": null,
+  "ready": 180,
+  "base": "DC=lab,DC=test",
+  "admin": "CN=Administrator,CN=Users,DC=lab,DC=test",
+  "password": "Lab-Pass-2026!"
+ },
+ {
+  "key": "389ds-3.1",
+  "impl": "389ds",
+  "version": "3.1",
+  "image": "389ds/dirsrv:3.1",
+  "port": 3389,
+  "extra": [
+   "-e",
+   "DS_DM_PASSWORD=Lab-Pass-2026",
+   "-e",
+   "DS_SUFFIX_NAME=dc=lab,dc=test"
+  ],
+  "cmd": null,
+  "ready": 300,
+  "base": "dc=lab,dc=test",
+  "admin": "cn=Directory Manager",
+  "password": "Lab-Pass-2026"
+ },
+ {
+  "key": "lldap-0.6.3",
+  "impl": "lldap",
+  "version": "0.6.3",
+  "image": "lldap/lldap:v0.6.3",
+  "port": 3890,
+  "extra": [
+   "-e",
+   "LLDAP_JWT_SECRET=lab-jwt-secret-0123456789",
+   "-e",
+   "LLDAP_LDAP_USER_PASS=Lab-Pass-2026",
+   "-e",
+   "LLDAP_LDAP_BASE_DN=dc=lab,dc=test"
+  ],
+  "cmd": null,
+  "ready": 90,
+  "base": "dc=lab,dc=test",
+  "admin": "uid=admin,ou=people,dc=lab,dc=test",
+  "password": "Lab-Pass-2026"
+ }
+]

@@ -1,0 +1,33 @@
+[
+ {
+  "key": "pigeonhole-2.4.5",
+  "impl": "pigeonhole",
+  "version": "2.4.5",
+  "image": "pd-pigeonhole:2.4.5",
+  "user": "1000:1000"
+ },
+ {
+  "key": "mailutils-3.21",
+  "impl": "mailutils",
+  "version": "3.21",
+  "image": "pd-mailutils:3.21"
+ },
+ {
+  "key": "exim-4.100.1",
+  "impl": "exim",
+  "version": "4.100.1",
+  "image": "pd-exim:4.100.1"
+ },
+ {
+  "key": "sieve-rs-0.7.3",
+  "impl": "sieve-rs",
+  "version": "0.7.3",
+  "image": "pd-sieve-rs:0.7.3"
+ },
+ {
+  "key": "jsieve-0.8",
+  "impl": "jsieve",
+  "version": "0.8",
+  "image": "pd-jsieve:0.8"
+ }
+]

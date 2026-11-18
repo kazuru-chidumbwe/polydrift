@@ -1,0 +1,20 @@
+[
+ {
+  "key": "stalwart-0.16.27",
+  "impl": "stalwart",
+  "version": "0.16.27",
+  "image": "pd-sieve-stalwart:0.16.27"
+ },
+ {
+  "key": "stalwart-1.0.3",
+  "impl": "stalwart",
+  "version": "1.0.3",
+  "image": "pd-sieve-stalwart:1.0.3"
+ },
+ {
+  "key": "stalwart-1.1.0",
+  "impl": "stalwart",
+  "version": "1.1.0",
+  "image": "pd-sieve-stalwart:1.1.0"
+ }
+]

@@ -1,0 +1,47 @@
+[
+ {
+  "key": "stalwart-1.1.0",
+  "impl": "stalwart",
+  "version": "1.1.0",
+  "image": "stalwartlabs/stalwart:v1.1.0",
+  "port": 8080,
+  "extra": [
+   "-e",
+   "STALWART_RECOVERY_ADMIN=admin:Lab-Admin-2026",
+   "-v",
+   "/home/test/polydrift/harness/polydrift/cells/jmap/lab/stalwart-config.json:/etc/stalwart/config.json:ro"
+  ],
+  "cmd": null,
+  "ready": 120
+ },
+ {
+  "key": "stalwart-1.0.3",
+  "impl": "stalwart",
+  "version": "1.0.3",
+  "image": "stalwartlabs/stalwart:v1.0.3",
+  "port": 8080,
+  "extra": [
+   "-e",
+   "STALWART_RECOVERY_ADMIN=admin:Lab-Admin-2026",
+   "-v",
+   "/home/test/polydrift/harness/polydrift/cells/jmap/lab/stalwart-config.json:/etc/stalwart/config.json:ro"
+  ],
+  "cmd": null,
+  "ready": 120
+ },
+ {
+  "key": "stalwart-0.16.27",
+  "impl": "stalwart",
+  "version": "0.16.27",
+  "image": "stalwartlabs/stalwart:v0.16.27",
+  "port": 8080,
+  "extra": [
+   "-e",
+   "STALWART_RECOVERY_ADMIN=admin:Lab-Admin-2026",
+   "-v",
+   "/home/test/polydrift/harness/polydrift/cells/jmap/lab/stalwart-config.json:/etc/stalwart/config.json:ro"
+  ],
+  "cmd": null,
+  "ready": 120
+ }
+]

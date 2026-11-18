@@ -187,13 +187,13 @@ bash ~/labtools/stability3.sh {cell} campaign/targets/{tag}.json $TAR {c} {fixtu
 
 PULL = """#!/bin/bash
 # Images for the campaign plan (harness {c}): first build the recipe images listed under "build" in
-# campaign/sources.json (through the host proxy), then pull every public image that is missing.
+# campaign/sources.json, then pull every public image that is missing.
 # Locally built pd-* images are never pulled; a missing one is listed. Idempotent.
 # Flag ~/polydrift/campaign-{c}-PULL-DONE (lists what was built, pulled or failed).
 set -u
 TAR=~/polydrift/harness-{c}.tar
 F=~/polydrift/campaign-{c}-PULL-DONE; : > $F.tmp
-PX="--network host --build-arg http_proxy=http://127.0.0.1:8118 --build-arg https_proxy=http://127.0.0.1:8118 --build-arg HTTP_PROXY=http://127.0.0.1:8118 --build-arg HTTPS_PROXY=http://127.0.0.1:8118"
+PX="--network host"   # Testbed D has direct internet since 18 Nov 2026 (no proxy)
 BH=~/polydrift/campaign-{c}-build; rm -rf $BH; mkdir -p $BH; tar -xf $TAR -C $BH
 {builds}
 for t in $(tar -tf $TAR | grep '^campaign/targets/.*\\.json$'); do tar -xOf $TAR $t; done > /tmp/pd-campaign-all.json.txt

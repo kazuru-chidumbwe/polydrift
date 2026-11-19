@@ -57,4 +57,4 @@ def test_pull_job_rebuilds_recipe_images_built_with_other_arguments(tmp_path):
         assert f"' {tag} 2>/dev/null)\" = '{label}' ]" in pull, tag
         assert f"--label 'pd.build-args={label}' -t {tag} " in pull, tag
     am26 = src["build"]["pd-apacheds:2.0.0.AM26"]["args"]
-    assert am26["JDK"] == "17" and "sun.security.x509" in am26["JOPTS"]
+    assert am26["JDK"] == "11"

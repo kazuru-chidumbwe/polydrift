@@ -205,11 +205,10 @@
       "context": "polydrift/cells/ldap/images",
       "args": {
         "VER": "2.0.0.AM26",
-        "BASE": "debian:bookworm",
-        "JDK": "17",
-        "JOPTS": "--add-exports=java.base/sun.security.x509=ALL-UNNAMED"
+        "BASE": "ubuntu:22.04",
+        "JDK": "11"
       },
-      "why": "2.0.0.AM26 creates its self-signed certificate through sun.security.x509, which JDK 17 and later do not export; with the default image (Debian trixie, JDK 21, no export) the server exits at start (IllegalAccessError, campaign dry run 18 Nov 2026)"
+      "why": "2.0.0.AM26 creates its self-signed certificate through JDK internals (sun.security.x509, sun.security.util); JDK 17 and later refuse that access (IllegalAccessError at start, campaign dry runs 18 and 19 Nov 2026, also with the x509 export), JDK 11 permits it. Ubuntu 22.04 ships openjdk-11; checked 19 Nov 2026: the server listens on 10389 with no exception"
     }
   }
 }

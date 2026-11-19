@@ -3,8 +3,8 @@
 # The .sha512 file uses the gpg --print-md layout ("name: AF233A1F CB7EAE00 ..." over several lines).
 # Runtime: the distribution's default instance (base dc=example,dc=com, uid=admin,ou=system / secret).
 # Build: docker build -f apacheds.Dockerfile --build-arg VER=2.0.0.AM27 -t pd-apacheds:2.0.0.AM27 .
-# 2.0.0.AM26 calls JDK internals removed after JDK 17 (X509CertInfo.set) and needs sun.security.x509 exported:
-#   --build-arg BASE=debian:bookworm --build-arg JDK=17 --build-arg JOPTS=--add-exports=java.base/sun.security.x509=ALL-UNNAMED
+# 2.0.0.AM26 reaches JDK internals (sun.security.x509, sun.security.util) that JDK 17 and later refuse; it runs on
+# JDK 11:  --build-arg BASE=ubuntu:22.04 --build-arg JDK=11   (campaign/sources.json "build")
 ARG BASE=debian:trixie
 FROM ${BASE}
 ARG VER

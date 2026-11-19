@@ -101,6 +101,14 @@ def cmd_build(_a) -> int:
     return 0
 
 
+LABEL = "pd.build-args"
+
+
+def build_label(b: dict) -> str:
+    """The build arguments of a recipe image as one string, stored on the image as a label."""
+    return ";".join(f"{k}={v}" for k, v in sorted(b.get("args", {}).items()))
+
+
 def host_images() -> tuple[set[str], callable]:
     tags = set(subprocess.run(["docker", "images", "--format", "{{.Repository}}:{{.Tag}}"],
                               capture_output=True, text=True, check=True).stdout.split())
@@ -125,6 +133,7 @@ def cmd_check(a) -> int:
     exc = m.get("exceptions", {})
     problems, notes = [], []
     tags, inspect = host_images() if a.images else (set(), None)
+    builds = json.loads((CAMP / "sources.json").read_text()).get("build", {})
     for c in m["cells"]:
         ts = load_list(ROOT / c["targets"])
         keys = [e.get("key") for e in ts]
@@ -141,8 +150,14 @@ def cmd_check(a) -> int:
                     problems.append(f"{c['tag']}: {e['key']} mounts a host path {s}")
             if a.images:
                 img = e["image"]
-                if not (img in tags or inspect(img)):
+                info = inspect(img)
+                if not (img in tags or info):
                     problems.append(f"{c['tag']}: {e['key']} image missing on host: {img}")
+                elif img in builds and info is not None:
+                    have = ((info.get("Config") or {}).get("Labels") or {}).get(LABEL)
+                    if have != build_label(builds[img]):
+                        problems.append(f"{c['tag']}: {e['key']} image {img} was not built with the arguments in "
+                                        f"campaign/sources.json (label {have!r})")
     for n in notes:
         print("NOTE", n)
     for p in problems:
@@ -249,10 +264,14 @@ def cmd_jobs(a) -> int:
         lines = []
         for tag, b in src.get("build", {}).items():
             args = " ".join(f"--build-arg {k}={v}" for k, v in b.get("args", {}).items())
+            label = build_label(b)
             log = "$BH/build-" + re.sub(r"[:/]", "_", tag) + ".log"
+            # An image that is present but was built with other arguments (label differs) is rebuilt.
             lines.append(
-                f'if docker image inspect {tag} >/dev/null 2>&1; then echo "PRESENT {tag}" >> $F.tmp; '
-                f'elif nice -n 5 docker build $PX -f $BH/{b["dockerfile"]} {args} -t {tag} $BH/{b["context"]} > {log} 2>&1; '
+                f'if [ "$(docker image inspect -f \'{{{{index .Config.Labels "{LABEL}"}}}}\' {tag} 2>/dev/null)" = \'{label}\' ]; '
+                f'then echo "PRESENT {tag}" >> $F.tmp; '
+                f'elif nice -n 5 docker build $PX -f $BH/{b["dockerfile"]} {args} --label \'{LABEL}={label}\' -t {tag} '
+                f'$BH/{b["context"]} > {log} 2>&1; '
                 f'then echo "BUILT {tag} $(grep -m1 -o "TARBALL-SHA256 [0-9a-f]*" {log})" >> $F.tmp; '
                 f'else echo "BUILD-FAILED {tag} (log {log})" >> $F.tmp; fi')
         w(f"D-{n:03d}-polydrift-campaign-pull-{a.commit}.sh", PULL.format(c=a.commit, builds="\n".join(lines)))

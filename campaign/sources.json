@@ -199,6 +199,17 @@
         "VER": "9.16.50"
       },
       "why": "no upstream image for the 9.16 line (Docker Hub has no bind9:9.16 tag, checked 18 Nov 2026); 9.16.50 is the last 9.16 release on downloads.isc.org"
+    },
+    "pd-apacheds:2.0.0.AM26": {
+      "dockerfile": "polydrift/cells/ldap/images/apacheds.Dockerfile",
+      "context": "polydrift/cells/ldap/images",
+      "args": {
+        "VER": "2.0.0.AM26",
+        "BASE": "debian:bookworm",
+        "JDK": "17",
+        "JOPTS": "--add-exports=java.base/sun.security.x509=ALL-UNNAMED"
+      },
+      "why": "2.0.0.AM26 creates its self-signed certificate through sun.security.x509, which JDK 17 and later do not export; with the default image (Debian trixie, JDK 21, no export) the server exits at start (IllegalAccessError, campaign dry run 18 Nov 2026)"
     }
   }
 }

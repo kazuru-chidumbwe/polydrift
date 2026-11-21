@@ -394,6 +394,10 @@ echo "$O/mqtt" > $FLAG
 
 SUMMARY = """#!/bin/bash
 # Summary of the {what} jobs at {c}. Flag ~/polydrift/{flag}
+# The jobs run in per-cell queues, so this waits until every job's flag exists (at most 48 h).
+for f in {expected}; do
+  for i in $(seq 1 2880); do [ -f ~/polydrift/stability/$f-DONE ] && break; sleep 60; done
+done
 O=~/polydrift/{summary}; : > $O
 for f in ~/polydrift/stability/{prefix}-*-DONE; do
   echo "== $(basename $f): $(head -c 300 $f)" >> $O
@@ -461,9 +465,23 @@ def cmd_jobs(a) -> int:
     w(f"D-{n:03d}-polydrift-{prefix}-pardiff-mqtt-{a.commit}.sh", PARDIFF_JOB.format(
         what=what, c=a.commit, flagtag=f"{prefix}-pardiff-mqtt"))
     n += 1
+    flags = [f"{prefix}-{c['tag']}" for c in m["cells"]] + [f"{prefix}-{r['tag']}" for r in m.get("recall", [])] \
+        + [f"{prefix}-l9-{rp['tag']}" for rp in m.get("replay", [])] + [f"{prefix}-pardiff-mqtt"]
     w(f"D-{n:03d}-polydrift-{prefix}-summary-{a.commit}.sh", SUMMARY.format(
         what=what, c=a.commit, prefix=prefix, summary=f"D-CAMP-{a.mode.upper()}-SUMMARY.txt",
-        flag=f"D-CAMP-{a.mode.upper()}-DONE"))
+        flag=f"D-CAMP-{a.mode.upper()}-DONE", expected=" ".join(flags)))
+    # Queue routing on Testbed D (one queue per cell, ~/labq-<queue>): the image job first in every queue's line is
+    # not needed, each job checks its own images; jobs of one cell share a queue so they never overlap.
+    route = []
+    for name in written:
+        q = "labq"
+        for key, queue in (("-dns", "dns"), ("-mqtt", "mqtt"), ("-ldap", "ldap"), ("-jmap", "jmap"),
+                           ("-sieve", "ldap"), ("-sipb", "sip")):
+            if key in name and "-pull-" not in name and "-summary-" not in name and "-pardiff-" not in name:
+                q = f"labq-{queue}"
+                break
+        route.append(f"{q} {name}")
+    (out / "ROUTE.txt").write_text("\n".join(route) + "\n")
     print("\n".join(written))
     return 0
 

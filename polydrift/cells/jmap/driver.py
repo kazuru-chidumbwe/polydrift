@@ -163,7 +163,9 @@ def _path(ctx: dict[str, Any], path: str) -> Any:
     return _MISSING
 
 
-FN = r"^(len|keys|type|has|eq|ne|in|re|allre|allin|sorted|lower|ge|hasall|nullorge|lensum|sortedby|allvals|count|nodate):"
+FN = r"^(len|keys|type|has|eq|ne|in|re|allre|allin|sorted|lower|ge|hasall|nullorge|lensum|sortedby|allvals|count|nodate|hoursahead):"
+# The lab push sink's control port (runner.PUSH_IP, lab/push/sink.py)
+PUSH_CONTROL = "http://93.184.215.14:8080"
 
 
 def evaluate(expr: str, ctx: dict[str, Any]) -> Any:
@@ -225,6 +227,14 @@ def evaluate(expr: str, ctx: dict[str, Any]) -> Any:
         return isinstance(v, dict) and all(x == _lit(lit) for x in v.values())
     if fn == "count":
         return v.count(_lit(lit)) if isinstance(v, list) else None
+    if fn == "hoursahead":
+        # an RFC 3339 date-time against now, in the buckets RFC 8620 7.2 names for a maximum expiry: "<48", "48-168",
+        # ">=168" hours ahead; "missing" when absent or not a date-time
+        if not isinstance(v, str) or not _DATETIME.fullmatch(v):
+            return "missing"
+        import calendar
+        h = (calendar.timegm(time.strptime(v[:19], "%Y-%m-%dT%H:%M:%S")) - time.time()) / 3600
+        return "<48" if h < 48 else "48-168" if h < 168 else ">=168"
     if fn == "nodate":
         return _nodate(v)
     if fn == "ge":
@@ -317,6 +327,9 @@ def run_script(base: str, user: str, password: str, session: dict[str, Any], ste
     env: dict[str, str] = {"acct": acct, "U": unique}
     out = []
     for i, raw in enumerate(steps, 1):
+        # {in:N}: the UTC date-time N seconds from now (a push subscription expiry set by the fixture)
+        for n in re.findall(r"\{in:(\d+)\}", json.dumps(raw)):
+            env[f"in:{n}"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() + int(n)))
         st = _subst(raw, env)
         op = st.get("op", "call")
         obs: dict[str, Any] = {"step": i, "op": op, "error": None}
@@ -357,6 +370,24 @@ def run_script(base: str, user: str, password: str, session: dict[str, Any], ste
                 code, ctype, text = es.get("es_status") or 0, "text/event-stream", ""
                 obs["events"] = es.get("events", [])
                 obs["es_error"] = es.get("error_es")
+            elif op in ("pushlog", "pushmode"):
+                # the push sink's records for this fixture (path holds {U} and the step's `sub`), or a status the sink
+                # answers the next `count` pushes with (RFC 8620 7.2: 429 must make the server slow down)
+                key = f"{unique}-{st.get('sub', 'p')}"
+                q = {"key": key} if op == "pushlog" else {"key": key, "code": st.get("code", 429), "count": st.get("count", 1)}
+                path = "/log?" if op == "pushlog" else "/mode?"
+                code, ctype, text, headers = _req(PUSH_CONTROL + path + urllib.parse.urlencode(q), None, None, None,
+                                                  method="GET")
+                if op == "pushlog":
+                    try:
+                        recs = json.loads(text)
+                    except ValueError:
+                        recs = []
+                    for rec in recs:
+                        jv = rec.get("json") if isinstance(rec, dict) else None
+                        if isinstance(jv, dict) and jv.get("@type") == "PushVerification":
+                            env[f"push:{st.get('sub', 'p')}"] = str(jv.get("verificationCode", ""))
+                            break
             else:
                 raise ValueError(f"unknown op {op}")
             obs.update({"http": code, "content_type": ctype.split(";")[0].strip().lower()})

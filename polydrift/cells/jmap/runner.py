@@ -34,6 +34,53 @@ CANARY = [{"op": "call", "using": [driver.CORE], "calls": [["Core/echo", {"pd": 
 # first Mailbox/get, so a Mailbox/query sent first finds none (smoke 10 Nov 17:42). Every server gets the same call.
 WARMUP = [{"op": "call", "calls": [["Mailbox/get", {"accountId": "{acct}", "ids": None, "properties": ["role"]}, "c0"]]}]
 
+# Push sink (RFC 8620 7.2, lab/push): the servers deliver PushVerification and StateChange objects to
+# https://pd-push.example.com/, which every server container resolves through its hosts file to the sink on an
+# internal network with no route out. example.com is the IANA documentation domain, under a public suffix, and
+# 93.184.215.14 is outside every reserved range, so the servers' own outbound guards accept the URL as they would a
+# public endpoint; the guard itself is measured separately (census_push_ssrf). The sink's certificate comes from a lab
+# CA that only these containers trust (bundle.pem as the system bundle, trust.p12 for the JVM).
+PUSH_NET, PUSH_SUBNET, PUSH_IP, PUSH_HOST = "pd-jmap-push", "93.184.215.8/29", "93.184.215.14", "pd-push.example.com"
+PUSH_IMAGE, PUSH_SINK = "pd-jmap-push:lab", "pd-jmap-push-sink"
+PUSH_CONTROL = f"http://{PUSH_IP}:8080"
+
+
+def push_up(pki: Path) -> str:
+    """Start the sink once per run; returns "" or the reason it is not available (push fixtures then record it)."""
+    pki.mkdir(parents=True, exist_ok=True)
+    if sh(["docker", "network", "inspect", PUSH_NET]).returncode != 0:
+        r = sh(["docker", "network", "create", "--internal", "--subnet", PUSH_SUBNET, PUSH_NET])
+        if r.returncode != 0:
+            return f"push network: {r.stderr.strip()[-160:]}"
+    sh(["docker", "rm", "-f", PUSH_SINK])
+    r = sh(["docker", "run", "-d", "--name", PUSH_SINK, "--network", PUSH_NET, "--ip", PUSH_IP, "-v", f"{pki}:/pki",
+            PUSH_IMAGE])
+    if r.returncode != 0:
+        return f"push sink: {r.stderr.strip()[-160:]}"
+    for _ in range(60):
+        if (pki / "bundle.pem").exists() and (pki / "trust.p12").exists():
+            try:
+                urllib.request.urlopen(PUSH_CONTROL + "/log?key=none", timeout=3)
+                return ""
+            except OSError:
+                pass
+        time.sleep(1)
+    return "push sink: not ready after 60 s"
+
+
+def push_args(pki: Path) -> list[str]:
+    """docker run arguments that let a server container reach and trust the sink."""
+    trust = ("-Djavax.net.ssl.trustStore=/pd/push/trust.p12 -Djavax.net.ssl.trustStorePassword=pdlab "
+             "-Djavax.net.ssl.trustStoreType=PKCS12")
+    return ["--add-host", f"{PUSH_HOST}:{PUSH_IP}", "-v", f"{pki}/bundle.pem:/etc/ssl/certs/ca-certificates.crt:ro",
+            "-v", f"{pki}:/pd/push:ro", "-e", "SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt",
+            "-e", f"JAVA_TOOL_OPTIONS={trust}"]
+
+
+def push_down() -> None:
+    sh(["docker", "rm", "-f", PUSH_SINK])
+    sh(["docker", "network", "rm", PUSH_NET])
+
 
 def load_fixtures() -> dict:
     return yaml.safe_load(fixtures_file(CELL_DIR).read_text(encoding="utf-8"))["fixtures"]
@@ -72,6 +119,9 @@ def main() -> int:
             f.write(f"[{time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}] {m}\n")
 
     targets = json.loads(Path(a.targets).read_text())
+    pki = out / "push-pki"
+    push_note = push_up(pki)
+    log(f"push sink: {push_note or 'up at ' + PUSH_IP}")
     if a.only:
         targets = [t for t in targets if t["key"] in set(a.only.split(","))]
     fx = load_fixtures()
@@ -93,10 +143,14 @@ def main() -> int:
                     ap2 = free_port()
                     args += ["-p", f"127.0.0.1:{ap2}:{t['admin_port']}"]
                     admin_base = f"http://127.0.0.1:{ap2}"
+                if not push_note:
+                    args += push_args(pki)
                 rr = sh(args + [*[str(x).replace("{celldir}", str(CELL_DIR)) for x in t.get("extra", [])], t["image"], *(t.get("cmd") or [])])
                 if rr.returncode != 0:
                     log(f"{t['key']} repeat {r}: start failed {rr.stderr[-200:]}")
                     break
+                if not push_note:
+                    sh(["docker", "network", "connect", PUSH_NET, name])
                 base = f"http://127.0.0.1:{port}"
                 t0, up = time.time(), False
                 while time.time() - t0 < t.get("ready", 180):
@@ -149,6 +203,7 @@ def main() -> int:
                 sh(["docker", "rm", "-f", name])
                 if final:
                     break
+    push_down()
     log("DONE")
     (out / "DONE").touch()
     return 0

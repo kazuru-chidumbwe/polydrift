@@ -474,6 +474,12 @@
         "ARCHIVE": "bullseye"
       },
       "why": "SIP UA cell: liblinphone 4.4.21, the Debian bullseye build of that upstream release (three minor lines 5.3, 5.1, 4.4)"
+    },
+    "pd-jmap-push:lab": {
+      "dockerfile": "polydrift/cells/jmap/lab/push/Dockerfile",
+      "context": "polydrift/cells/jmap/lab/push",
+      "args": {},
+      "why": "JMAP push sink (RFC 8620 7.2): records what the servers push to https://pd-push.example.com/ on the closed lab network"
     }
   },
   "recall": [

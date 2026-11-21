@@ -602,26 +602,47 @@ fixtures:
       - {"req_id": "JMAP-f352ecc4", "keyword": "MUST", "axis": "x5", "step": 4, "allowed": [true]}
       - {"req_id": "JMAP-79cef567", "keyword": "MAY", "axis": "x6", "step": 1, "basis": "option"}
       - {"req_id": "JMAP-b0f18fea", "keyword": "MAY", "axis": "x6", "step": 1, "basis": "option"}
-      - {"req_id": "JMAP-86648395", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
-      - {"req_id": "JMAP-2a52558f", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
-      - {"req_id": "JMAP-5b5a9148", "keyword": "MAY", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
       - {"req_id": "JMAP-d6327422", "keyword": "MUST", "axis": "x7", "step": 2, "basis": "not-applicable", "note": "single set of credentials in the lab"}
-      - {"req_id": "JMAP-53e08a71", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
-      - {"req_id": "JMAP-648a4737", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
-      - {"req_id": "JMAP-383a6704", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
-      - {"req_id": "JMAP-12f4ab63", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
-      - {"req_id": "JMAP-a8a5d014", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
-      - {"req_id": "JMAP-c298b929", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
-      - {"req_id": "JMAP-ab3a7336", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
-      - {"req_id": "JMAP-68345c1b", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
-      - {"req_id": "JMAP-4e40f46c", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
-      - {"req_id": "JMAP-9b2317ec", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
-      - {"req_id": "JMAP-9b91073a", "keyword": "SHOULD", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
     steps:
       - {"op": "call", "calls": [["PushSubscription/set", {"create": {"p": {"deviceClientId": "pd{U}dev", "url": "https://pd-push.example.invalid/jmap", "types": null}}}, "c0"]], "extract": {"x4": "has:r0/created/p/expires", "x6": "nodate:r0/created/p"}}
       - {"op": "call", "calls": [["PushSubscription/get", {"ids": null}, "c0"]], "extract": {"x1": "has:r0/list/0/url", "x2": "has:r0/list/0/keys", "x7": "len:r0/list"}}
       - {"op": "call", "calls": [["PushSubscription/get", {"ids": null, "properties": ["url"]}, "c0"]], "extract": {"x3": "eq:r0/type=\"forbidden\""}}
       - {"op": "call", "calls": [["PushSubscription/set", {"update": {"{id:p}": {"verificationCode": "pd-wrong-code"}}}, "c0"]], "extract": {"x5": "eq:r0/notUpdated/{id:p}/type=\"invalidProperties\""}}
+
+  census_push_delivery:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-86648395", "keyword": "MUST", "axis": "x2", "step": 2, "allowed": [">=168", "48-168"], "note": "a requested expiry of 2027-12-31 read back: the server's cap is at least 48 hours ahead"}
+      - {"req_id": "JMAP-2a52558f", "keyword": "MUST", "axis": "x14", "step": 15, "allowed": [1], "note": "expiry 25 s after the create, verified, then a change at about 35 s: nothing after the PushVerification"}
+      - {"req_id": "JMAP-5b5a9148", "keyword": "MAY", "axis": "x15", "step": 16, "basis": "option", "note": "destroying the expired subscription is optional"}
+      - {"req_id": "JMAP-53e08a71", "keyword": "MUST", "axis": "x8", "step": 5, "allowed": [1], "note": "a change before verification sends nothing more than the PushVerification"}
+      - {"req_id": "JMAP-648a4737", "keyword": "MUST", "axis": "x12", "step": 10, "allowed": ["aes128gcm"], "note": "with keys supplied, the PushVerification is encrypted (RFC 8291, Content-Encoding aes128gcm)"}
+      - {"req_id": "JMAP-383a6704", "keyword": "MUST", "axis": "x5", "step": 3, "allowed": [true], "note": "the push is a POST with Content-Type application/json"}
+      - {"req_id": "JMAP-12f4ab63", "keyword": "MUST", "axis": "x6", "step": 3, "allowed": [true], "note": "the push carries a TTL header (RFC 8030 5.2)"}
+      - {"req_id": "JMAP-a8a5d014", "keyword": "MUST", "axis": "x10", "step": 8, "basis": "not-observable", "note": "a reduced frequency has no fixed observable: one change gives one push, and coalescing or delaying later pushes is the server's choice"}
+      - {"req_id": "JMAP-c298b929", "keyword": "MUST", "axis": "x1", "step": 1, "basis": "not-applicable", "note": "the lab authenticates with static Basic credentials: none expire or are revoked during a fixture"}
+      - {"req_id": "JMAP-ab3a7336", "keyword": "MUST", "axis": "x1", "step": 1, "basis": "not-applicable", "note": "no session credentials with their own expiry in the lab"}
+      - {"req_id": "JMAP-68345c1b", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [1], "note": "one PushVerification reaches the sink within 3 s of the create"}
+      - {"req_id": "JMAP-4e40f46c", "keyword": "MUST", "axis": "x4", "step": 3, "allowed": [true]}
+      - {"req_id": "JMAP-9b2317ec", "keyword": "MUST", "axis": "x7", "step": 3, "allowed": [true], "note": "the verification code has at least 16 characters"}
+      - {"req_id": "JMAP-9b91073a", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "not-applicable", "note": "no OAuth access and refresh tokens in the lab"}
+    steps:
+      - {"op": "call", "calls": [["PushSubscription/set", {"create": {"p": {"deviceClientId": "pd{U}dev", "url": "https://pd-push.example.com/jmap/{U}-p", "types": null, "expires": "2027-12-31T00:00:00Z"}}}, "c0"]], "extract": {"x1": "has:r0/created/p"}, "settle_ms": 3000}
+      - {"op": "call", "calls": [["PushSubscription/get", {"ids": ["{id:p}"]}, "c0"]], "extract": {"x2": "hoursahead:r0/list/0/expires"}}
+      - {"op": "pushlog", "sub": "p", "extract": {"x3": "len:body", "x4": "eq:body/0/json/@type=\"PushVerification\"", "x5": "re:body/0/headers/content-type=application/json.*", "x6": "has:body/0/headers/ttl", "x7": "re:body/0/json/verificationCode=.{16,}"}}
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"b1": {"name": "pd{U}b1"}}}, "c0"]], "settle_ms": 4000}
+      - {"op": "pushlog", "sub": "p", "extract": {"x8": "len:body"}}
+      - {"op": "call", "calls": [["PushSubscription/set", {"update": {"{id:p}": {"verificationCode": "{push:p}"}}}, "c0"]], "extract": {"x9": "has:r0/updated"}}
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"b2": {"name": "pd{U}b2"}}}, "c0"]], "settle_ms": 4000}
+      - {"op": "pushlog", "sub": "p", "extract": {"x10": "len:body"}}
+      - {"op": "call", "calls": [["PushSubscription/set", {"create": {"q": {"deviceClientId": "pd{U}devq", "url": "https://pd-push.example.com/jmap/{U}-q", "types": null, "keys": {"p256dh": "BLwLnggHtiZuzB6agMu7_6VcDAnnmZSmjr6dY3NtW6QyKgEjgFRowmALmXYYLYL9uKvrx7_pbj3GdvnwjQ062R8", "auth": "vO9WrZN3jq7SPuQyg0WO3w"}}}}, "c0"]], "extract": {"x11": "has:r0/created/q"}, "settle_ms": 3000}
+      - {"op": "pushlog", "sub": "q", "extract": {"x12": "body/0/headers/content-encoding"}}
+      - {"op": "call", "calls": [["PushSubscription/set", {"create": {"e": {"deviceClientId": "pd{U}deve", "url": "https://pd-push.example.com/jmap/{U}-e", "types": null, "expires": "{in:25}"}}}, "c0"]], "extract": {"x13": "has:r0/created/e"}, "settle_ms": 3000}
+      - {"op": "pushlog", "sub": "e"}
+      - {"op": "call", "calls": [["PushSubscription/set", {"update": {"{id:e}": {"verificationCode": "{push:e}"}}}, "c0"]], "settle_ms": 30000}
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"b3": {"name": "pd{U}b3"}}}, "c0"]], "settle_ms": 4000}
+      - {"op": "pushlog", "sub": "e", "extract": {"x14": "len:body"}}
+      - {"op": "call", "calls": [["PushSubscription/get", {"ids": ["{id:e}"]}, "c0"]], "extract": {"x15": "len:r0/list"}}
 
   census_push_ssrf:
     kind: probe

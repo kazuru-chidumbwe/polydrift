@@ -326,11 +326,41 @@
       "lab": false,
       "peers_from": "mqtt",
       "families": [
-        "nanomq"
+        "emqx",
+        "hivemq-ce",
+        "mosquitto",
+        "nanomq",
+        "vernemq"
       ],
       "base": [
         "rq5/mqtt_rq5.json"
-      ]
+      ],
+      "clone": {
+        "emqx": {
+          "from": "6.3.2",
+          "to": [
+            "5.6.0"
+          ]
+        },
+        "mosquitto": {
+          "from": "2.0.22",
+          "to": [
+            "2.0.18"
+          ]
+        },
+        "vernemq": {
+          "from": "2.2.1",
+          "to": [
+            "1.13.0"
+          ]
+        },
+        "hivemq-ce": {
+          "from": "2026.5",
+          "to": [
+            "2024.1"
+          ]
+        }
+      }
     },
     {
       "tag": "rq5-ldap",

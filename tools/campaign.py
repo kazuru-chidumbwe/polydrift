@@ -148,6 +148,20 @@ def build_recall(spec: dict, cell_targets: dict[str, list[dict]]) -> list[dict]:
         for e in base:
             if str(e.get("version")) in want.get(e.get("impl"), set()):
                 out.setdefault(e["key"], e)
+        # Affected or fixed versions with no validated entry of their own: a clone of the campaign's entry for that
+        # implementation that changes only version, image and key (as the cells' clone rule).
+        for impl, rule in spec.get("clone", {}).items():
+            src = [e for e in cell_targets[spec["peers_from"]] if e.get("impl") == impl and str(e.get("version")) == rule["from"]]
+            if not src:
+                raise SystemExit(f"{spec['tag']}: no {impl} {rule['from']} entry to clone from")
+            for to in rule["to"]:
+                ver, image = (to if isinstance(to, list) else (to, None))
+                for e in src:
+                    c = json.loads(json.dumps(e))
+                    c["version"], c["image"] = ver, image or retag(e["image"], rule["from"], ver)
+                    c["key"], c["cloned_from"] = e["key"].replace(rule["from"], ver), e["key"]
+                    c.pop("tag", None)
+                    out.setdefault(c["key"], c)
     else:
         for e in base:
             out.setdefault(e["key"], e)

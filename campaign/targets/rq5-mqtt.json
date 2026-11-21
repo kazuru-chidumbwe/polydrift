@@ -1,5 +1,16 @@
 [
  {
+  "key": "emqx-5.6.0",
+  "impl": "emqx",
+  "version": "5.6.0",
+  "image": "emqx/emqx:5.6.0",
+  "port": 1883,
+  "extra": [],
+  "cmd": null,
+  "ready": 180,
+  "cloned_from": "emqx-6.3.2"
+ },
+ {
   "key": "emqx-6.3.2",
   "impl": "emqx",
   "version": "6.3.2",
@@ -10,6 +21,17 @@
   "ready": 180
  },
  {
+  "key": "hivemq-ce-2024.1",
+  "impl": "hivemq-ce",
+  "version": "2024.1",
+  "image": "hivemq/hivemq-ce:2024.1",
+  "port": 1883,
+  "extra": [],
+  "cmd": null,
+  "ready": 180,
+  "cloned_from": "hivemq-ce-2026.5"
+ },
+ {
   "key": "hivemq-ce-2026.5",
   "impl": "hivemq-ce",
   "version": "2026.5",
@@ -18,6 +40,21 @@
   "extra": [],
   "cmd": null,
   "ready": 180
+ },
+ {
+  "key": "mosquitto-2.0.18",
+  "impl": "mosquitto",
+  "version": "2.0.18",
+  "image": "eclipse-mosquitto:2.0.18",
+  "port": 1883,
+  "extra": [],
+  "cmd": [
+   "sh",
+   "-c",
+   "printf 'listener 1883\nallow_anonymous true\n' > /tmp/m.conf && exec mosquitto -c /tmp/m.conf"
+  ],
+  "ready": 60,
+  "cloned_from": "mosquitto-2.0.22"
  },
  {
   "key": "mosquitto-2.0.22",
@@ -72,6 +109,24 @@
   "extra": [],
   "cmd": null,
   "ready": 60
+ },
+ {
+  "key": "vernemq-1.13.0",
+  "impl": "vernemq",
+  "version": "1.13.0",
+  "image": "vernemq/vernemq:1.13.0",
+  "port": 1883,
+  "extra": [
+   "-e",
+   "DOCKER_VERNEMQ_ACCEPT_EULA=yes",
+   "-e",
+   "DOCKER_VERNEMQ_ALLOW_ANONYMOUS=on",
+   "-e",
+   "DOCKER_VERNEMQ_LISTENER__TCP__ALLOWED_PROTOCOL_VERSIONS=3,4,5"
+  ],
+  "cmd": null,
+  "ready": 180,
+  "cloned_from": "vernemq-2.2.1"
  },
  {
   "key": "vernemq-2.2.1",

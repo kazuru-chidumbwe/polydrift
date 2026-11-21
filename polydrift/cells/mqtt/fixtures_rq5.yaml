@@ -16,3 +16,389 @@ fixtures:
       - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}, "window_ms": 3000}
       - {"client": "a", "op": "publish", "args": {"topic": "1/1/1", "payload": "123", "qos": 0}, "window_ms": 3000}
       - {"client": "a", "op": "disconnect", "window_ms": 3000}
+
+  # BEGIN generated: mbfuzzer (tools/gen_rq5_mbfuzzer.py)
+  # MBFuzzer N1: MQTT 3.1.1 SUBSCRIBE with Packet Identifier 0. Affected per Table 10: emqx 5.6.0, nanomq 0.21.10, vernemq 1.13.0, hivemq-ce 2024.1.
+  rq5_mb_n1:
+    kind: probe
+    clause: "MQTT-2.3.1-1 (MUST); judged at step 2"
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "version": 4}}
+      - {"client": "a", "op": "hex", "hex": "82 06 0000 0001 78 00", "expect_reply": true}
+
+  # MBFuzzer N3: MQTT 3.1.1 CONNECT with User Name Flag 1 and no user name. Affected per Table 10: emqx 5.6.0, mosquitto 2.0.18, vernemq 1.13.0, hivemq-ce 2024.1.
+  rq5_mb_n3:
+    kind: probe
+    clause: "MQTT-3.1.2-19 (MUST); judged at step 1"
+    steps:
+      - {"client": "a", "op": "hex", "hex": "10 0e 0004 4d515454 04 82 003c 0002 7064", "expect_reply": true}
+
+  # MBFuzzer N4: MQTT 3.1.1 CONNECT with Password Flag 1 and User Name Flag 0. Affected per Table 10: emqx 5.6.0, nanomq 0.21.10.
+  rq5_mb_n4:
+    kind: probe
+    clause: "MQTT-3.1.2-22 (MUST); judged at step 1"
+    steps:
+      - {"client": "a", "op": "hex", "hex": "10 12 0004 4d515454 04 42 003c 0002 7071 0002 7077", "expect_reply": true}
+
+  # MBFuzzer N5: MQTT 3.1.1 CONNECT with Will Flag 1 and no Will fields. Affected per Table 10: hivemq-ce 2024.1.
+  rq5_mb_n5:
+    kind: probe
+    clause: "MQTT-3.1.2-9 (MUST); judged at step 1"
+    steps:
+      - {"client": "a", "op": "hex", "hex": "10 0e 0004 4d515454 04 06 003c 0002 7072", "expect_reply": true}
+
+  # MBFuzzer N6: MQTT 3.1.1 user name not UTF-8. Affected per Table 10: vernemq 1.13.0, hivemq-ce 2024.1.
+  rq5_mb_n6:
+    kind: probe
+    clause: "MQTT-3.1.3-11 (MUST); judged at step 1"
+    steps:
+      - {"client": "a", "op": "hex", "hex": "10 12 0004 4d515454 04 82 003c 0002 7073 0002 61ff", "expect_reply": true}
+
+  # MBFuzzer N7: MQTT 3.1.1 ClientId not UTF-8. Affected per Table 10: vernemq 1.13.0.
+  rq5_mb_n7:
+    kind: probe
+    clause: "MQTT-3.1.3-4 (MUST); judged at step 1"
+    steps:
+      - {"client": "a", "op": "hex", "hex": "10 0f 0004 4d515454 04 02 003c 0003 70ff74", "expect_reply": true}
+
+  # MBFuzzer N8: MQTT 3.1.1 zero-byte ClientId with CleanSession 0: CONNACK 0x02, then close. Affected per Table 10: nanomq 0.21.10.
+  rq5_mb_n8:
+    kind: probe
+    clause: "MQTT-3.1.3-8 (MUST); judged at step 1"
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "", "version": 4, "clean_start": false}}
+
+  # MBFuzzer N10: Will Flag 0 with Will QoS 1. Affected per Table 10: emqx 5.6.0, nanomq 0.21.10.
+  rq5_mb_n10:
+    kind: probe
+    clause: "MQTT-3.1.2-11 (MUST); judged at step 1"
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "will_qos_bits": 1}}
+
+  # MBFuzzer N11: Will Flag 0 with Will Retain 1. Affected per Table 10: emqx 5.6.0, nanomq 0.21.10.
+  rq5_mb_n11:
+    kind: probe
+    clause: "MQTT-3.1.2-13 (MUST); judged at step 1"
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "will_retain_bit": true}}
+
+  # MBFuzzer N12: CONNECT reserved flag set. Affected per Table 10: nanomq 0.21.10.
+  rq5_mb_n12:
+    kind: probe
+    clause: "MQTT-3.1.2-3 (MUST); judged at step 1"
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "reserved_bit": true}}
+
+  # MBFuzzer N14: MQTT 5 user name not UTF-8. Affected per Table 10: vernemq 1.13.0, hivemq-ce 2024.1.
+  rq5_mb_n14:
+    kind: probe
+    clause: "MQTT-3.1.3-12 (MUST); judged at step 1"
+    steps:
+      - {"client": "a", "op": "hex", "hex": "10 13 0004 4d515454 05 82 003c 00 0002 7074 0002 61ff", "expect_reply": true}
+
+  # MBFuzzer N15: UNSUBSCRIBE Topic Filter not UTF-8. Affected per Table 10: emqx 5.6.0, vernemq 1.13.0.
+  rq5_mb_n15:
+    kind: probe
+    clause: "MQTT-3.10.3-1 (MUST); judged at step 2"
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "hex", "hex": "a2 07 0001 00 0002 61ff", "expect_reply": true}
+
+  # MBFuzzer N16: UNSUBSCRIBE with no Topic Filter. Affected per Table 10: mosquitto 2.0.18.
+  rq5_mb_n16:
+    kind: probe
+    clause: "MQTT-3.10.3-2 (MUST); judged at step 2"
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "hex", "hex": "a2 03 0001 00", "expect_reply": true}
+
+  # MBFuzzer N17: second CONNECT on one connection: at most one CONNACK. Affected per Table 10: nanomq 0.21.10.
+  rq5_mb_n17:
+    kind: probe
+    clause: "MQTT-3.2.0-2 (MUST); judged at step 2"
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+
+  # MBFuzzer N18: QoS 0 PUBLISH with DUP 1. Affected per Table 10: nanomq 0.21.10.
+  rq5_mb_n18:
+    kind: probe
+    clause: "MQTT-3.3.1-2 (MUST); judged at step 4"
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x"}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "p", "qos": 0, "dup": true}}
+
+  # MBFuzzer N19: PUBLISH Topic Name not UTF-8. Affected per Table 10: vernemq 1.13.0.
+  rq5_mb_n19:
+    kind: probe
+    clause: "MQTT-3.3.2-1 (MUST); judged at step 4"
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "x"}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "hex", "hex": "30 07 0003 61ff62 00 70", "expect_reply": true}
+
+  # MBFuzzer N20: Response Topic with a wildcard. Affected per Table 10: mosquitto 2.0.18, nanomq 0.21.10, vernemq 1.13.0.
+  rq5_mb_n20:
+    kind: probe
+    clause: "MQTT-3.3.2-14 (MUST); judged at step 4"
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x"}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "p", "qos": 1, "packet_id": 5, "properties": {"response_topic": "r/#"}}}
+
+  # MBFuzzer N21: Content Type not UTF-8. Affected per Table 10: nanomq 0.21.10.
+  rq5_mb_n21:
+    kind: probe
+    clause: "MQTT-3.3.2-19 (MUST); judged at step 4"
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x"}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "p", "qos": 1, "packet_id": 5, "properties": {"raw": "030002ffff"}}}
+
+  # MBFuzzer N22: Topic Alias 65535, above the Topic Alias Maximum a broker announces (EMQX announces 65535). Affected per Table 10: nanomq 0.21.10.
+  rq5_mb_n22:
+    kind: probe
+    clause: "MQTT-3.3.2-9 (MUST); judged at step 4"
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x"}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "p", "qos": 1, "packet_id": 5, "properties": {"topic_alias": 65535}}}
+
+  # MBFuzzer N23: client PUBLISH carrying a Subscription Identifier. Affected per Table 10: emqx 5.6.0, mosquitto 2.0.18, nanomq 0.21.10, vernemq 1.13.0.
+  rq5_mb_n23:
+    kind: probe
+    clause: "MQTT-3.3.4-6 (MUST); judged at step 4"
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x"}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "p", "qos": 1, "packet_id": 5, "properties": {"subscription_identifier": 5}}}
+
+  # MBFuzzer N24: client PUBACK with Reason Code 0x05, not a PUBACK reason code. Affected per Table 10: emqx 5.6.0, nanomq 0.21.10.
+  rq5_mb_n24:
+    kind: probe
+    clause: "MQTT-3.4.2-1 (MUST); judged at step 5"
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}, "auto_ack": false}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x", "qos": 1}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "p", "qos": 1, "packet_id": 5}}
+      - {"client": "b", "op": "puback", "args": {"packet_id": "last", "reason_code": 5}}
+
+  # MBFuzzer N25: PUBREL fixed-header flags 0000. Affected per Table 10: nanomq 0.21.10.
+  rq5_mb_n25:
+    kind: probe
+    clause: "MQTT-3.6.1-1 (MUST); judged at step 3"
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "p", "qos": 2, "packet_id": 9}}
+      - {"client": "a", "op": "pubrel", "args": {"packet_id": 9, "fixed_flags": 0}}
+
+  # MBFuzzer N26: SUBSCRIBE Topic Filter not UTF-8. Affected per Table 10: emqx 5.6.0, vernemq 1.13.0.
+  rq5_mb_n26:
+    kind: probe
+    clause: "MQTT-3.8.3-1 (MUST); judged at step 2"
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "hex", "hex": "82 08 0001 00 0002 61ff 00", "expect_reply": true}
+
+  # MBFuzzer N27: SUBSCRIBE with no Topic Filter. Affected per Table 10: mosquitto 2.0.18.
+  rq5_mb_n27:
+    kind: probe
+    clause: "MQTT-3.8.3-2 (MUST); judged at step 2"
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "hex", "hex": "82 03 0001 00", "expect_reply": true}
+
+  # MBFuzzer N28: No Local 1 on a Shared Subscription. Affected per Table 10: mosquitto 2.0.18, vernemq 1.13.0.
+  rq5_mb_n28:
+    kind: probe
+    clause: "MQTT-3.8.3-4 (MUST); judged at step 2"
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "subscribe", "args": {"packet_id": 2, "filters": [{"topic": "$share/g/{T}n", "no_local": true}]}}
+
+  # MBFuzzer N30: ShareName containing '+'. Affected per Table 10: mosquitto 2.0.18, nanomq 0.21.10, vernemq 1.13.0.
+  rq5_mb_n30:
+    kind: probe
+    clause: "MQTT-4.8.2-2 (MUST); judged at step 2"
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "subscribe", "args": {"packet_id": 2, "filters": [{"topic": "$share/a+b/{T}s"}]}}
+
+  # MBFuzzer N31: Authentication Data without Authentication Method (Protocol Error, 3.1.2.11.10). Affected per Table 10: emqx 5.6.0, mosquitto 2.0.18, nanomq 0.21.10, vernemq 1.13.0.
+  rq5_mb_n31:
+    kind: probe
+    clause: "MQTT 5.0 3.1.2.11.10 (MUST); judged at step 1"
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "properties": {"raw": "1600026161"}}}
+
+  # MBFuzzer N32: Authentication Method not UTF-8. Affected per Table 10: nanomq 0.21.10.
+  rq5_mb_n32:
+    kind: probe
+    clause: "MQTT-1.5.4-1 (MUST); judged at step 1"
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "properties": {"raw": "15000261ff"}}}
+
+  # MBFuzzer N34: Correlation Data twice (Protocol Error, 3.3.2.3.6). Affected per Table 10: emqx 5.6.0.
+  rq5_mb_n34:
+    kind: probe
+    clause: "MQTT 5.0 3.3.2.3.6 (MUST); judged at step 4"
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x"}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "p", "qos": 1, "packet_id": 5, "properties": {"raw": "0900016109000162"}}}
+
+  # MBFuzzer N35: Table 11 reads 'Maximum QoS field has the value 3'; the broker-received form is a PUBLISH with both QoS bits set (3.3.1.2, Malformed Packet). Affected per Table 10: emqx 5.6.0.
+  rq5_mb_n35:
+    kind: probe
+    clause: "MQTT-3.3.1-4 (MUST); judged at step 2"
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "hex", "hex": "36 07 0001 78 0001 00 70", "expect_reply": true}
+
+  # MBFuzzer N36: Message Expiry Interval twice (Protocol Error, 3.3.2.3.3). Affected per Table 10: nanomq 0.21.10.
+  rq5_mb_n36:
+    kind: probe
+    clause: "MQTT 5.0 3.3.2.3.3 (MUST); judged at step 4"
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x"}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "p", "qos": 1, "packet_id": 5, "properties": {"raw": "020000003c020000003c"}}}
+
+  # MBFuzzer N37: Payload Format Indicator 2. Affected per Table 10: nanomq 0.21.10.
+  rq5_mb_n37:
+    kind: probe
+    clause: "MQTT 5.0 3.3.2.3.2 (MUST); judged at step 4"
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x"}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "p", "qos": 1, "packet_id": 5, "properties": {"payload_format_indicator": 2}}}
+
+  # MBFuzzer N38: Will with Payload Format Indicator 1 and a Will Payload that is not UTF-8 (the Server MAY validate, 3.1.3.2.3; counted by MBFuzzer and fixed by VerneMQ). Affected per Table 10: emqx 5.6.0, mosquitto 2.0.18, vernemq 1.13.0, hivemq-ce 2024.1.
+  rq5_mb_n38:
+    kind: probe
+    clause: "MQTT 5.0 3.1.3.2.3 (MAY); judged at step 1"
+    steps:
+      - {"client": "a", "op": "hex", "hex": "10 19 0004 4d515454 05 06 003c 00 0002 7077 02 0101 0001 77 0002 fffe", "expect_reply": true}
+
+  # MBFuzzer N39: PUBLISH with Payload Format Indicator 1 and a payload that is not UTF-8 (receiver MAY validate). Affected per Table 10: mosquitto 2.0.18, nanomq 0.21.10, vernemq 1.13.0, hivemq-ce 2024.1.
+  rq5_mb_n39:
+    kind: probe
+    clause: "MQTT 5.0 3.3.2.3.2 (MAY); judged at step 4"
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "x"}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "hex", "hex": "30 08 0001 78 02 0101 fffe", "expect_reply": true}
+
+  # MBFuzzer N40: Payload Format Indicator twice. Affected per Table 10: emqx 5.6.0.
+  rq5_mb_n40:
+    kind: probe
+    clause: "MQTT 5.0 3.3.2.3.2 (MUST); judged at step 4"
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x"}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "p", "qos": 1, "packet_id": 5, "properties": {"raw": "01010101"}}}
+
+  # MBFuzzer N41: PUBLISH with property identifier 0x7F (not valid). Affected per Table 10: nanomq 0.21.10.
+  rq5_mb_n41:
+    kind: probe
+    clause: "MQTT 5.0 2.2.2.2 (MUST); judged at step 4"
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x"}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "p", "qos": 1, "packet_id": 5, "properties": {"raw": "7f00"}}}
+
+  # MBFuzzer N42: Receive Maximum 0 (Protocol Error, 3.1.2.11.3). Affected per Table 10: nanomq 0.21.10.
+  rq5_mb_n42:
+    kind: probe
+    clause: "MQTT 5.0 3.1.2.11.3 (MUST); judged at step 1"
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "properties": {"receive_maximum": 0}}}
+
+  # MBFuzzer N43: Request Problem Information 2. Affected per Table 10: nanomq 0.21.10.
+  rq5_mb_n43:
+    kind: probe
+    clause: "MQTT 5.0 3.1.2.11.7 (MUST); judged at step 1"
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "properties": {"request_problem_information": 2}}}
+
+  # MBFuzzer N44: Request Response Information 2. Affected per Table 10: nanomq 0.21.10.
+  rq5_mb_n44:
+    kind: probe
+    clause: "MQTT 5.0 3.1.2.11.6 (MUST); judged at step 1"
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "properties": {"request_response_information": 2}}}
+
+  # MBFuzzer N45: Request Response Information twice. Affected per Table 10: emqx 5.6.0.
+  rq5_mb_n45:
+    kind: probe
+    clause: "MQTT 5.0 3.1.2.11.6 (MUST); judged at step 1"
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "properties": {"raw": "19011901"}}}
+
+  # MBFuzzer N47: Response Topic of zero length. Affected per Table 10: emqx 5.6.0, mosquitto 2.0.18, nanomq 0.21.10.
+  rq5_mb_n47:
+    kind: probe
+    clause: "MQTT 5.0 3.3.2.3.5 (MUST); judged at step 4"
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x"}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "p", "qos": 1, "packet_id": 5, "properties": {"response_topic": ""}}}
+
+  # MBFuzzer N48: Subscription Identifier 0 (range 1 to 268,435,455). Affected per Table 10: nanomq 0.21.10.
+  rq5_mb_n48:
+    kind: probe
+    clause: "MQTT 5.0 3.8.2.1.2 (MUST); judged at step 2"
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "subscribe", "args": {"packet_id": 2, "filters": [{"topic": "{T}x"}], "properties": {"subscription_identifier": 0}}}
+
+  # MBFuzzer N49: Topic Alias twice. Affected per Table 10: emqx 5.6.0.
+  rq5_mb_n49:
+    kind: probe
+    clause: "MQTT 5.0 3.3.2.3.4 (MUST); judged at step 4"
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x"}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "p", "qos": 1, "packet_id": 5, "properties": {"raw": "230001230002"}}}
+
+  # MBFuzzer N50: User Property key not UTF-8. Affected per Table 10: nanomq 0.21.10.
+  rq5_mb_n50:
+    kind: probe
+    clause: "MQTT-1.5.4-1 (MUST); judged at step 4"
+    steps:
+      - {"client": "b", "op": "connect", "args": {"client_id": "{C}b"}}
+      - {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "{T}x"}]}}
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}}
+      - {"client": "a", "op": "publish", "args": {"topic": "{T}x", "payload": "p", "qos": 1, "packet_id": 5, "properties": {"raw": "260001ff000161"}}}
+
+  # MBFuzzer N51: Will QoS 3. Affected per Table 10: vernemq 1.13.0.
+  rq5_mb_n51:
+    kind: probe
+    clause: "MQTT 5.0 3.1.2.6 (MUST); judged at step 1"
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "will": {"topic": "{T}w", "payload": "w", "qos": 3}}}
+
+  # MBFuzzer N53: zero-length Will Topic. Affected per Table 10: nanomq 0.21.10.
+  rq5_mb_n53:
+    kind: probe
+    clause: "MQTT 5.0 3.1.3.3 (MUST); judged at step 1"
+    steps:
+      - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "will": {"topic": "", "payload": "w"}}}
+
+  # END generated: mbfuzzer

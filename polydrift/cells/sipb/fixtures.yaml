@@ -837,7 +837,7 @@ fixtures:
       - {"req_id": "SIP-a4b666ce", "keyword": "SHOULD", "axis": "x2", "step": 1, "basis": "option", "note": "several outcomes conform"}
       - {"req_id": "SIP-762afc06", "keyword": "SHOULD", "axis": "x2", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
     steps:
-      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nSupported:\nX-Pd-Broken: ;;;\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "nre:alice/-1/hdr/require/0=.+", "x2": "codes:alice"}}
+      - {"op": "send", "from": "alice", "window_ms": 1000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nSupported:\nX-Pd-Broken: ;;;\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "nre:alice/-1/hdr/require/0=.+", "x2": "codes:alice"}}
       - {"op": "ack", "from": "alice", "window_ms": 800}
 
   uas_merged_request:

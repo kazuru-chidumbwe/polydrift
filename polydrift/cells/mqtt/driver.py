@@ -182,12 +182,16 @@ def run_script(host: str, port: int, steps: list[dict[str, Any]], *, topic_prefi
         # latency (a JVM broker under load answers its first CONNECTs after 600 ms), and a reply that arrives one
         # step late would otherwise be recorded as silence.
         t0 = time.monotonic()
-        need = err is None and expects_reply(st) and "window_ms" not in st
-        deadline = t0 + (REPLY_MAX_MS if need else st.get("window_ms", DEFAULT_WINDOW_MS)) / 1000.0
+        # With an explicit window the step still waits for its reply, and the window then runs from the reply
+        # (a CONNACK after 600 ms, then the queued messages of a resumed session; campaign 79cb3e7: HiveMQ CE).
+        need = err is None and expects_reply(st)
+        win = st.get("window_ms")
+        deadline = t0 + (max(REPLY_MAX_MS, win or 0) if need else (win or DEFAULT_WINDOW_MS)) / 1000.0
         settled = False
         while True:
             if need and not settled and (len(c.inbox) > start.get(name, 0) or c.closed):
-                deadline = min(deadline, time.monotonic() + SETTLE_MS / 1000.0)
+                after = (win if win is not None else SETTLE_MS) / 1000.0
+                deadline = time.monotonic() + after if win is not None else min(deadline, time.monotonic() + after)
                 settled = True
             left = deadline - time.monotonic()
             if left <= 0:

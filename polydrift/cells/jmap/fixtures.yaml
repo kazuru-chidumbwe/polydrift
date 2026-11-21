@@ -618,7 +618,7 @@ fixtures:
       - {"req_id": "JMAP-9b2317ec", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
       - {"req_id": "JMAP-9b91073a", "keyword": "SHOULD", "axis": "x6", "step": 1, "basis": "not-observable", "note": "needs a push endpoint the servers accept: they refuse private destinations (STATUS 15 Nov); decision recorded"}
     steps:
-      - {"op": "call", "calls": [["PushSubscription/set", {"create": {"p": {"deviceClientId": "pd{U}dev", "url": "https://pd-push.example.invalid/jmap", "types": null}}}, "c0"]], "extract": {"x4": "has:r0/created/p/expires", "x6": "r0/created/p"}}
+      - {"op": "call", "calls": [["PushSubscription/set", {"create": {"p": {"deviceClientId": "pd{U}dev", "url": "https://pd-push.example.invalid/jmap", "types": null}}}, "c0"]], "extract": {"x4": "has:r0/created/p/expires", "x6": "nodate:r0/created/p"}}
       - {"op": "call", "calls": [["PushSubscription/get", {"ids": null}, "c0"]], "extract": {"x1": "has:r0/list/0/url", "x2": "has:r0/list/0/keys", "x7": "len:r0/list"}}
       - {"op": "call", "calls": [["PushSubscription/get", {"ids": null, "properties": ["url"]}, "c0"]], "extract": {"x3": "eq:r0/type=\"forbidden\""}}
       - {"op": "call", "calls": [["PushSubscription/set", {"update": {"{id:p}": {"verificationCode": "pd-wrong-code"}}}, "c0"]], "extract": {"x5": "eq:r0/notUpdated/{id:p}/type=\"invalidProperties\""}}
@@ -754,7 +754,7 @@ fixtures:
     steps:
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"box": {"name": "pd{U}box"}}}, "mc"]]}
       - {"op": "upload", "key": "m", "data": "From: Alice <alice@example.invalid>\r\nTo: user@lab.test\r\nSubject: =?UTF-8?Q?Gr=C3=BC=C3=9Fe?= pdcase pd phrase here\r\nMessage-ID: <pd-search-{U}@example.invalid>\r\nDate: Thu, 12 Nov 2026 10:00:00 +0000\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<p title=\"pdtitle\"><a href=\"https://pdhref.example\">x</a><img alt=\"pdalt\"> pdtokena middle pdtokenb</p>\r\n", "content_type": "message/rfc822"}
-      - {"op": "call", "calls": [["Email/import", {"accountId": "{acct}", "emails": {"e": {"blobId": "{blob:m}", "mailboxIds": {"{id:box}": true}}}}, "ei"]]}
+      - {"op": "call", "calls": [["Email/import", {"accountId": "{acct}", "emails": {"e": {"blobId": "{blob:m}", "mailboxIds": {"{id:box}": true}}}}, "ei"]], "settle_ms": 3000}
       - {"op": "call", "calls": [["Email/query", {"accountId": "{acct}", "filter": {"operator": "AND", "conditions": [{"inMailbox": "{id:box}"}, {"from": "alice"}]}}, "c0"]], "extract": {"x1": "len:r0/ids"}}
       - {"op": "call", "calls": [["Email/query", {"accountId": "{acct}", "filter": {"operator": "AND", "conditions": [{"inMailbox": "{id:box}"}, {"subject": "Grüße"}]}}, "c0"]], "extract": {"x1": "len:r0/ids"}}
       - {"op": "call", "calls": [["Email/query", {"accountId": "{acct}", "filter": {"operator": "AND", "conditions": [{"inMailbox": "{id:box}"}, {"subject": "PDCASE"}]}}, "c0"]], "extract": {"x1": "len:r0/ids"}}

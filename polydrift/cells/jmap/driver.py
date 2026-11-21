@@ -394,4 +394,8 @@ def run_script(base: str, user: str, password: str, session: dict[str, Any], ste
         except (OSError, ValueError) as e:
             obs["error"] = f"{type(e).__name__}: {e}"
         out.append(obs)
+        if st.get("settle_ms"):
+            # a server may index or deliver asynchronously (RFC 8620 does not require a write to be visible to the
+            # next query at once); the fixture waits so it measures the result, not the race
+            time.sleep(float(st["settle_ms"]) / 1000)
     return out

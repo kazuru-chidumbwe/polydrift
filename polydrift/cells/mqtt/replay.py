@@ -41,9 +41,10 @@ CONSUMERS = {"libmosquitto": ["mosqconsumer", SERVER_IP, "1883"],
              "paho": ["python3", "/lab/consumers/pahoconsumer.py", SERVER_IP, "1883"]}
 PTYPE = {"connect": "CONNECT", "subscribe": "SUBSCRIBE", "unsubscribe": "UNSUBSCRIBE", "publish": "PUBLISH",
          "disconnect": "DISCONNECT"}
-CONNECT_KEYS = {"version", "clean_start", "keep_alive", "client_id", "properties"}
+CONNECT_KEYS = {"version", "clean_start", "keep_alive", "client_id", "properties", "will", "username", "password"}
 CONNECT_PROPS = {"session_expiry_interval": "sei", "receive_maximum": "rmax", "maximum_packet_size": "mps",
-                 "topic_alias_maximum": "tam"}
+                 "topic_alias_maximum": "tam", "request_problem_information": "rpi",
+                 "request_response_information": "rri", "authentication_method": "am"}
 
 
 def prefixes(fid: str, repeat: int) -> tuple[str, str]:
@@ -71,14 +72,36 @@ def line_for(st: dict[str, Any]) -> str | None:
         return None
     if op == "connect":
         props = a.get("properties") or {}
-        if set(a) - CONNECT_KEYS or set(props) - set(CONNECT_PROPS) or not _token(a.get("client_id")):
+        cid = a.get("client_id", "")
+        if set(a) - CONNECT_KEYS or set(props) - set(CONNECT_PROPS) or not (cid == "" or _token(cid)):
             return None
         v = int(a.get("version", 5))
         if v not in (4, 5):
             return None
-        extra = " ".join(f"{CONNECT_PROPS[k]}={int(x)}" for k, x in sorted(props.items()))
-        return f"connect {v} {int(bool(a.get('clean_start', True)))} {int(a.get('keep_alive', 60))} {a['client_id']}" + \
-            (f" {extra}" if extra else "")
+        extra = []
+        for k, x in sorted(props.items()):
+            if k == "authentication_method":
+                if not _token(x):
+                    return None
+                extra.append(f"am={x}")
+            else:
+                extra.append(f"{CONNECT_PROPS[k]}={int(x)}")
+        will = a.get("will")
+        if will is not None:
+            # a will a library can set: topic, payload, QoS 0 to 2, retain; no will properties
+            if set(will) - {"topic", "payload", "qos", "retain"} or not _token(will.get("topic")) \
+                    or int(will.get("qos", 0)) not in (0, 1, 2):
+                return None
+            pl = will.get("payload", "")
+            hx = (pl.encode() if isinstance(pl, str) else bytes(pl)).hex() or "-"
+            extra.append(f"will={int(will.get('qos', 0))},{int(bool(will.get('retain')))},{will['topic']},{hx}")
+        for k, tag in (("username", "user"), ("password", "pass")):
+            if a.get(k) is not None:
+                if not (_token(a[k]) or a[k] == ""):
+                    return None
+                extra.append(f"{tag}={a[k] or '-'}")
+        return (f"connect {v} {int(bool(a.get('clean_start', True)))} {int(a.get('keep_alive', 60))} {cid or '-'}"
+                + (" " + " ".join(extra) if extra else ""))
     if op == "subscribe":
         fs = [{"topic": f} if isinstance(f, str) else f for f in a.get("filters") or []]
         if set(a) - {"filters", "packet_id", "version"} or len(fs) != 1 or a.get("properties") or a.get("fixed_flags") is not None or not _token(fs[0].get("topic")):

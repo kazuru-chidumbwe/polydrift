@@ -103,7 +103,8 @@ int main(int argc, char **argv) {
             int ver, clean, ka;
             char cid[512];
             if (sscanf(line, "connect %d %d %d %511s", &ver, &clean, &ka, cid) != 4) continue;
-            m = mosquitto_new(cid, clean, NULL);
+            m = mosquitto_new(strcmp(cid, "-") ? cid : NULL, clean, NULL);
+            if (!m) { printf("{\"ev\":\"api\",\"call\":\"new\",\"rc\":-1}\n"); continue; }
             mosquitto_int_option(m, MOSQ_OPT_PROTOCOL_VERSION, ver == 5 ? MQTT_PROTOCOL_V5 : MQTT_PROTOCOL_V311);
             mosquitto_connect_v5_callback_set(m, on_connect);
             mosquitto_subscribe_v5_callback_set(m, on_subscribe);
@@ -118,6 +119,35 @@ int main(int argc, char **argv) {
                 if ((s = strstr(line, "rmax="))) mosquitto_property_add_int16(&cp, MQTT_PROP_RECEIVE_MAXIMUM, (uint16_t)atoi(s + 5));
                 if ((s = strstr(line, "mps="))) mosquitto_property_add_int32(&cp, MQTT_PROP_MAXIMUM_PACKET_SIZE, (uint32_t)atol(s + 4));
                 if ((s = strstr(line, "tam="))) mosquitto_property_add_int16(&cp, MQTT_PROP_TOPIC_ALIAS_MAXIMUM, (uint16_t)atoi(s + 4));
+                if ((s = strstr(line, "rpi="))) mosquitto_property_add_byte(&cp, MQTT_PROP_REQUEST_PROBLEM_INFORMATION, (uint8_t)atoi(s + 4));
+                if ((s = strstr(line, "rri="))) mosquitto_property_add_byte(&cp, MQTT_PROP_REQUEST_RESPONSE_INFORMATION, (uint8_t)atoi(s + 4));
+                if ((s = strstr(line, " am="))) {
+                    char am[256];
+                    if (sscanf(s + 4, "%255s", am) == 1) mosquitto_property_add_string(&cp, MQTT_PROP_AUTHENTICATION_METHOD, am);
+                }
+            }
+            if ((s = strstr(line, " will="))) {
+                /* will=QOS,RETAIN,TOPIC,PAYLOAD_HEX (the topic may hold commas: the payload is after the last one) */
+                char wv[8192];
+                int wq = 0, wr = 0;
+                if (sscanf(s + 6, "%8191s", wv) == 1 && sscanf(wv, "%d,%d,", &wq, &wr) == 2) {
+                    char *topic = strchr(strchr(wv, ',') + 1, ',') + 1, *hx = strrchr(wv, ',');
+                    *hx++ = 0;
+                    int n = strcmp(hx, "-") ? (int)strlen(hx) / 2 : 0;
+                    char *pl = malloc(n + 1);
+                    for (int i = 0; i < n; i++) pl[i] = (char)(hexval(hx[2 * i]) * 16 + hexval(hx[2 * i + 1]));
+                    int rc = mosquitto_will_set_v5(m, topic, n, pl, wq, wr, NULL);
+                    if (rc) printf("{\"ev\":\"api\",\"call\":\"will\",\"rc\":%d}\n", rc);
+                    free(pl);
+                }
+            }
+            {
+                char u[512] = "", p[512] = "";
+                char *su = strstr(line, " user="), *sp = strstr(line, " pass=");
+                if (su) sscanf(su + 6, "%511s", u);
+                if (sp) sscanf(sp + 6, "%511s", p);
+                if (su || sp) mosquitto_username_pw_set(m, su ? (strcmp(u, "-") ? u : "") : NULL,
+                                                         sp ? (strcmp(p, "-") ? p : "") : NULL);
             }
             int rc = mosquitto_connect_bind_v5(m, argv[1], atoi(argv[2]), ka, NULL, cp);
             if (rc) printf("{\"ev\":\"api\",\"call\":\"connect\",\"rc\":%d}\n", rc);

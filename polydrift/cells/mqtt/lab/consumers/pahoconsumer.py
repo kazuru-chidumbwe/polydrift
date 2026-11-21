@@ -47,6 +47,8 @@ def main() -> int:
         try:
             if w[0] == "connect":
                 ver, clean, ka, cid = int(w[1]), int(w[2]), int(w[3]), w[4]
+                cid = "" if cid == "-" else cid
+                opts = dict(kv.split("=", 1) for kv in w[5:])
                 proto = mqtt.MQTTv5 if ver == 5 else mqtt.MQTTv311
                 c = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=cid, protocol=proto,
                                 clean_session=None if ver == 5 else bool(clean))
@@ -58,13 +60,23 @@ def main() -> int:
                                                       qos=m.qos, retain=int(m.retain),
                                                       props=prop_names(getattr(m, "properties", None)))
                 c.on_disconnect = lambda cl, u, f, rc, p: emit(ev="disconnect", rc=rc_value(rc))
+                if "will" in opts:
+                    wq, wr, rest = opts["will"].split(",", 2)
+                    wt, wh = rest.rsplit(",", 1)
+                    c.will_set(wt, b"" if wh == "-" else bytes.fromhex(wh), qos=int(wq), retain=bool(int(wr)))
+                if "user" in opts or "pass" in opts:
+                    u, p = opts.get("user"), opts.get("pass")
+                    c.username_pw_set(None if u is None else ("" if u == "-" else u),
+                                      None if p is None else ("" if p == "-" else p))
                 cp = None
                 if ver == 5:
                     cp = Properties(PacketTypes.CONNECT)
-                    for kv in w[5:]:
-                        k, v = kv.split("=")
-                        setattr(cp, {"sei": "SessionExpiryInterval", "rmax": "ReceiveMaximum",
-                                     "mps": "MaximumPacketSize", "tam": "TopicAliasMaximum"}[k], int(v))
+                    names = {"sei": "SessionExpiryInterval", "rmax": "ReceiveMaximum", "mps": "MaximumPacketSize",
+                             "tam": "TopicAliasMaximum", "rpi": "RequestProblemInformation",
+                             "rri": "RequestResponseInformation", "am": "AuthenticationMethod"}
+                    for k, v in opts.items():
+                        if k in names:
+                            setattr(cp, names[k], v if k == "am" else int(v))
                     c.connect(host, port, keepalive=ka, clean_start=bool(clean), properties=cp)
                 else:
                     c.connect(host, port, keepalive=ka)

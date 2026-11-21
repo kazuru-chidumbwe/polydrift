@@ -24,7 +24,13 @@ def test_client_script_lines_and_limits():
     s = replay.client_script(FX, "b", 4, t, c)
     assert s == ["connect 5 1 60 pd-F-r2-b sei=30", "subscribe 1 0 0 0 pd/F/r2/x"]
     assert replay.client_script(FX, "b", 5, t, c) is None          # a raw packet step
-    assert replay.client_script(FX, "a", 4, t, c) is None          # a will cannot be set the same way
+    # a will, an empty client id and the authentication method are calls a library makes
+    assert replay.client_script(FX, "a", 4, t, c) == ["connect 5 1 60 pd-F-r2-a will=0,0,w,-", "publish 1 0 pd/F/r2/x 6869"]
+    assert replay.line_for({"op": "connect", "args": {"client_id": "", "properties": {"authentication_method": "X"}}}) \
+        == "connect 5 1 60 - am=X"
+    # a will with properties, a malformed will QoS or a client id with spaces is not
+    assert replay.line_for({"op": "connect", "args": {"client_id": "a", "will": {"topic": "w", "qos": 3}}}) is None
+    assert replay.line_for({"op": "connect", "args": {"client_id": "a b"}}) is None
 
 
 def test_server_steps_mark_actor_and_carry_wire():

@@ -27,6 +27,17 @@ cases:
     fixed: ["4.9.0"]
     source: "ResolverFuzz RC3 (PowerDNS Recursor 4.7.0); RD=0 forwarding changed in 4.9.0-alpha1 (PR 12425), not described as the fix"
     clause: "RFC 1034 4.3.1"
+  D4:
+    cell: dns
+    family: unbound
+    status: unfixed
+    fixtures: [rq5_d4_authority_inject]
+    axes: [answers]
+    affected: ["1.16.0"]
+    known: [{fixture: rq5_d4_authority_inject, axis: answers, step: 2, value: ["rq5-inj.pd.pdlab a 6.6.6.9"]}]
+    source: "ResolverFuzz RC2 (Unbound 1.16.0); Unbound Changelog 19 Jan 2023: harden-unknown-additional (1.18.0), default no"
+    clause: "RFC 2181 5.4.1"
+    note: "unfixed in the default configuration (the 1.18.0 option is off by default); recall run on the affected release"
   D5:
     cell: dns
     family: unbound
@@ -49,6 +60,16 @@ cases:
     source: "ResolverFuzz RC7 (Knot Resolver, 100 TCP queries); Knot Resolver NEWS 5.6.0 (2023-01-26), Security, !1380, credited to the ResolverFuzz authors"
     clause: "RFC 1035 7.2"
     note: "known steps count observations (the sleep step gives none)"
+  D6:
+    cell: dns
+    family: bind-fwd
+    fixtures: [rq5_d6_cdns_bailiwick]
+    axes: [answers, upstream_servers]
+    affected: ["9.18.0"]
+    fixed: ["9.18.1"]
+    source: "MaginotDNS (Li et al., USENIX Security 2023) V1, Section 7: BIND fixed in 9.18.1 (CVE-2021-25220); ResolverFuzz CP1"
+    clause: "RFC 2181 5.4.1"
+    note: "profile: atk.pd.pdlab. forwarded with fallback (BIND forward first, Unbound forward-first); Knot (form b/c) and Technitium (form d) need other answer forms"
   D9:
     cell: dns
     family: pdns-recursor

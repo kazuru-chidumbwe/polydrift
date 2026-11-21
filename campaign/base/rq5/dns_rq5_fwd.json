@@ -109,5 +109,31 @@
   "entrypoint": null,
   "cmd": null,
   "role": "forwarding"
+ },
+ {
+  "key": "bind-fwd-9.18.0",
+  "impl": "bind-fwd",
+  "version": "9.18.0",
+  "image": "pd-bind:9.18.0",
+  "ready": 60,
+  "mounts": {
+   "named-fwd.conf": "/etc/bind/named.conf"
+  },
+  "entrypoint": null,
+  "cmd": null,
+  "role": "forwarding"
+ },
+ {
+  "key": "bind-fwd-9.18.1",
+  "impl": "bind-fwd",
+  "version": "9.18.1",
+  "image": "pd-bind:9.18.1",
+  "ready": 60,
+  "mounts": {
+   "named-fwd.conf": "/etc/bind/named.conf"
+  },
+  "entrypoint": null,
+  "cmd": null,
+  "role": "forwarding"
  }
 ]

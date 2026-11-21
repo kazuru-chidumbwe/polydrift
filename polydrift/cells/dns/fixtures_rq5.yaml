@@ -33,6 +33,29 @@ fixtures:
       - {qname: rq5-rd0.pd.pdlab, qtype: A, rd: false}
       - {op: upstream, match: rq5-rd0, id: up2}
 
+  # D6, MaginotDNS (USENIX Security 2023) V1 / ResolverFuzz CP1: a CDNS forwards the attacker's domain (forward
+  # first) and the forwarder's answer carries an out-of-bailiwick delegation (other.pdlab. NS ns1.rogue.pdlab., glue
+  # to .17). BIND 9.18.0 caches it (Q.zone starts at the root in forwarding mode) and sends the victim query to .17;
+  # fixed in 9.18.1 (CVE-2021-25220). Forwarding targets only (lab/resolvers/*-fwd*).
+  rq5_d6_cdns_bailiwick:
+    kind: probe
+    clause: "RFC 2181 5.4.1 (data ranking); RFC 1034 5.3.3 (bailiwick of referral data)"
+    steps:
+      - {op: upstream, match: rq5-cp1v, id: up0}
+      - {qname: x.atk.pd.pdlab, qtype: A}
+      - {qname: rq5-cp1v.other.pdlab, qtype: A}
+      - {op: upstream, match: rq5-cp1v, id: up1}
+
+  # D4, ResolverFuzz RC2: an answer for rq5-authx carries an A record for another name (rq5-inj) in its authority
+  # section. A resolver that caches it answers rq5-inj from cache (6.6.6.9) instead of asking (10.0.67.2). Unbound
+  # 1.18.0 added harden-unknown-additional (default no), so the default configuration keeps the behaviour.
+  rq5_d4_authority_inject:
+    kind: probe
+    clause: "RFC 2181 5.4.1; RFC 1035 7.4 (unsolicited data)"
+    steps:
+      - {qname: rq5-authx.pd.pdlab, qtype: A}
+      - {qname: rq5-inj.pd.pdlab, qtype: A}
+
   # D13, ResolverFuzz RC7: the authority answers over UDP with TC set and closes every TCP connection without a
   # reply. Knot Resolver before 5.6.0 reconnected up to about 100 times per client query (NEWS 5.6.0, !1380:
   # "a DNS server that just closes connections without answer could cause lots of work for the resolver").

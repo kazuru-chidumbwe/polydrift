@@ -100,6 +100,7 @@ servers:
       - "rq5-self 300 DNAME pd.pdlab."
       - "rq5-loop 300 DNAME rq5-loop.pd.pdlab."
       - "rq5-rd0 300 A 10.0.12.1"
+      - "rq5-inj 300 A 10.0.67.2"
       - "tcpa 300 A 10.0.11.8"
       - "tcpb 300 A 10.0.11.9"
       - "tcpc 300 A 10.0.11.10"
@@ -131,6 +132,12 @@ servers:
       msbttl: {kind: raw_answer, rrs: [["msbttl.pd.pdlab.", 2147483948, A, 10.0.11.4]]}
       upref: {kind: referral_up}
       nosoa: {kind: flip, negative_seconds: 0.5, no_soa: true}
+      # RQ5 D6 (MaginotDNS Fig. 5a, CVE-2021-25220): the forwarded zone's server answers with an out-of-bailiwick
+      # delegation for other.pdlab. (rogue NS, glue to the ghost server .17); a resolver that takes it asks .17 next
+      x.atk: {kind: craft, answer: ["x.atk.pd.pdlab. 300 A 10.0.68.1"], authority: ["other.pdlab. 300 NS ns1.rogue.pdlab."],
+              additional: ["ns1.rogue.pdlab. 300 A 172.31.53.17"]}
+      # RQ5 D4 (ResolverFuzz RC2): an A record placed in the authority section of an answer for another name
+      rq5-authx: {kind: craft, answer: ["rq5-authx.pd.pdlab. 300 A 10.0.67.1"], authority: ["rq5-inj.pd.pdlab. 300 A 6.6.6.9"]}
       # RQ5 D13 (ResolverFuzz RC7): truncated over UDP, TCP connection closed without a payload
       rq5-tcpnull: {kind: tcp_null}
       x.dn0: {kind: answer, answer: ["dn0.pd.pdlab. 300 DNAME dtarget.other.pdlab.", "x.dn0.pd.pdlab. 0 CNAME x.dtarget.other.pdlab."]}
@@ -145,6 +152,7 @@ servers:
       - "x.dtarget 300 A 10.9.8.1"
       - "victim 300 A 10.9.0.1"
       - "victim2 300 A 10.9.0.2"
+      - "rq5-cp1v 300 A 10.9.0.5"
   half:
     ip: 172.31.53.15
     zone: "halflame.pdlab."

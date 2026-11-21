@@ -258,10 +258,11 @@
    "cases": [
     "D10",
     "D13",
+    "D4",
     "D5",
     "D9"
    ],
-   "n_targets": 11,
+   "n_targets": 12,
    "keys": [
     "bind-9.20.30",
     "bind-9.16.13",
@@ -272,6 +273,7 @@
     "pdns-recursor-5.3.14",
     "pdns-recursor-4.7.3",
     "unbound-1.26.0",
+    "unbound-1.16.0",
     "unbound-1.16.1",
     "unbound-1.16.2"
    ]
@@ -283,10 +285,13 @@
    "targets": "campaign/targets/rq5-dns-fwd.json",
    "cases": [
     "D1",
-    "D1p"
+    "D1p",
+    "D6"
    ],
-   "n_targets": 8,
+   "n_targets": 10,
    "keys": [
+    "bind-fwd-9.18.0",
+    "bind-fwd-9.18.1",
     "bind-fwd-9.20.30",
     "knot-fwd-6.5.1",
     "pdns-fwd-4.7.0",

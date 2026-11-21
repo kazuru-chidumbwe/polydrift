@@ -152,5 +152,20 @@
    "/conf/knot5.lua"
   ],
   "role": "recursive"
+ },
+ {
+  "key": "unbound-1.16.0",
+  "impl": "unbound",
+  "version": "1.16.0",
+  "image": "pd-unbound:1.16.0",
+  "ready": 60,
+  "mounts": {},
+  "entrypoint": "/usr/local/sbin/unbound",
+  "cmd": [
+   "-d",
+   "-c",
+   "/conf/unbound.conf"
+  ],
+  "role": "recursive"
  }
 ]

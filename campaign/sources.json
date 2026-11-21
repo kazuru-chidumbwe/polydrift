@@ -226,6 +226,24 @@
       },
       "why": "RQ5 D10 (CVE-2021-25215): affected 9.16.13, fixed 9.16.15; ISC tarball recipe"
     },
+    "pd-bind:9.18.0": {
+      "dockerfile": "polydrift/cells/dns/lab/images/bind.Dockerfile",
+      "context": "polydrift/cells/dns/lab/images",
+      "args": {
+        "VER": "9.18.0",
+        "CONF": "--disable-doh"
+      },
+      "why": "RQ5 D6 (CVE-2021-25220, MaginotDNS): affected 9.18.0, fixed 9.18.1; ISC tarball recipe"
+    },
+    "pd-bind:9.18.1": {
+      "dockerfile": "polydrift/cells/dns/lab/images/bind.Dockerfile",
+      "context": "polydrift/cells/dns/lab/images",
+      "args": {
+        "VER": "9.18.1",
+        "CONF": "--disable-doh"
+      },
+      "why": "RQ5 D6 (CVE-2021-25220, MaginotDNS): affected 9.18.0, fixed 9.18.1; ISC tarball recipe"
+    },
     "pd-unbound:1.17.1": {
       "dockerfile": "polydrift/cells/dns/lab/images/unbound.Dockerfile",
       "context": "polydrift/cells/dns/lab/images",
@@ -257,6 +275,14 @@
         "VER": "1.16.2"
       },
       "why": "RQ5 D5 (CVE-2022-30698, Phoenix Domain T2): affected 1.16.1, fixed 1.16.2; NLnet Labs tarball recipe"
+    },
+    "pd-unbound:1.16.0": {
+      "dockerfile": "polydrift/cells/dns/lab/images/unbound.Dockerfile",
+      "context": "polydrift/cells/dns/lab/images",
+      "args": {
+        "VER": "1.16.0"
+      },
+      "why": "RQ5 D4 (ResolverFuzz RC2): the release ResolverFuzz tested; NLnet Labs tarball recipe"
     },
     "pd-sipb-opensips:3.4.1-src": {
       "dockerfile": "polydrift/cells/sipb/lab/images/opensips-src.Dockerfile",
@@ -332,7 +358,8 @@
       "peers_from": null,
       "families": [
         "unbound-fwd",
-        "pdns-fwd"
+        "pdns-fwd",
+        "bind-fwd"
       ],
       "base": [
         "rq5/dns_rq5_fwd.json"

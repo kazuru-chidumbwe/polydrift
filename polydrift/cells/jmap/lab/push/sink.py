@@ -6,7 +6,8 @@ signed by a lab CA that only the server containers under test trust.
   :443   HTTPS, any method and path: recorded (path, method, the push-relevant headers, body as text and, when it
          parses, as JSON), answered 201 Created, or with the status set for the path's key (see /mode)
   :8080  control, plain HTTP: GET /log?key=K -> JSON list of the records whose path contains K;
-         GET /mode?key=K&code=429&count=N -> the next N requests for K are answered with that status
+         GET /mode?key=K&code=429&count=N -> the next N requests for K are answered with that status;
+         GET /clear -> the log and the modes are emptied (the runner calls it before each server)
 """
 
 from __future__ import annotations
@@ -23,16 +24,30 @@ LOG: list[dict] = []
 MODE: dict[str, list] = {}
 LOCK = threading.Lock()
 HEADERS = ("content-type", "content-encoding", "ttl", "urgency", "topic", "content-length", "authorization",
-           "crypto-key", "encryption")
+           "crypto-key", "encryption", "transfer-encoding")
 
 
 class Push(BaseHTTPRequestHandler):
     def log_message(self, *a):  # quiet
         pass
 
-    def _record(self):
+    def _body(self) -> bytes:
+        if "chunked" in (self.headers.get("transfer-encoding") or "").lower():
+            # HTTP/1.1 chunked body (RFC 9112 7.1): size line, data, CRLF, until a zero-size chunk
+            out = b""
+            while True:
+                size = int(self.rfile.readline().split(b";")[0].strip() or b"0", 16)
+                if size == 0:
+                    while self.rfile.readline() not in (b"\r\n", b"\n", b""):
+                        pass
+                    return out
+                out += self.rfile.read(size)
+                self.rfile.readline()
         n = int(self.headers.get("content-length") or 0)
-        body = self.rfile.read(n) if n else b""
+        return self.rfile.read(n) if n else b""
+
+    def _record(self):
+        body = self._body()
         rec = {"t": round(time.time(), 3), "method": self.command, "path": self.path,
                "headers": {h: self.headers.get(h) for h in HEADERS if self.headers.get(h) is not None},
                "body": body.decode("utf-8", "replace")[:4096], "size": len(body)}
@@ -63,7 +78,13 @@ class Control(BaseHTTPRequestHandler):
         u = urllib.parse.urlsplit(self.path)
         q = dict(urllib.parse.parse_qsl(u.query))
         key = q.get("key", "")
-        if u.path == "/mode":
+        if u.path == "/clear":
+            # the runner clears the log and the modes before each server, so no record outlives its server
+            with LOCK:
+                LOG.clear()
+                MODE.clear()
+            out = {"ok": True}
+        elif u.path == "/mode":
             with LOCK:
                 MODE[key] = [int(q.get("code", 429)), int(q.get("count", 1))]
             out = {"ok": True}

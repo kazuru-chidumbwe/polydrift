@@ -145,6 +145,10 @@ def main() -> int:
                     admin_base = f"http://127.0.0.1:{ap2}"
                 if not push_note:
                     args += push_args(pki)
+                    try:  # every server starts with an empty sink log, so no record outlives its server
+                        urllib.request.urlopen(PUSH_CONTROL + "/clear", timeout=5)
+                    except OSError as e:
+                        log(f"{t['key']} repeat {r}: push sink clear failed: {e}")
                 rr = sh(args + [*[str(x).replace("{celldir}", str(CELL_DIR)) for x in t.get("extra", [])], t["image"], *(t.get("cmd") or [])])
                 if rr.returncode != 0:
                     log(f"{t['key']} repeat {r}: start failed {rr.stderr[-200:]}")

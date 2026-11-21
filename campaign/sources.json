@@ -514,7 +514,8 @@
       "families": [
         "unbound-fwd",
         "pdns-fwd",
-        "bind-fwd"
+        "bind-fwd",
+        "technitium-fwd"
       ],
       "base": [
         "rq5/dns_rq5_fwd.json"

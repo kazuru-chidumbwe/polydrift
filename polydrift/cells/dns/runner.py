@@ -153,6 +153,11 @@ if not tok:
 w = get(s["set"], token=tok, **{k: str(v).lower() if isinstance(v, bool) else str(v) for k, v in s["params"].items()})
 if w.get("status") != "ok":
     sys.exit(f"settings refused: {w}"[:200])
+for path, params in s.get("calls", []):
+    # further configuration, such as a conditional forwarder zone for a forwarding profile
+    w = get(path, token=tok, **{k: str(v).lower() if isinstance(v, bool) else str(v) for k, v in params.items()})
+    if w.get("status") != "ok":
+        sys.exit(f"{path} refused: {w}"[:200])
 if s.get("flush"):
     get(s["flush"], token=tok)
 print("setup ok")

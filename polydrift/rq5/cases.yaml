@@ -100,6 +100,26 @@ cases:
     fixed: ["11.0.3"]
     source: "Technitium CHANGELOG 11.0.3 (11 Mar 2023): amplification made more effective by the max 4096 bytes limit for responses, reported by Xiang Li (ResolverFuzz RC5)"
     clause: "RFC 6891 6.2.5"
+  D6T:
+    cell: dns
+    family: technitium-fwd
+    fixtures: [rq5_d6t_cdns_referral]
+    axes: [answers, upstream_servers]
+    affected: ["7.0"]
+    fixed: ["7.1"]
+    source: "MaginotDNS (USENIX Security 2023) Fig. 5d and Section 7: Technitium fixed in 7.1 (CVE-2021-43105); ResolverFuzz CP1"
+    clause: "RFC 2181 5.4.1"
+    note: "profile: pd.pdlab. as a conditional forwarder zone to the lab authority (the CDNS setting)"
+  D1T:
+    cell: dns
+    family: technitium-fwd
+    fixtures: [rq5_d1_rd0_forwarded]
+    axes: [upstream_count, upstream_rd]
+    affected: ["11.0.2"]
+    fixed: ["11.0.3"]
+    source: "Technitium CHANGELOG 11.0.3 (11 Mar 2023): conditional forwarder not honouring the RD flag in requests, reported by Xiang Li (ResolverFuzz RC3)"
+    clause: "RFC 1034 4.3.1"
+    note: "profile: pd.pdlab. as a conditional forwarder zone"
   D9:
     cell: dns
     family: pdns-recursor

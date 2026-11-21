@@ -46,6 +46,17 @@ fixtures:
       - {qname: rq5-cp1v.other.pdlab, qtype: A}
       - {op: upstream, match: rq5-cp1v, id: up1}
 
+  # D6T, MaginotDNS V1 form (d) (Technitium 7.0; fixed in 7.1, CVE-2021-43105: forwarding queries ignore NS and glue):
+  # the forwarded zone's server answers with a referral that delegates other.pdlab. to the rogue server.
+  rq5_d6t_cdns_referral:
+    kind: probe
+    clause: "RFC 2181 5.4.1; RFC 1034 5.3.3"
+    steps:
+      - {op: upstream, match: rq5-cp1t, id: up0}
+      - {qname: x.atkr.pd.pdlab, qtype: A}
+      - {qname: rq5-cp1t.other.pdlab, qtype: A}
+      - {op: upstream, match: rq5-cp1t, id: up1}
+
   # D4, ResolverFuzz RC2: an answer for rq5-authx carries an A record for another name (rq5-inj) in its authority
   # section. A resolver that caches it answers rq5-inj from cache (6.6.6.9) instead of asking (10.0.67.2). Unbound
   # 1.18.0 added harden-unknown-additional (default no), so the default configuration keeps the behaviour.

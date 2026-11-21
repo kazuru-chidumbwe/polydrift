@@ -360,10 +360,12 @@
    "targets": "campaign/targets/rq5-dns-fwd.json",
    "cases": [
     "D1",
+    "D1T",
     "D1p",
-    "D6"
+    "D6",
+    "D6T"
    ],
-   "n_targets": 10,
+   "n_targets": 15,
    "keys": [
     "bind-fwd-9.18.0",
     "bind-fwd-9.18.1",
@@ -372,6 +374,11 @@
     "pdns-fwd-4.7.0",
     "pdns-fwd-4.9.0",
     "pdns-fwd-5.3.14",
+    "technitium-fwd-7.0",
+    "technitium-fwd-7.1",
+    "technitium-fwd-11.0.2",
+    "technitium-fwd-11.0.3",
+    "technitium-fwd-15.6.2",
     "unbound-fwd-1.17.1",
     "unbound-fwd-1.18.0",
     "unbound-fwd-1.26.0"

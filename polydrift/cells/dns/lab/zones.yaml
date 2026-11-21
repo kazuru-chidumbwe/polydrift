@@ -140,6 +140,10 @@ servers:
       # delegation for other.pdlab. (rogue NS, glue to the ghost server .17); a resolver that takes it asks .17 next
       x.atk: {kind: craft, answer: ["x.atk.pd.pdlab. 300 A 10.0.68.1"], authority: ["other.pdlab. 300 NS ns1.rogue.pdlab."],
               additional: ["ns1.rogue.pdlab. 300 A 172.31.53.17"]}
+      # RQ5 D6T (MaginotDNS Fig. 5d, Technitium): the referral form of the same attack, empty answer, the rogue
+      # delegation for other.pdlab. in the authority section and its glue
+      x.atkr: {kind: craft, aa: false, authority: ["other.pdlab. 300 NS ns1.rogue.pdlab."],
+               additional: ["ns1.rogue.pdlab. 300 A 172.31.53.17"]}
       # RQ5 D4 (ResolverFuzz RC2): an A record placed in the authority section of an answer for another name
       rq5-authx: {kind: craft, answer: ["rq5-authx.pd.pdlab. 300 A 10.0.67.1"], authority: ["rq5-inj.pd.pdlab. 300 A 6.6.6.9"]}
       # RQ5 D14 (TuDoor VDS): a malformed packet on the query's four-tuple, then the valid answer 300 ms later; a
@@ -163,6 +167,7 @@ servers:
       - "victim 300 A 10.9.0.1"
       - "victim2 300 A 10.9.0.2"
       - "rq5-cp1v 300 A 10.9.0.5"
+      - "rq5-cp1t 300 A 10.9.0.6"
   half:
     ip: 172.31.53.15
     zone: "halflame.pdlab."

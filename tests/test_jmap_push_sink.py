@@ -14,7 +14,7 @@ class _H:
 
 
 def test_chunked_body_is_read_whole():
-    raw = b'5\r\n{"@ty\r\n13\r\npe":"PushVerificati\r\n3\r\non"}\r\n0\r\n\r\n'
+    raw = b'5\r\n{"@ty\r\n13\r\npe":"PushVerificati\r\n4\r\non"}\r\n0\r\n\r\n'
     h = _H(raw, {"transfer-encoding": "chunked"})
     assert sink.Push._body(h) == b'{"@type":"PushVerification"}'
 

@@ -13,7 +13,7 @@ cases:
     axes: [upstream_count, upstream_rd]
     affected: ["1.17.1"]
     fixed: ["1.18.0"]
-    known: [{fixture: rq5_d1_rd0_forwarded, axis: upstream_rd, step: 3, value: [false]}]
+    known: [{fixture: rq5_d1_rd0_forwarded, axis: upstream_rd, step: 3, value: [true]}]
     source: "ResolverFuzz RC3; Unbound Changelog 18 Jan 2023 (first release 1.18.0)"
     clause: "RFC 1034 4.3.1"
     note: "profile access-control allow_snoop (RD=0 queries admitted); with allow, every version answers REFUSED"

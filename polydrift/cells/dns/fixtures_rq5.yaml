@@ -22,8 +22,8 @@ fixtures:
       - {qname: x.rq5-loop.pd.pdlab, qtype: A}
       - {qname: a.pd.pdlab, qtype: A}
 
-  # D1, ResolverFuzz RC3: a forwarder that receives a query with RD=0 forwards it upstream with RD=0 (Unbound fixed
-  # in 1.18.0: "refusing to send RD=0 queries to a forwarder, they still get answered from cache"). Forwarding
+  # D1, ResolverFuzz RC3: a forwarder that receives a query with RD=0 forwards it upstream, with RD set (Unbound
+  # 1.17.1; fixed in 1.18.0: "refusing to send RD=0 queries to a forwarder, they still get answered from cache"). Forwarding
   # targets only (lab/resolvers/*-fwd*); the lab authority for pd.pdlab. is the forwarder's upstream and logs it.
   rq5_d1_rd0_forwarded:
     kind: probe

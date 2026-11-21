@@ -195,7 +195,7 @@
    "fixtures": "all",
    "lab": true,
    "targets": "campaign/targets/sieve-mail.json",
-   "n_targets": 14,
+   "n_targets": 15,
    "versions": {
     "exim": [
      "4.100.1",
@@ -214,7 +214,8 @@
     ],
     "pigeonhole": [
      "2.4.5",
-     "2.3.21.1"
+     "2.3.21.1",
+     "2.2.36.4"
     ],
     "sieve-rs": [
      "0.7.3",
@@ -289,13 +290,17 @@
    "fixtures": "ua_,uas_,uac_,r_",
    "lab": true,
    "targets": "campaign/targets/sipb-ua.json",
-   "n_targets": 15,
+   "n_targets": 27,
    "versions": {
     "baresip": [
-     "Debian trixie"
+     "4.13.0",
+     "4.12.0",
+     "4.11.0"
     ],
     "linphone": [
-     "Debian trixie"
+     "5.3.105",
+     "5.1.65",
+     "4.4.21"
     ],
     "pjsip": [
      "2.17",
@@ -305,11 +310,7 @@
    }
   }
  ],
- "exceptions": {
-  "pigeonhole": "Two lines built (2.4.5, 2.3.21.1); the third (2.2 line or a 24-month span) is not decided yet (open gap, tasklist).",
-  "baresip": "Debian trixie package only so far; older releases need source builds (open gap, tasklist).",
-  "linphone": "Debian trixie package only so far; older releases need source builds (open gap, tasklist)."
- },
+ "exceptions": {},
  "recall": [
   {
    "tag": "rq5-dns-rec",

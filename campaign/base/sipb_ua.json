@@ -82,14 +82,14 @@
  },
  {
   "impl": "baresip",
-  "version": "Debian trixie",
-  "image": "pd-sipb-baresip:trixie",
+  "version": "4.13.0",
+  "image": "pd-sipb-baresip:4.13.0",
   "ctl": {
    "kind": "baresip",
    "port": 4444
   },
   "ready": 40,
-  "key": "baresip-trixie",
+  "key": "baresip-4.13.0",
   "roles": [
    "uas",
    "uac"
@@ -100,14 +100,14 @@
  },
  {
   "impl": "baresip",
-  "version": "Debian trixie",
-  "image": "pd-sipb-baresip:trixie",
+  "version": "4.13.0",
+  "image": "pd-sipb-baresip:4.13.0",
   "ctl": {
    "kind": "baresip",
    "port": 4444
   },
   "ready": 40,
-  "key": "baresip-trixie-ring",
+  "key": "baresip-4.13.0-ring",
   "roles": [
    "uas-ring"
   ],
@@ -117,14 +117,14 @@
  },
  {
   "impl": "baresip",
-  "version": "Debian trixie",
-  "image": "pd-sipb-baresip:trixie",
+  "version": "4.13.0",
+  "image": "pd-sipb-baresip:4.13.0",
   "ctl": {
    "kind": "baresip",
    "port": 4444
   },
   "ready": 40,
-  "key": "baresip-trixie-reg",
+  "key": "baresip-4.13.0-reg",
   "roles": [
    "uac-reg"
   ],
@@ -134,14 +134,14 @@
  },
  {
   "impl": "linphone",
-  "version": "Debian trixie",
+  "version": "5.3.105",
   "image": "pd-sipb-linphone:trixie",
   "ctl": {
    "kind": "linphone",
    "port": 4444
   },
   "ready": 60,
-  "key": "linphone-trixie",
+  "key": "linphone-5.3.105",
   "roles": [
    "uas",
    "uac"
@@ -151,14 +151,14 @@
  },
  {
   "impl": "linphone",
-  "version": "Debian trixie",
+  "version": "5.3.105",
   "image": "pd-sipb-linphone:trixie",
   "ctl": {
    "kind": "linphone",
    "port": 4444
   },
   "ready": 60,
-  "key": "linphone-trixie-ring",
+  "key": "linphone-5.3.105-ring",
   "roles": [
    "uas-ring"
   ],
@@ -170,14 +170,14 @@
  },
  {
   "impl": "linphone",
-  "version": "Debian trixie",
+  "version": "5.3.105",
   "image": "pd-sipb-linphone:trixie",
   "ctl": {
    "kind": "linphone",
    "port": 4444
   },
   "ready": 60,
-  "key": "linphone-trixie-reg",
+  "key": "linphone-5.3.105-reg",
   "roles": [
    "uac-reg"
   ],

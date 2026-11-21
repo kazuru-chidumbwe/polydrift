@@ -124,7 +124,8 @@
         "pigeonhole": {
           "from": "2.4.5",
           "to": [
-            "2.3.21.1"
+            "2.3.21.1",
+            "2.2.36.4"
           ]
         },
         "mailutils": {
@@ -200,15 +201,31 @@
             "2.17",
             "2.16"
           ]
+        },
+        "baresip": {
+          "from": "4.13.0",
+          "to": [
+            "4.12.0",
+            "4.11.0"
+          ]
+        },
+        "linphone": {
+          "from": "5.3.105",
+          "to": [
+            [
+              "5.1.65",
+              "pd-sipb-linphone:bookworm"
+            ],
+            [
+              "4.4.21",
+              "pd-sipb-linphone:bullseye"
+            ]
+          ]
         }
       }
     }
   ],
-  "exceptions": {
-    "pigeonhole": "Two lines built (2.4.5, 2.3.21.1); the third (2.2 line or a 24-month span) is not decided yet (open gap, tasklist).",
-    "baresip": "Debian trixie package only so far; older releases need source builds (open gap, tasklist).",
-    "linphone": "Debian trixie package only so far; older releases need source builds (open gap, tasklist)."
-  },
+  "exceptions": {},
   "build": {
     "pd-bind:9.16.50": {
       "dockerfile": "polydrift/cells/dns/lab/images/bind.Dockerfile",
@@ -375,6 +392,88 @@
       "context": "polydrift/cells/sipb/lab/consumers",
       "args": {},
       "why": "L9 SIP consumers"
+    },
+    "pd-pigeonhole:2.4.5": {
+      "dockerfile": "polydrift/cells/sieve/images/dovecot.Dockerfile",
+      "context": "polydrift/cells/sieve/images",
+      "args": {
+        "DV": "2.4.5",
+        "SERIES": "2.4",
+        "PH": "dovecot-pigeonhole-2.4.5"
+      },
+      "why": "Sieve cell, Pigeonhole: the three minor lines 2.4, 2.3, 2.2 (version rule), dovecot.org tarballs"
+    },
+    "pd-pigeonhole:2.3.21.1": {
+      "dockerfile": "polydrift/cells/sieve/images/dovecot.Dockerfile",
+      "context": "polydrift/cells/sieve/images",
+      "args": {
+        "DV": "2.3.21.1",
+        "SERIES": "2.3",
+        "PH": "dovecot-2.3-pigeonhole-0.5.21.1"
+      },
+      "why": "Sieve cell, Pigeonhole: the three minor lines 2.4, 2.3, 2.2 (version rule), dovecot.org tarballs"
+    },
+    "pd-pigeonhole:2.2.36.4": {
+      "dockerfile": "polydrift/cells/sieve/images/dovecot.Dockerfile",
+      "context": "polydrift/cells/sieve/images",
+      "args": {
+        "DV": "2.2.36.4",
+        "SERIES": "2.2",
+        "PH": "dovecot-2.2-pigeonhole-0.4.24.2",
+        "DVCONF": "--without-ssl",
+        "CF": "-fcommon -I/usr/include/tirpc",
+        "LX": "-ltirpc"
+      },
+      "why": "Sieve cell, Pigeonhole: the three minor lines 2.4, 2.3, 2.2 (version rule), dovecot.org tarballs"
+    },
+    "pd-sipb-baresip:4.13.0": {
+      "dockerfile": "polydrift/cells/sipb/lab/images/baresip-src.Dockerfile",
+      "context": "polydrift/cells/sipb/lab/images",
+      "args": {
+        "TAG": "v4.13.0"
+      },
+      "why": "SIP UA cell: baresip and libre from the upstream tags (latest and two preceding minor releases, GitHub releases 2026-08-25 to 2026-11-04); Debian ships 1.1.0"
+    },
+    "pd-sipb-baresip:4.12.0": {
+      "dockerfile": "polydrift/cells/sipb/lab/images/baresip-src.Dockerfile",
+      "context": "polydrift/cells/sipb/lab/images",
+      "args": {
+        "TAG": "v4.12.0"
+      },
+      "why": "SIP UA cell: baresip and libre from the upstream tags (latest and two preceding minor releases, GitHub releases 2026-08-25 to 2026-11-04); Debian ships 1.1.0"
+    },
+    "pd-sipb-baresip:4.11.0": {
+      "dockerfile": "polydrift/cells/sipb/lab/images/baresip-src.Dockerfile",
+      "context": "polydrift/cells/sipb/lab/images",
+      "args": {
+        "TAG": "v4.11.0"
+      },
+      "why": "SIP UA cell: baresip and libre from the upstream tags (latest and two preceding minor releases, GitHub releases 2026-08-25 to 2026-11-04); Debian ships 1.1.0"
+    },
+    "pd-sipb-linphone:trixie": {
+      "dockerfile": "polydrift/cells/sipb/lab/images/linphone.Dockerfile",
+      "context": "polydrift/cells/sipb/lab/images",
+      "args": {
+        "BASE": "debian:trixie-slim"
+      },
+      "why": "SIP UA cell: liblinphone 5.3.105, the Debian trixie build of that upstream release (three minor lines 5.3, 5.1, 4.4)"
+    },
+    "pd-sipb-linphone:bookworm": {
+      "dockerfile": "polydrift/cells/sipb/lab/images/linphone.Dockerfile",
+      "context": "polydrift/cells/sipb/lab/images",
+      "args": {
+        "BASE": "debian:bookworm-slim"
+      },
+      "why": "SIP UA cell: liblinphone 5.1.65, the Debian bookworm build of that upstream release (three minor lines 5.3, 5.1, 4.4)"
+    },
+    "pd-sipb-linphone:bullseye": {
+      "dockerfile": "polydrift/cells/sipb/lab/images/linphone.Dockerfile",
+      "context": "polydrift/cells/sipb/lab/images",
+      "args": {
+        "BASE": "debian:bullseye-slim",
+        "ARCHIVE": "bullseye"
+      },
+      "why": "SIP UA cell: liblinphone 4.4.21, the Debian bullseye build of that upstream release (three minor lines 5.3, 5.1, 4.4)"
     }
   },
   "recall": [

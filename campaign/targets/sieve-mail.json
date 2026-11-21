@@ -60,6 +60,14 @@
   "image": "pd-mailutils:3.21"
  },
  {
+  "key": "pigeonhole-2.2.36.4",
+  "impl": "pigeonhole",
+  "version": "2.2.36.4",
+  "image": "pd-pigeonhole:2.2.36.4",
+  "user": "1000:1000",
+  "cloned_from": "pigeonhole-2.4.5"
+ },
+ {
   "key": "pigeonhole-2.3.21.1",
   "impl": "pigeonhole",
   "version": "2.3.21.1",

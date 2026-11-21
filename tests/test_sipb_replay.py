@@ -43,3 +43,13 @@ def test_reasons_are_data_not_compared():
               "side": s, "result": r} for s, r in (("left", a), ("right", b))]
     s = replay_summary(lines, [("T4-only", None)], [], ("pjsip",), 1)
     assert s["confusion"]["pjsip"]["tn"] == 1
+
+
+def test_non_invite_requests_are_replayable_once():
+    fx = {"steps": [{"op": "send", "from": "alice", "msg": "REGISTER sip:lab.test SIP/2.0\nTo: <sip:bob@lab.test>\n\n"},
+                    {"op": "send", "from": "alice", "msg": "REGISTER sip:lab.test SIP/2.0\nTo: <sip:bob@lab.test>\n\n"}]}
+    ob = [{"step": 1, "actor": "alice", "got": {"alice": [{"kind": "resp", "wire": "QQ=="}]}},
+          {"step": 2, "actor": "alice", "got": {"alice": [{"kind": "resp", "wire": "QQ=="}]}}]
+    p = replay.prefix_plan(fx, ob, 1)
+    assert p["method"] == "REGISTER" and p["uri"] == f"sip:bob@{replay.SERVER_IP}"
+    assert replay.prefix_plan(fx, ob, 2) is None  # a second request of alice's is not one library call

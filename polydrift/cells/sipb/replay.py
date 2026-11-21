@@ -5,8 +5,8 @@ Input is one sipb run of proxy-role targets (records.jsonl, and raw.jsonl whose 
 harness >= the wire capture in lab/driver.py). Pairs and the sample are as in RQ3 and core.replay.
 
 The consumer plays the caller alice. A sampled pair is replayed up to record step k (each step with a difference)
-when, in the fixture's steps up to k, alice sends one INVITE over UDP without authentication and otherwise only
-ACKs, and receives only responses (no requests forwarded to her). The replay server (lab/replay_server.py) answers
+when, in the fixture's steps up to k, alice sends one INVITE (otherwise only ACKs) or one REGISTER, OPTIONS or
+MESSAGE, over UDP without authentication, and receives only responses (no requests forwarded to her). The replay server (lab/replay_server.py) answers
 the consumer's INVITE with the responses the proxy sent alice in the recorded run, those of later steps included,
 first implementation i's and then j's. Consumers (lab/consumers): PJSIP pjsua-lib and Sofia-SIP nua, each calling
 the same user at the replay server. A consumer's events (call states and status codes) and the requests it sent
@@ -39,12 +39,18 @@ IMAGE = "pd-consumer-sip"
 CONSUMERS = {"pjsip": "pjconsumer", "sofia": "sofconsumer"}
 
 
+NON_INVITE = ("REGISTER", "OPTIONS", "MESSAGE")
+
+
 def prefix_plan(fixture: dict[str, Any], obs: list[dict[str, Any]], k: int) -> dict[str, Any] | None:
-    """Consumer call and server steps for record steps 1..k (obs[0..k-1]), or None if not replayable."""
+    """Consumer call and server steps for record steps 1..k (obs[0..k-1]), or None if not replayable.
+
+    Alice's first own step is one request a library caller can make: an INVITE (then only ACKs), or one REGISTER,
+    OPTIONS or MESSAGE (then no further request of hers), over UDP without authentication."""
     if k > len(obs):
         return None
     steps = fixture.get("steps") or []
-    user, server, wait_ms, invited = None, [], 0, False
+    user, server, wait_ms, first = None, [], 0, None
     for o in obs[:k]:
         st = steps[o["step"] - 1] if 0 < o.get("step", 0) <= len(steps) else {}
         got = [m for m in (o.get("got") or {}).get("alice") or []]
@@ -55,24 +61,30 @@ def prefix_plan(fixture: dict[str, Any], obs: list[dict[str, Any]], k: int) -> d
         if actor:
             if st.get("op") == "send":
                 msg = st.get("msg") or ""
-                if invited or not msg.startswith("INVITE ") or st.get("auth") or st.get("transport", "udp") != "udp":
+                req = msg.split(" ", 1)[0].upper()
+                if first or req not in ("INVITE", *NON_INVITE) or st.get("auth")                         or st.get("transport", "udp") != "udp":
                     return None
-                m = re.match(r"INVITE sips?:([^@\s;>]+)@", msg)
+                if req == "REGISTER":
+                    # the address of record is in To; the request-URI names the registrar's domain
+                    m = re.search(r"^(?:To|t)\s*:[^\n]*?sips?:([^@\s;>]+)@", msg, re.M | re.I)
+                else:
+                    m = re.match(rf"{req} sips?:([^@\s;>]+)@", msg)
                 if not m:
                     return None
-                user, invited, method = m.group(1), True, "INVITE"
-            elif st.get("op") == "ack" and invited:
+                user, first, method = m.group(1), req, req
+            elif st.get("op") == "ack" and first == "INVITE":
                 method = "ACK"
             else:
                 return None
-        elif not invited and got:
+        elif not first and got:
             return None  # alice receives something before she calls: not a session a library caller can have
-        if invited:
+        if first:
             wait_ms += int(st.get("window_ms", 1500))
         server.append({"actor": actor, "method": method, "wire": [m["wire"] for m in got]})
-    if not invited:
+    if not first:
         return None
-    return {"uri": f"sip:{user}@{SERVER_IP}", "wait_ms": max(3000, min(wait_ms + 1000, 15000)), "steps": server}
+    return {"uri": f"sip:{user}@{SERVER_IP}", "method": first, "wait_ms": max(3000, min(wait_ms + 1000, 15000)),
+            "steps": server}
 
 
 def pair_steps(pair: Any) -> list[int]:
@@ -177,7 +189,7 @@ def main() -> int:
                     for side, plan in plans.items():
                         ctl("LOAD " + json.dumps({"steps": plan["steps"]}))
                         r = sh(["docker", "exec", "pdr-sip-consumer", "timeout", "60", prog, plan["uri"],
-                                str(plan["wait_ms"])], timeout=90)
+                                str(plan["wait_ms"]), plan.get("method", "INVITE")], timeout=90)
                         res = split_result(r.stdout.splitlines())
                         res["server"] = json.loads(ctl("COUNT") or "{}")
                         ln = {"stratum": stratum, "fixture": p.fixture, "left": p.left, "right": p.right,

@@ -38,6 +38,17 @@ cases:
     source: "Phoenix Domain T2 (Li et al., NDSS 2023, VII-B: Unbound fixed, CVE-2022-30698, 1.16.2); ResolverFuzz CP4"
     clause: "RFC 2181 5.4.1"
     note: "known steps count observations (the sleep step gives none); Phoenix Table I: T2 also affects BIND, Knot, PowerDNS, so the affected version may agree with every peer (expected miss)"
+  D13:
+    cell: dns
+    family: knot
+    fixtures: [rq5_d13_tcp_null]
+    axes: [upstream_volume]
+    affected: ["5.5.3"]
+    fixed: ["5.6.0"]
+    known: [{fixture: rq5_d13_tcp_null, axis: upstream_volume, step: 3, value: ">30"}]
+    source: "ResolverFuzz RC7 (Knot Resolver, 100 TCP queries); Knot Resolver NEWS 5.6.0 (2023-01-26), Security, !1380, credited to the ResolverFuzz authors"
+    clause: "RFC 1035 7.2"
+    note: "known steps count observations (the sleep step gives none)"
   D9:
     cell: dns
     family: pdns-recursor

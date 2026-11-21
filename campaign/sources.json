@@ -318,7 +318,8 @@
       "families": [
         "bind",
         "pdns-recursor",
-        "unbound"
+        "unbound",
+        "knot"
       ],
       "base": [
         "rq5/dns_rq5_recursive.json"

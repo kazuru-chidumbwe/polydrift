@@ -33,6 +33,18 @@ fixtures:
       - {qname: rq5-rd0.pd.pdlab, qtype: A, rd: false}
       - {op: upstream, match: rq5-rd0, id: up2}
 
+  # D13, ResolverFuzz RC7: the authority answers over UDP with TC set and closes every TCP connection without a
+  # reply. Knot Resolver before 5.6.0 reconnected up to about 100 times per client query (NEWS 5.6.0, !1380:
+  # "a DNS server that just closes connections without answer could cause lots of work for the resolver").
+  rq5_d13_tcp_null:
+    kind: probe
+    clause: "RFC 1035 7.2 (bounded retransmission); RFC 7766 6.2.2"
+    steps:
+      - {op: upstream, match: rq5-tcpnull, id: up1}
+      - {qname: rq5-tcpnull.pd.pdlab, qtype: A, timeout: 15}
+      - {op: sleep, ms: 3000}
+      - {op: upstream, match: rq5-tcpnull, volume: true, id: up2}
+
   # D5, Phoenix Domain T2 (NDSS 2023; ResolverFuzz CP4): iterative subdomain delegation. ghost.pdlab. is delegated
   # for 6 s and revoked by its parent 2 s after the first query; its server answers s.ghost with a child delegation
   # (TTL 3600) pointing back at itself. After the parent delegation has expired, x.s.ghost resolves only for a

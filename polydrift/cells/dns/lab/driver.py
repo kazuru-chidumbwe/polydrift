@@ -9,8 +9,9 @@ Input (stdin, JSON): {"server": "172.31.53.53", "steps": [...]}. Step ops:
             the order in which answers arrived and each answer's latency bucket (concurrency clauses)
   tcp_session {queries: [{qname, qtype, idle_ms}...], timeout=6}: one TCP connection, queries in sequence with an
             idle gap before each; reports each rcode and whether the connection was still open
-  upstream  {match}: the lab authorities' query logs since the previous upstream step (control port 5300), only
-            queries whose name contains `match`; the first upstream step of a fixture clears the logs
+  upstream  {match, volume=false}: the lab authorities' query logs since the previous upstream step (control port
+            5300), only queries whose name contains `match`; the first upstream step of a fixture clears the logs.
+            volume=true also reports the total in buckets (resource-consumption cases)
   sleep     {ms}
 Output (stdout, JSON): one observation per step except sleep:
   query/raw: {step, op, error, rcode, answers, aa, ra, tc, ad, z, rd, qname_case, ttls, additional, additional_soa,
@@ -325,6 +326,7 @@ def run(server: str, steps: list[dict]) -> list[dict]:
                     obs = header_only(data)
             elif op == "upstream":
                 obs = upstream(str(st.get("match", "")).lower())
+                obs["volume"] = bool(st.get("volume"))
             elif op == "parallel":
                 obs = parallel(server, st["queries"], float(st.get("timeout", 8)))
             elif op == "tcp_session":

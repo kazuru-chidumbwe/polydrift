@@ -417,9 +417,10 @@ def cmd_jobs(a) -> int:
             args = " ".join(f"--build-arg {k}={v}" for k, v in b.get("args", {}).items())
             label = build_label(b)
             log = "$BH/build-" + re.sub(r"[:/]", "_", tag) + ".log"
-            # An image that is present but was built with other arguments (label differs) is rebuilt.
+            # An image that is present but was built with other arguments (label differs) is rebuilt; a missing
+            # image is always built (inspect prints nothing for it, which must not pass for an empty label).
             lines.append(
-                f'if [ "$(docker image inspect -f \'{{{{index .Config.Labels "{LABEL}"}}}}\' {tag} 2>/dev/null)" = \'{label}\' ]; '
+                f'if docker image inspect {tag} >/dev/null 2>&1 && [ "$(docker image inspect -f \'{{{{index .Config.Labels "{LABEL}"}}}}\' {tag} 2>/dev/null)" = \'{label}\' ]; '
                 f'then echo "PRESENT {tag}" >> $F.tmp; '
                 f'elif nice -n 5 docker build $PX -f $BH/{b["dockerfile"]} {args} --label \'{LABEL}={label}\' -t {tag} '
                 f'$BH/{b["context"]} > {log} 2>&1; '

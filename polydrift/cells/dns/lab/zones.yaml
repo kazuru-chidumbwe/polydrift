@@ -131,6 +131,8 @@ servers:
       msbttl: {kind: raw_answer, rrs: [["msbttl.pd.pdlab.", 2147483948, A, 10.0.11.4]]}
       upref: {kind: referral_up}
       nosoa: {kind: flip, negative_seconds: 0.5, no_soa: true}
+      # RQ5 D13 (ResolverFuzz RC7): truncated over UDP, TCP connection closed without a payload
+      rq5-tcpnull: {kind: tcp_null}
       x.dn0: {kind: answer, answer: ["dn0.pd.pdlab. 300 DNAME dtarget.other.pdlab.", "x.dn0.pd.pdlab. 0 CNAME x.dtarget.other.pdlab."]}
   other:
     ip: 172.31.53.14

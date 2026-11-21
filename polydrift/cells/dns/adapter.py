@@ -126,6 +126,18 @@ def decision(rcode: str | None, answers: Any, tc: bool = False) -> str | None:
     return RCODE_CLASS.get(rcode or "")
 
 
+VOLUME_BUCKETS = ((0, "0"), (3, "1-3"), (10, "4-10"), (30, "11-30"))
+
+
+def volume_bucket(n: int) -> str:
+    """Upstream queries for one client query, in buckets: exact counts move with retry timing, an amplification
+    (ResolverFuzz RC7, TuDoor VRC: about 100 against a limit of a few) does not."""
+    for top, label in VOLUME_BUCKETS:
+        if n <= top:
+            return label
+    return ">30"
+
+
 def _upstream_fields(obs: dict[str, Any]) -> dict[str, Any]:
     """What the resolver sent to the lab authorities for the fixture's names (driver `upstream` step)."""
     qs = obs.get("queries") or []
@@ -133,7 +145,9 @@ def _upstream_fields(obs: dict[str, Any]) -> dict[str, Any]:
     for q in qs:
         k = f"{q['qname'].lower()} {q['qtype']}"
         count[k] = count.get(k, 0) + 1
+    extra = {"upstream_volume": volume_bucket(len(qs))} if obs.get("volume") else {}
     return {
+        **extra,
         "upstream_count": tuple(sorted(count.items())),
         "upstream_rd": sorted({bool(q["rd"]) for q in qs}),
         "upstream_opt_codes": sorted({c for q in qs for c in q.get("opts") or []}),

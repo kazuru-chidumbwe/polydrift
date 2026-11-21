@@ -53,6 +53,36 @@
   "build": "lab/images/knot.Dockerfile PKG=knot-resolver6 VER=6.5.1-cznic.1~trixie"
  },
  {
+  "key": "knot-5.5.3",
+  "impl": "knot",
+  "version": "5.5.3",
+  "image": "cznic/knot-resolver:v5.5.3",
+  "ready": 90,
+  "mounts": {},
+  "entrypoint": "/usr/sbin/kresd",
+  "cmd": [
+   "-n",
+   "-c",
+   "/conf/knot5.lua"
+  ],
+  "role": "recursive"
+ },
+ {
+  "key": "knot-5.6.0",
+  "impl": "knot",
+  "version": "5.6.0",
+  "image": "cznic/knot-resolver:v5.6.0",
+  "ready": 90,
+  "mounts": {},
+  "entrypoint": "/usr/sbin/kresd",
+  "cmd": [
+   "-n",
+   "-c",
+   "/conf/knot5.lua"
+  ],
+  "role": "recursive"
+ },
+ {
   "key": "pdns-recursor-5.3.14",
   "impl": "pdns-recursor",
   "version": "5.3.14",

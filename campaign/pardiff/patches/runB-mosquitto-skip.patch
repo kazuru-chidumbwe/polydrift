@@ -1,0 +1,16 @@
+diff --git a/lib/Core/Executor.cpp b/lib/Core/Executor.cpp
+index 539c214..4df0d02 100644
+--- a/lib/Core/Executor.cpp
++++ b/lib/Core/Executor.cpp
+@@ -123,6 +123,11 @@ static std::set<std::string> ByteSwapFunctions = {
+ };
+ 
+ static std::set<std::string> DeadFunctions = {
++        // polydrift L10 Run B (the authors tune this list per target; ours, from the Run A call profile before any
++        // difference was seen): Mosquitto bookkeeping reached from handle__connect that reads no packet byte.
++        //   keepalive__add, keepalive__remove, calc_index: keepalive list for the new connection (keepalive.c)
++        //   net__is_connected: socket state check (net_mosq.c)
++        "keepalive__add", "keepalive__remove", "calc_index", "net__is_connected",
+         "gettime","linklocal","update_neighbour_metric","find_neighbour","send_challenge_request","bgp_conn_enter_established_state","bgp_update_implicit_eors","sockopt_tcp_rtt",
+         "neighbour_rxcost","find_neighbour_nocreate","update_neighbour","flush_neighbour","local_notify_neighbour","reset_txcost","neighbour_txcost", "bgp_notify_send",
+         "check_neighbours","neighbour_rxcost","neighbour_rttcost","neighbour_cost","schedule_neighbours_check","timeval_compare","neigh_find","handle_request",

@@ -379,6 +379,19 @@ python3 -m polydrift.cells.{cell}.replay --run $R{targets} --lab $H/polydrift/ce
 echo "$O" > $FLAG
 """
 
+PARDIFF_JOB = """#!/bin/bash
+# polydrift {what}, RQ2 static-analysis contrast at harness {c}: ParDiff (b0a3098, release build) on the MQTT pair,
+# Run A as published and Run B with the skip-list patch (campaign/pardiff). Each run capped at 6 h and 4 GiB of output.
+# Written by tools/campaign.py jobs. Flag ~/polydrift/stability/{flagtag}-DONE (first line: the result directory).
+set -u
+C={c}; TAR=~/polydrift/harness-$C.tar; FLAG=~/polydrift/stability/{flagtag}-DONE
+[ -f $TAR ] || {{ echo "NO-HARNESS-TAR $TAR" > $FLAG; exit 1; }}
+H=~/polydrift/pardiff/harness-$C; rm -rf $H; mkdir -p $H; tar xf $TAR -C $H; echo $C > $H/COMMIT
+O=~/polydrift/pardiff/{flagtag}-$C
+bash $H/campaign/pardiff/run_mqtt_ab.sh $H $O > $O.out 2>&1
+echo "$O/mqtt" > $FLAG
+"""
+
 SUMMARY = """#!/bin/bash
 # Summary of the {what} jobs at {c}. Flag ~/polydrift/{flag}
 O=~/polydrift/{summary}; : > $O
@@ -388,7 +401,8 @@ for f in ~/polydrift/stability/{prefix}-*-DONE; do
   [ -f "$d/RECALL.txt" ] && cat "$d/RECALL.txt" >> $O
   [ -f "$d/summary.json" ] && head -c 3000 "$d/summary.json" >> $O && echo >> $O
   [ -f "$d/progress" ] && tail -3 "$d/progress" >> $O
-  case "$f" in *-rq5-*|*-l9-*) ;; *) [ -d "$d" ] && python3 ~/labtools/stabdiff.py "$d" >> $O 2>&1;; esac
+  [ -f "$d/SUMMARY.txt" ] && cat "$d/SUMMARY.txt" >> $O
+  case "$f" in *-rq5-*|*-l9-*|*-pardiff-*) ;; *) [ -d "$d" ] && python3 ~/labtools/stabdiff.py "$d" >> $O 2>&1;; esac
 done
 df -h /srv/lab | tail -1 >> $O
 touch ~/polydrift/{flag}
@@ -444,6 +458,9 @@ def cmd_jobs(a) -> int:
             flagtag=f"{prefix}-l9-{rp['tag']}", images=" ".join(rp["images"]), rep=rep,
             targets=f" --targets $H/campaign/targets/{rp['from']}.json" if rp.get("targets") else ""))
         n += 1
+    w(f"D-{n:03d}-polydrift-{prefix}-pardiff-mqtt-{a.commit}.sh", PARDIFF_JOB.format(
+        what=what, c=a.commit, flagtag=f"{prefix}-pardiff-mqtt"))
+    n += 1
     w(f"D-{n:03d}-polydrift-{prefix}-summary-{a.commit}.sh", SUMMARY.format(
         what=what, c=a.commit, prefix=prefix, summary=f"D-CAMP-{a.mode.upper()}-SUMMARY.txt",
         flag=f"D-CAMP-{a.mode.upper()}-DONE"))

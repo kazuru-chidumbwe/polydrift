@@ -69,6 +69,17 @@ fixtures:
       - {qname: rq5-mal-txid.pd.pdlab, qtype: A}
       - {qname: rq5-mal-qr0.pd.pdlab, qtype: A}
 
+  # D15, D16, ResolverFuzz RC5: a client that advertises 4096 octets asks for an answer of about 1.4 KB (big.pd.pdlab
+  # TXT). A resolver that caps UDP responses at 1232 octets answers with TC set; one that honours the client's 4096
+  # sends the whole answer over UDP (amplification). Unbound lowered max-udp-size to 1232 in 1.18.0 (Changelog 19 Jan
+  # 2023); Technitium removed its 4096-byte limit in 11.0.3 (CHANGELOG 11 Mar 2023). Both credited to Xiang Li.
+  rq5_d15_udp_4096:
+    kind: probe
+    clause: "RFC 6891 6.2.5 (the responder's UDP size); RFC 8085 3.2 (avoid fragmentation)"
+    steps:
+      - {qname: big.pd.pdlab, qtype: TXT, payload: 4096}
+      - {qname: big.pd.pdlab, qtype: TXT, payload: 4096}
+
   # D13, ResolverFuzz RC7: the authority answers over UDP with TC set and closes every TCP connection without a
   # reply. Knot Resolver before 5.6.0 reconnected up to about 100 times per client query (NEWS 5.6.0, !1380:
   # "a DNS server that just closes connections without answer could cause lots of work for the resolver").

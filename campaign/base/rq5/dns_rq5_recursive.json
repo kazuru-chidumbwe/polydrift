@@ -223,5 +223,35 @@
    }
   },
   "role": "recursive"
+ },
+ {
+  "key": "unbound-1.17.1",
+  "impl": "unbound",
+  "version": "1.17.1",
+  "image": "pd-unbound:1.17.1",
+  "ready": 60,
+  "mounts": {},
+  "entrypoint": "/usr/local/sbin/unbound",
+  "cmd": [
+   "-d",
+   "-c",
+   "/conf/unbound.conf"
+  ],
+  "role": "recursive"
+ },
+ {
+  "key": "unbound-1.18.0",
+  "impl": "unbound",
+  "version": "1.18.0",
+  "image": "pd-unbound:1.18.0",
+  "ready": 60,
+  "mounts": {},
+  "entrypoint": "/usr/local/sbin/unbound",
+  "cmd": [
+   "-d",
+   "-c",
+   "/conf/unbound.conf"
+  ],
+  "role": "recursive"
  }
 ]

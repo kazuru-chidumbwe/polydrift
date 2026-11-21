@@ -80,6 +80,26 @@ cases:
     source: "TuDoor (Li et al., IEEE S&P 2024) VDS, Section 7: Technitium fixed DNSDoS; Technitium CHANGELOG 11.0.3 (11 Mar 2023): bad-formatted UDP packet DoS, reported by Xiang Li"
     clause: "RFC 5452 4.1"
     note: "TuDoor does not name the malformed form for Technitium, so the fixture sends four forms in turn; no known value"
+  D15:
+    cell: dns
+    family: unbound
+    fixtures: [rq5_d15_udp_4096]
+    axes: [tc, answers]
+    affected: ["1.17.1"]
+    fixed: ["1.18.0"]
+    known: [{fixture: rq5_d15_udp_4096, axis: tc, step: 2, value: false}]
+    source: "ResolverFuzz RC5 (Unbound 4096-byte responses); Unbound Changelog 19 Jan 2023: max-udp-size default 4096 -> 1232, thanks to Xiang Li (first release 1.18.0)"
+    clause: "RFC 6891 6.2.5"
+    note: "step 2 asks again from the cache, so the size limit, not the upstream fetch, decides"
+  D16:
+    cell: dns
+    family: technitium
+    fixtures: [rq5_d15_udp_4096]
+    axes: [tc, answers]
+    affected: ["11.0.2"]
+    fixed: ["11.0.3"]
+    source: "Technitium CHANGELOG 11.0.3 (11 Mar 2023): amplification made more effective by the max 4096 bytes limit for responses, reported by Xiang Li (ResolverFuzz RC5)"
+    clause: "RFC 6891 6.2.5"
   D9:
     cell: dns
     family: pdns-recursor

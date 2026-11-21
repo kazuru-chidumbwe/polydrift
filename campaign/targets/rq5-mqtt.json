@@ -1,0 +1,93 @@
+[
+ {
+  "key": "emqx-6.3.2",
+  "impl": "emqx",
+  "version": "6.3.2",
+  "image": "emqx/emqx:6.3.2",
+  "port": 1883,
+  "extra": [],
+  "cmd": null,
+  "ready": 180
+ },
+ {
+  "key": "hivemq-ce-2026.5",
+  "impl": "hivemq-ce",
+  "version": "2026.5",
+  "image": "hivemq/hivemq-ce:2026.5",
+  "port": 1883,
+  "extra": [],
+  "cmd": null,
+  "ready": 180
+ },
+ {
+  "key": "mosquitto-2.0.22",
+  "impl": "mosquitto",
+  "version": "2.0.22",
+  "image": "eclipse-mosquitto:2.0.22",
+  "port": 1883,
+  "extra": [],
+  "cmd": [
+   "sh",
+   "-c",
+   "printf 'listener 1883\nallow_anonymous true\n' > /tmp/m.conf && exec mosquitto -c /tmp/m.conf"
+  ],
+  "ready": 60
+ },
+ {
+  "key": "nanomq-0.21.10",
+  "impl": "nanomq",
+  "version": "0.21.10",
+  "image": "emqx/nanomq:0.21.10",
+  "port": 1883,
+  "extra": [],
+  "cmd": null,
+  "ready": 60
+ },
+ {
+  "key": "nanomq-0.22.2",
+  "impl": "nanomq",
+  "version": "0.22.2",
+  "image": "emqx/nanomq:0.22.2",
+  "port": 1883,
+  "extra": [],
+  "cmd": null,
+  "ready": 60
+ },
+ {
+  "key": "nanomq-0.24.13",
+  "impl": "nanomq",
+  "version": "0.24.13",
+  "image": "emqx/nanomq:0.24.13",
+  "port": 1883,
+  "extra": [],
+  "cmd": null,
+  "ready": 60
+ },
+ {
+  "key": "nanomq-0.25.7",
+  "impl": "nanomq",
+  "version": "0.25.7",
+  "image": "emqx/nanomq:0.25.7",
+  "port": 1883,
+  "extra": [],
+  "cmd": null,
+  "ready": 60
+ },
+ {
+  "key": "vernemq-2.2.1",
+  "impl": "vernemq",
+  "version": "2.2.1",
+  "image": "vernemq/vernemq:2.2.1",
+  "port": 1883,
+  "extra": [
+   "-e",
+   "DOCKER_VERNEMQ_ACCEPT_EULA=yes",
+   "-e",
+   "DOCKER_VERNEMQ_ALLOW_ANONYMOUS=on",
+   "-e",
+   "DOCKER_VERNEMQ_LISTENER__TCP__ALLOWED_PROTOCOL_VERSIONS=3,4,5"
+  ],
+  "cmd": null,
+  "ready": 180
+ }
+]

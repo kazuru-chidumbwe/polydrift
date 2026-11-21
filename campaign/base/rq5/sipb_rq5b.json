@@ -1,0 +1,92 @@
+[
+  {
+    "key": "kamailio-6.0",
+    "impl": "kamailio",
+    "version": "6.0 (Debian trixie)",
+    "role": "proxy",
+    "image": "pd-sipb-kamailio:trixie",
+    "config": "kamailio.cfg",
+    "config_dst": "/etc/kamailio/kamailio.cfg",
+    "ready": 40
+  },
+  {
+    "key": "opensips-3.6",
+    "impl": "opensips",
+    "version": "3.6",
+    "role": "proxy",
+    "image": "opensips/opensips:3.6",
+    "config": "opensips.cfg",
+    "config_dst": "/etc/opensips/opensips.cfg",
+    "entrypoint": "opensips",
+    "cmd": [
+      "-F",
+      "-f",
+      "/etc/opensips/opensips.cfg"
+    ],
+    "ready": 40
+  },
+  {
+    "key": "ejabberd-26.09",
+    "impl": "ejabberd",
+    "version": "26.09",
+    "role": "proxy",
+    "image": "ejabberd/ecs:26.09",
+    "config": "ejabberd.yml",
+    "config_dst": "/home/ejabberd/conf/ejabberd.yml",
+    "env": {
+      "CTL_ON_START": "register alice lab.test pdpass ; register bob lab.test pdpass ; register carol lab.test pdpass ; register dave lab.test pdpass"
+    },
+    "creds": {
+      "alice": "pdpass",
+      "bob": "pdpass",
+      "carol": "pdpass",
+      "dave": "pdpass"
+    },
+    "ready": 120
+  },
+  {
+    "key": "repro-1.14.0",
+    "impl": "repro",
+    "version": "1.14.0",
+    "role": "proxy",
+    "image": "pd-sipb-repro:1.14.0",
+    "config": "repro.config",
+    "config_dst": "/etc/repro/repro.config",
+    "ready": 40
+  },
+  {
+    "key": "opensips-3.4.1",
+    "impl": "opensips",
+    "version": "3.4.1",
+    "role": "proxy",
+    "image": "pd-sipb-opensips:3.4.1-src",
+    "config": "opensips.cfg",
+    "config_dst": "/etc/opensips/opensips.cfg",
+    "entrypoint": "opensips",
+    "cmd": [
+      "-F",
+      "-f",
+      "/etc/opensips/opensips.cfg"
+    ],
+    "ready": 40
+  },
+  {
+    "key": "ejabberd-24.12",
+    "impl": "ejabberd",
+    "version": "24.12",
+    "role": "proxy",
+    "image": "ejabberd/ecs:24.12",
+    "config": "ejabberd.yml",
+    "config_dst": "/home/ejabberd/conf/ejabberd.yml",
+    "env": {
+      "CTL_ON_START": "register alice lab.test pdpass ; register bob lab.test pdpass ; register carol lab.test pdpass ; register dave lab.test pdpass"
+    },
+    "creds": {
+      "alice": "pdpass",
+      "bob": "pdpass",
+      "carol": "pdpass",
+      "dave": "pdpass"
+    },
+    "ready": 120
+  }
+]

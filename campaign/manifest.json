@@ -248,5 +248,173 @@
   "pigeonhole": "Two lines built (2.4.5, 2.3.21.1); the third (2.2 line or a 24-month span) is not decided yet (open gap, tasklist).",
   "baresip": "Debian trixie package only so far; older releases need source builds (open gap, tasklist).",
   "linphone": "Debian trixie package only so far; older releases need source builds (open gap, tasklist)."
- }
+ },
+ "recall": [
+  {
+   "tag": "rq5-dns-rec",
+   "cell": "dns",
+   "lab": true,
+   "targets": "campaign/targets/rq5-dns-rec.json",
+   "cases": [
+    "D10",
+    "D9"
+   ],
+   "n_targets": 7,
+   "keys": [
+    "bind-9.20.30",
+    "bind-9.16.13",
+    "bind-9.16.15",
+    "knot-6.5.1",
+    "pdns-recursor-5.3.14",
+    "pdns-recursor-4.7.3",
+    "unbound-1.26.0"
+   ]
+  },
+  {
+   "tag": "rq5-dns-fwd",
+   "cell": "dns",
+   "lab": true,
+   "targets": "campaign/targets/rq5-dns-fwd.json",
+   "cases": [
+    "D1",
+    "D1p"
+   ],
+   "n_targets": 8,
+   "keys": [
+    "bind-fwd-9.20.30",
+    "knot-fwd-6.5.1",
+    "pdns-fwd-4.7.0",
+    "pdns-fwd-4.9.0",
+    "pdns-fwd-5.3.14",
+    "unbound-fwd-1.17.1",
+    "unbound-fwd-1.18.0",
+    "unbound-fwd-1.26.0"
+   ]
+  },
+  {
+   "tag": "rq5-mqtt",
+   "cell": "mqtt",
+   "lab": false,
+   "targets": "campaign/targets/rq5-mqtt.json",
+   "cases": [
+    "M1"
+   ],
+   "n_targets": 8,
+   "keys": [
+    "emqx-6.3.2",
+    "hivemq-ce-2026.5",
+    "mosquitto-2.0.22",
+    "nanomq-0.21.10",
+    "nanomq-0.22.2",
+    "nanomq-0.24.13",
+    "nanomq-0.25.7",
+    "vernemq-2.2.1"
+   ]
+  },
+  {
+   "tag": "rq5-ldap",
+   "cell": "ldap",
+   "lab": false,
+   "targets": "campaign/targets/rq5-ldap.json",
+   "cases": [
+    "L2"
+   ],
+   "n_targets": 7,
+   "keys": [
+    "389ds-3.1",
+    "apacheds-2.0.0.AM27",
+    "lldap-0.5.0",
+    "lldap-0.6.0",
+    "lldap-0.6.3",
+    "openldap-2.7.2",
+    "samba-ad-4.25.1"
+   ]
+  },
+  {
+   "tag": "rq5-jmap",
+   "cell": "jmap",
+   "lab": false,
+   "targets": "campaign/targets/rq5-jmap.json",
+   "cases": [
+    "J1"
+   ],
+   "n_targets": 6,
+   "keys": [
+    "cyrus-3.12.4",
+    "james-3.9.1",
+    "stalwart-0.13.3",
+    "stalwart-0.13.4",
+    "stalwart-0.16.10",
+    "stalwart-1.1.0"
+   ]
+  },
+  {
+   "tag": "rq5-sipb",
+   "cell": "sipb",
+   "lab": true,
+   "targets": "campaign/targets/rq5-sipb.json",
+   "cases": [
+    "S1e",
+    "S1o",
+    "S2"
+   ],
+   "n_targets": 9,
+   "keys": [
+    "ejabberd-24.12",
+    "ejabberd-26.09",
+    "kamailio-6.1",
+    "kamailio-6.1-redirect",
+    "kamailio-6.1-stateless",
+    "opensips-3.4.1",
+    "opensips-3.6",
+    "opensips-4.0",
+    "repro-1.14.0"
+   ]
+  }
+ ],
+ "replay": [
+  {
+   "tag": "dns",
+   "cell": "dns",
+   "from": "dns",
+   "images": [
+    "pd-dns-py:lab",
+    "pd-consumer-glibc",
+    "pd-consumer-musl"
+   ]
+  },
+  {
+   "tag": "mqtt",
+   "cell": "mqtt",
+   "from": "mqtt",
+   "images": [
+    "pd-consumer-mqtt"
+   ]
+  },
+  {
+   "tag": "ldap",
+   "cell": "ldap",
+   "from": "ldap",
+   "targets": true,
+   "images": [
+    "pd-consumer-ldap"
+   ]
+  },
+  {
+   "tag": "jmap",
+   "cell": "jmap",
+   "from": "jmap",
+   "images": [
+    "pd-consumer-jmap"
+   ]
+  },
+  {
+   "tag": "sipb-proxy",
+   "cell": "sipb",
+   "from": "sipb-proxy",
+   "images": [
+    "pd-consumer-sip"
+   ]
+  }
+ ]
 }

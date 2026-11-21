@@ -209,6 +209,213 @@
         "JDK": "11"
       },
       "why": "2.0.0.AM26 creates its self-signed certificate through JDK internals (sun.security.x509, sun.security.util); JDK 17 and later refuse that access (IllegalAccessError at start, campaign dry runs 18 and 19 Nov 2026, also with the x509 export), JDK 11 permits it. Ubuntu 22.04 ships openjdk-11; checked 19 Nov 2026: the server listens on 10389 with no exception"
+    },
+    "pd-bind:9.16.13": {
+      "dockerfile": "polydrift/cells/dns/lab/images/bind.Dockerfile",
+      "context": "polydrift/cells/dns/lab/images",
+      "args": {
+        "VER": "9.16.13"
+      },
+      "why": "RQ5 D10 (CVE-2021-25215): affected 9.16.13, fixed 9.16.15; ISC tarball recipe"
+    },
+    "pd-bind:9.16.15": {
+      "dockerfile": "polydrift/cells/dns/lab/images/bind.Dockerfile",
+      "context": "polydrift/cells/dns/lab/images",
+      "args": {
+        "VER": "9.16.15"
+      },
+      "why": "RQ5 D10 (CVE-2021-25215): affected 9.16.13, fixed 9.16.15; ISC tarball recipe"
+    },
+    "pd-unbound:1.17.1": {
+      "dockerfile": "polydrift/cells/dns/lab/images/unbound.Dockerfile",
+      "context": "polydrift/cells/dns/lab/images",
+      "args": {
+        "VER": "1.17.1"
+      },
+      "why": "RQ5 D1: affected 1.17.1, fixed 1.18.0; NLnet Labs tarball recipe"
+    },
+    "pd-unbound:1.18.0": {
+      "dockerfile": "polydrift/cells/dns/lab/images/unbound.Dockerfile",
+      "context": "polydrift/cells/dns/lab/images",
+      "args": {
+        "VER": "1.18.0"
+      },
+      "why": "RQ5 D1: affected 1.17.1, fixed 1.18.0; NLnet Labs tarball recipe"
+    },
+    "pd-sipb-opensips:3.4.1-src": {
+      "dockerfile": "polydrift/cells/sipb/lab/images/opensips-src.Dockerfile",
+      "context": "polydrift/cells/sipb/lab/images",
+      "args": {
+        "TAG": "3.4.1"
+      },
+      "why": "RQ5 S1o, S2: Docker Hub publishes no opensips 3.4.1 image (only the latest of each series)"
+    },
+    "pd-dns-py:lab": {
+      "dockerfile": "polydrift/cells/dns/lab/Dockerfile",
+      "context": "polydrift/cells/dns/lab",
+      "args": {},
+      "why": "DNS lab image (authority, driver, L9 replay server)"
+    },
+    "pd-consumer-glibc": {
+      "dockerfile": "polydrift/cells/dns/lab/consumers/glibc.Dockerfile",
+      "context": "polydrift/cells/dns/lab/consumers",
+      "args": {},
+      "why": "L9 DNS consumer"
+    },
+    "pd-consumer-musl": {
+      "dockerfile": "polydrift/cells/dns/lab/consumers/musl.Dockerfile",
+      "context": "polydrift/cells/dns/lab/consumers",
+      "args": {},
+      "why": "L9 DNS consumer"
+    },
+    "pd-consumer-mqtt": {
+      "dockerfile": "polydrift/cells/mqtt/lab/consumers/Dockerfile",
+      "context": "polydrift/cells/mqtt/lab/consumers",
+      "args": {},
+      "why": "L9 MQTT consumers"
+    },
+    "pd-consumer-ldap": {
+      "dockerfile": "polydrift/cells/ldap/lab/consumers/Dockerfile",
+      "context": "polydrift/cells/ldap/lab/consumers",
+      "args": {},
+      "why": "L9 LDAP consumers"
+    },
+    "pd-consumer-jmap": {
+      "dockerfile": "polydrift/cells/jmap/lab/consumers/Dockerfile",
+      "context": "polydrift/cells/jmap/lab/consumers",
+      "args": {},
+      "why": "L9 JMAP consumers"
+    },
+    "pd-consumer-sip": {
+      "dockerfile": "polydrift/cells/sipb/lab/consumers/Dockerfile",
+      "context": "polydrift/cells/sipb/lab/consumers",
+      "args": {},
+      "why": "L9 SIP consumers"
     }
-  }
+  },
+  "recall": [
+    {
+      "tag": "rq5-dns-rec",
+      "cell": "dns",
+      "lab": true,
+      "peers_from": "dns",
+      "families": [
+        "bind",
+        "pdns-recursor"
+      ],
+      "base": [
+        "rq5/dns_rq5_recursive.json"
+      ]
+    },
+    {
+      "tag": "rq5-dns-fwd",
+      "cell": "dns",
+      "lab": true,
+      "peers_from": null,
+      "families": [
+        "unbound-fwd",
+        "pdns-fwd"
+      ],
+      "base": [
+        "rq5/dns_rq5_fwd.json"
+      ]
+    },
+    {
+      "tag": "rq5-mqtt",
+      "cell": "mqtt",
+      "lab": false,
+      "peers_from": "mqtt",
+      "families": [
+        "nanomq"
+      ],
+      "base": [
+        "rq5/mqtt_rq5.json"
+      ]
+    },
+    {
+      "tag": "rq5-ldap",
+      "cell": "ldap",
+      "lab": false,
+      "peers_from": "ldap",
+      "families": [
+        "lldap"
+      ],
+      "base": [
+        "rq5/ldap_rq5.json"
+      ]
+    },
+    {
+      "tag": "rq5-jmap",
+      "cell": "jmap",
+      "lab": false,
+      "peers_from": "jmap",
+      "families": [
+        "stalwart"
+      ],
+      "base": [
+        "rq5/jmap_rq5.json"
+      ],
+      "rewrite": {
+        "/home/test/polydrift/recall/harness-ddf544b-jmap-rq5/polydrift/cells/jmap": "{celldir}"
+      }
+    },
+    {
+      "tag": "rq5-sipb",
+      "cell": "sipb",
+      "lab": true,
+      "peers_from": "sipb-proxy",
+      "families": [
+        "opensips",
+        "ejabberd"
+      ],
+      "base": [
+        "rq5/sipb_rq5b.json"
+      ]
+    }
+  ],
+  "replay": [
+    {
+      "tag": "dns",
+      "cell": "dns",
+      "from": "dns",
+      "images": [
+        "pd-dns-py:lab",
+        "pd-consumer-glibc",
+        "pd-consumer-musl"
+      ]
+    },
+    {
+      "tag": "mqtt",
+      "cell": "mqtt",
+      "from": "mqtt",
+      "images": [
+        "pd-consumer-mqtt"
+      ]
+    },
+    {
+      "tag": "ldap",
+      "cell": "ldap",
+      "from": "ldap",
+      "targets": true,
+      "images": [
+        "pd-consumer-ldap"
+      ]
+    },
+    {
+      "tag": "jmap",
+      "cell": "jmap",
+      "from": "jmap",
+      "images": [
+        "pd-consumer-jmap"
+      ]
+    },
+    {
+      "tag": "sipb-proxy",
+      "cell": "sipb",
+      "from": "sipb-proxy",
+      "images": [
+        "pd-consumer-sip"
+      ]
+    }
+  ]
 }

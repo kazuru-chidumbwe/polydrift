@@ -58,3 +58,66 @@ def test_pull_job_rebuilds_recipe_images_built_with_other_arguments(tmp_path):
         assert f"--label 'pd.build-args={label}' -t {tag} " in pull, tag
     am26 = src["build"]["pd-apacheds:2.0.0.AM26"]["args"]
     assert am26["JDK"] == "11"
+
+
+def _cases():
+    import yaml
+    return yaml.safe_load((ROOT / "polydrift" / "rq5" / "cases.yaml").read_text(encoding="utf-8"))["cases"]
+
+
+def _vk(v):
+    import re
+    return [int(p) if p.isdigit() else p for p in re.split(r"[.\-]", re.sub(r"^v", "", str(v)))]
+
+
+def test_recall_sets_cover_every_case_version_once():
+    m = json.loads((ROOT / "campaign" / "manifest.json").read_text())
+    served = {}
+    for r in m["recall"]:
+        ts = json.loads((ROOT / r["targets"]).read_text())
+        keys = [t["key"] for t in ts]
+        assert len(keys) == len(set(keys)), r["tag"]
+        assert "/home/" not in json.dumps([t.get("extra", []) for t in ts]), r["tag"]
+        for cid in r["cases"]:
+            assert cid not in served, f"{cid} in {served.get(cid)} and {r['tag']}"
+            served[cid] = r["tag"]
+            c = _cases()[cid]
+            for v in [*c["affected"], *(c.get("fixed") or [])]:
+                hits = [t for t in ts if t["impl"] == c["family"] and str(t["version"]) == str(v)]
+                assert len(hits) == 1, (r["tag"], cid, v)
+    assert set(served) == set(_cases())
+
+
+def test_recall_peers_are_the_campaign_current_versions():
+    m = json.loads((ROOT / "campaign" / "manifest.json").read_text())
+    src = {s["tag"]: s for s in json.loads((ROOT / "campaign" / "sources.json").read_text())["recall"]}
+    cells = {c["tag"]: json.loads((ROOT / c["targets"]).read_text()) for c in m["cells"]}
+    for r in m["recall"]:
+        frm = src[r["tag"]].get("peers_from")
+        if not frm:
+            continue
+        rec = {t["key"]: t for t in json.loads((ROOT / r["targets"]).read_text())}
+        best = {}
+        for t in cells[frm]:
+            k = (t["impl"], t.get("role"), t["key"].replace(str(t["version"]), ""))
+            if k not in best or _vk(t["version"]) > _vk(best[k]["version"]):
+                best[k] = t
+        for t in best.values():
+            assert rec.get(t["key"]) == t, (r["tag"], t["key"])
+
+
+def test_campaign_jobs_include_recall_replay_and_summary(tmp_path):
+    r = run("jobs", "--mode", "campaign", "--commit", "abc1234", "--start", "1", "--out", str(tmp_path))
+    assert r.returncode == 0, r.stderr
+    names = sorted(p.name for p in tmp_path.iterdir())
+    m = json.loads((ROOT / "campaign" / "manifest.json").read_text())
+    assert sum("-rq5-" in n for n in names) == len(m["recall"])
+    assert sum("-l9-" in n for n in names) == len(m["replay"])
+    assert names[-1].startswith(f"D-{len(names):03d}-") and "summary" in names[-1]
+    for p in tmp_path.iterdir():
+        body = p.read_text()
+        assert "/home/test" not in body and "abc1234" in body
+        if "-rq5-" in p.name:
+            assert "POLYDRIFT_FIXTURE_SET=rq5" in body and "--repeats 3" in body and "polydrift.cli recall" in body
+        if "-l9-" in p.name:
+            assert "--min-repeats 3" in body and "d-campcampaign-" in body

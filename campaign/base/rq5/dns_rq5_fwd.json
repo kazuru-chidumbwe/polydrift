@@ -1,0 +1,113 @@
+[
+ {
+  "key": "unbound-fwd-1.26.0",
+  "impl": "unbound-fwd",
+  "version": "1.26.0",
+  "image": "pd-unbound:1.26.0",
+  "ready": 60,
+  "mounts": {},
+  "entrypoint": "/usr/local/sbin/unbound",
+  "cmd": [
+   "-d",
+   "-c",
+   "/conf/unbound-fwd.conf"
+  ],
+  "role": "forwarding"
+ },
+ {
+  "key": "unbound-fwd-1.17.1",
+  "impl": "unbound-fwd",
+  "version": "1.17.1",
+  "image": "pd-unbound:1.17.1",
+  "ready": 60,
+  "mounts": {},
+  "entrypoint": "/usr/local/sbin/unbound",
+  "cmd": [
+   "-d",
+   "-c",
+   "/conf/unbound-fwd.conf"
+  ],
+  "role": "forwarding"
+ },
+ {
+  "key": "unbound-fwd-1.18.0",
+  "impl": "unbound-fwd",
+  "version": "1.18.0",
+  "image": "pd-unbound:1.18.0",
+  "ready": 60,
+  "mounts": {},
+  "entrypoint": "/usr/local/sbin/unbound",
+  "cmd": [
+   "-d",
+   "-c",
+   "/conf/unbound-fwd.conf"
+  ],
+  "role": "forwarding"
+ },
+ {
+  "key": "bind-fwd-9.20.30",
+  "impl": "bind-fwd",
+  "version": "9.20.30",
+  "image": "internetsystemsconsortium/bind9@sha256:66092edb53c081fa11b1fa8219e99065b0f497cb38f568ba789702a4c10e2590",
+  "ready": 60,
+  "mounts": {
+   "named-fwd.conf": "/etc/bind/named.conf"
+  },
+  "entrypoint": null,
+  "cmd": null,
+  "role": "forwarding"
+ },
+ {
+  "key": "knot-fwd-6.5.1",
+  "impl": "knot-fwd",
+  "version": "6.5.1",
+  "image": "pd-knot:6.5.1",
+  "ready": 90,
+  "mounts": {},
+  "entrypoint": "/usr/bin/knot-resolver",
+  "cmd": [
+   "-c",
+   "/conf/knot6-fwd.yaml"
+  ],
+  "role": "forwarding"
+ },
+ {
+  "key": "pdns-fwd-5.3.14",
+  "impl": "pdns-fwd",
+  "version": "5.3.14",
+  "image": "powerdns/pdns-recursor-53@sha256:87d7766f156df1af123de4087317178120725ec3141745256166d17e4cb9fe6e",
+  "ready": 60,
+  "mounts": {
+   "recursor-fwd.yml": "/etc/powerdns/recursor.d/lab.yml"
+  },
+  "entrypoint": null,
+  "cmd": null,
+  "role": "forwarding"
+ },
+ {
+  "key": "pdns-fwd-4.7.0",
+  "impl": "pdns-fwd",
+  "version": "4.7.0",
+  "image": "powerdns/pdns-recursor-47:4.7.0",
+  "ready": 60,
+  "mounts": {
+   "recursor4-fwd.conf": "/etc/powerdns/recursor.d/lab.conf"
+  },
+  "entrypoint": null,
+  "cmd": null,
+  "role": "forwarding"
+ },
+ {
+  "key": "pdns-fwd-4.9.0",
+  "impl": "pdns-fwd",
+  "version": "4.9.0",
+  "image": "powerdns/pdns-recursor-49:4.9.0",
+  "ready": 60,
+  "mounts": {
+   "recursor4-fwd.conf": "/etc/powerdns/recursor.d/lab.conf"
+  },
+  "entrypoint": null,
+  "cmd": null,
+  "role": "forwarding"
+ }
+]

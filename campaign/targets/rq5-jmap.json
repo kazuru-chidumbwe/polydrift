@@ -1,0 +1,73 @@
+[
+ {
+  "key": "cyrus-3.12.4",
+  "impl": "cyrus",
+  "version": "3.12.4",
+  "image": "pd-cyrus:3.12.4",
+  "port": 8008,
+  "extra": [],
+  "cmd": null,
+  "ready": 120
+ },
+ {
+  "key": "james-3.9.1",
+  "impl": "james",
+  "version": "3.9.1",
+  "image": "pd-james:3.9.1",
+  "port": 80,
+  "extra": [],
+  "cmd": null,
+  "ready": 240,
+  "admin_port": 8000
+ },
+ {
+  "key": "stalwart-0.13.3",
+  "impl": "stalwart",
+  "version": "0.13.3",
+  "image": "stalwartlabs/stalwart:v0.13.3",
+  "port": 8080,
+  "extra": [],
+  "cmd": null,
+  "ready": 120
+ },
+ {
+  "key": "stalwart-0.13.4",
+  "impl": "stalwart",
+  "version": "0.13.4",
+  "image": "stalwartlabs/stalwart:v0.13.4",
+  "port": 8080,
+  "extra": [],
+  "cmd": null,
+  "ready": 120
+ },
+ {
+  "key": "stalwart-0.16.10",
+  "impl": "stalwart",
+  "version": "0.16.10",
+  "image": "stalwartlabs/stalwart:v0.16.10",
+  "port": 8080,
+  "extra": [
+   "-e",
+   "STALWART_RECOVERY_ADMIN=admin:Lab-Admin-2026",
+   "-v",
+   "{celldir}/lab/stalwart-config.json:/etc/stalwart/config.json:ro"
+  ],
+  "cmd": null,
+  "ready": 120
+ },
+ {
+  "key": "stalwart-1.1.0",
+  "impl": "stalwart",
+  "version": "1.1.0",
+  "image": "stalwartlabs/stalwart:v1.1.0",
+  "port": 8080,
+  "extra": [
+   "-e",
+   "STALWART_RECOVERY_ADMIN=admin:Lab-Admin-2026",
+   "-v",
+   "{celldir}/lab/stalwart-config.json:/etc/stalwart/config.json:ro"
+  ],
+  "cmd": null,
+  "ready": 120
+ }
+]

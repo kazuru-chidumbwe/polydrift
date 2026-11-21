@@ -87,7 +87,7 @@ def cmd_build(_a) -> int:
         ts = build_cell(spec)
         ts.sort(key=lambda e: (e.get("impl", ""), e.get("role", ""), ver_key(str(e.get("version", "")))))
         rel = f"campaign/targets/{spec['tag']}.json"
-        (ROOT / rel).write_text(json.dumps(ts, indent=1) + "\n")
+        (ROOT / rel).write_text(json.dumps(ts, indent=1) + "\n", newline="\n")
         versions = defaultdict(set)
         for e in ts:
             versions[e.get("impl")].add(str(e.get("version")))
@@ -97,8 +97,69 @@ def cmd_build(_a) -> int:
             "versions": {k: sorted(v, key=ver_key, reverse=True) for k, v in sorted(versions.items())},
         })
         print(f"{spec['tag']:15s} {len(ts):3d} targets  " + "  ".join(f"{k}:{len(v)}" for k, v in sorted(versions.items())))
-    (CAMP / "manifest.json").write_text(json.dumps(manifest, indent=1) + "\n")
+    cell_targets = {c["tag"]: load_list(ROOT / c["targets"]) for c in manifest["cells"]}
+    manifest["recall"] = []
+    for spec in src.get("recall", []):
+        ts = build_recall(spec, cell_targets)
+        rel = f"campaign/targets/{spec['tag']}.json"
+        (ROOT / rel).write_text(json.dumps(ts, indent=1) + "\n", newline="\n")
+        manifest["recall"].append({"tag": spec["tag"], "cell": spec["cell"], "lab": spec["lab"], "targets": rel,
+                                   "cases": spec_cases(spec), "n_targets": len(ts), "keys": [e["key"] for e in ts]})
+        print(f"{spec['tag']:15s} {len(ts):3d} targets  " + " ".join(e["key"] for e in ts))
+    manifest["replay"] = src.get("replay", [])
+    (CAMP / "manifest.json").write_text(json.dumps(manifest, indent=1) + "\n", newline="\n")
     return 0
+
+
+def load_rq5_cases() -> dict:
+    import yaml
+    return (yaml.safe_load((ROOT / "polydrift" / "rq5" / "cases.yaml").read_text(encoding="utf-8")) or {})["cases"]
+
+
+def spec_cases(spec: dict) -> list[str]:
+    """The RQ5 cases a recall target set serves: those of its cell whose family the set names."""
+    cases = load_rq5_cases()
+    return sorted(k for k, c in cases.items() if c["cell"] == spec["cell"] and c["family"] in spec["families"])
+
+
+def build_recall(spec: dict, cell_targets: dict[str, list[dict]]) -> list[dict]:
+    """RQ5 recall targets: the affected and fixed versions of every case the set serves (validated entries from
+    campaign/base/rq5/), plus the current peers. With peers_from, the peers are the highest version of every
+    (implementation, role, variant) in that campaign cell, so recall compares against exactly the campaign's current
+    versions; without it (a role no campaign cell holds), the base file's own current entries are the peers."""
+    cases = load_rq5_cases()
+    want = defaultdict(set)
+    for cid in spec_cases(spec):
+        c = cases[cid]
+        for v in [*c.get("affected", []), *(c.get("fixed") or [])]:
+            want[c["family"]].add(str(v))
+    base: list[dict] = []
+    for name in spec["base"]:
+        base += [json.loads(json.dumps(e)) for e in load_list(CAMP / "base" / name)]
+    out: dict[str, dict] = {}
+    if spec.get("peers_from"):
+        best: dict[tuple, dict] = {}
+        for e in cell_targets[spec["peers_from"]]:
+            k = (e.get("impl"), e.get("role"), e["key"].replace(str(e.get("version")), ""))
+            if k not in best or ver_key(str(e["version"])) > ver_key(str(best[k]["version"])):
+                best[k] = e
+        for e in best.values():
+            out[e["key"]] = json.loads(json.dumps(e))
+        for e in base:
+            if str(e.get("version")) in want.get(e.get("impl"), set()):
+                out.setdefault(e["key"], e)
+    else:
+        for e in base:
+            out.setdefault(e["key"], e)
+    rw = spec.get("rewrite", {})
+    if rw:
+        for e in out.values():
+            e["extra"] = [_rewrite(x, rw) for x in e.get("extra", [])]
+    missing = [f"{f} {v}" for f, vs in sorted(want.items()) for v in sorted(vs)
+               if not any(e.get("impl") == f and str(e.get("version")) == v for e in out.values())]
+    if missing:
+        raise SystemExit(f"{spec['tag']}: no target for case version(s) {missing}")
+    return sorted(out.values(), key=lambda e: (e.get("impl", ""), e.get("role") or "", ver_key(str(e.get("version", "")))))
 
 
 LABEL = "pd.build-args"
@@ -158,6 +219,28 @@ def cmd_check(a) -> int:
                     if have != build_label(builds[img]):
                         problems.append(f"{c['tag']}: {e['key']} image {img} was not built with the arguments in "
                                         f"campaign/sources.json (label {have!r})")
+    cases = load_rq5_cases()
+    served = set()
+    for r in m.get("recall", []):
+        served |= set(r["cases"])
+        for e in load_list(ROOT / r["targets"]):
+            for s in mount_sources(e.get("extra", [])):
+                if s.startswith("/") or "/home/" in s or "/srv/" in s:
+                    problems.append(f"{r['tag']}: {e['key']} mounts a host path {s}")
+            if a.images and not (e["image"] in tags or inspect(e["image"])):
+                problems.append(f"{r['tag']}: {e['key']} image missing on host: {e['image']}")
+    for cid in sorted(set(cases) - served):
+        problems.append(f"RQ5 case {cid} is served by no recall target set")
+    for rp in m.get("replay", []):
+        if rp["from"] not in {c["tag"] for c in m["cells"]}:
+            problems.append(f"replay {rp['tag']}: no campaign cell {rp['from']}")
+    if a.images:
+        for img, b in builds.items():
+            info = inspect(img)
+            if info is None:
+                problems.append(f"recipe image missing on host: {img}")
+            elif ((info.get("Config") or {}).get("Labels") or {}).get(LABEL) != build_label(b):
+                problems.append(f"recipe image {img} was not built with the arguments in campaign/sources.json")
     for n in notes:
         print("NOTE", n)
     for p in problems:
@@ -177,7 +260,7 @@ def cmd_pin(_a) -> int:
                 pins[e["image"]] = None
                 continue
             pins[e["image"]] = {"id": info["Id"], "repo_digests": info.get("RepoDigests", [])}
-    (CAMP / "pins.json").write_text(json.dumps(pins, indent=1, sort_keys=True) + "\n")
+    (CAMP / "pins.json").write_text(json.dumps(pins, indent=1, sort_keys=True) + "\n", newline="\n")
     missing = [k for k, v in pins.items() if v is None]
     print(f"pinned {len(pins) - len(missing)} image(s); missing {len(missing)}: {missing}")
     return 1 if missing else 0
@@ -231,13 +314,55 @@ done < /tmp/pd-campaign-images.txt
 mv $F.tmp $F
 """
 
+RECALL_JOB = """#!/bin/bash
+# polydrift {what}, RQ5 recall {tag} at harness {c}: every known-bug fixture (cells/{cell}/fixtures_rq5.yaml) on the
+# affected and fixed versions of cases {cases} and the campaign's current peers (campaign/targets/{tag}.json),
+# {rep} repeat(s); then the recall outcome per case (polydrift recall). Written by tools/campaign.py jobs.
+# Flag ~/polydrift/stability/{flagtag}-DONE (first line: the run directory).
+set -u
+C={c}; TAR=~/polydrift/harness-$C.tar; FLAG=~/polydrift/stability/{flagtag}-DONE
+mkdir -p ~/polydrift/stability ~/polydrift/recall
+[ -f $TAR ] || {{ echo "NO-HARNESS-TAR $TAR" > $FLAG; exit 1; }}
+H=~/polydrift/recall/harness-$C-{tag}; rm -rf $H; mkdir -p $H; tar xf $TAR -C $H; echo $C > $H/COMMIT
+miss=$(python3 -c "import json,subprocess,sys
+for x in json.load(open(sys.argv[1])):
+    if subprocess.run(['docker','image','inspect',x['image']],capture_output=True).returncode: print(x['image'])" $H/campaign/targets/{tag}.json | sort -u | tr '\\n' ' ')
+if [ -n "$miss" ]; then echo "MISSING-IMAGES $miss" > $FLAG; exit 1; fi
+cd $H; export POLYDRIFT_COMMIT=$C POLYDRIFT_FIXTURE_SET=rq5
+O=~/polydrift/recall/{flagtag}-r{rep}-$(date -u +%Y%m%dT%H%M%SZ)
+python3 -m polydrift.cells.{cell}.runner --targets campaign/targets/{tag}.json{lab} --out $O --repeats {rep} > $O.out 2>&1
+python3 ~/labtools/labsum.py $O > $O/SMOKE.txt 2>&1; cat $O/progress >> $O/SMOKE.txt 2>/dev/null
+python3 -m polydrift.cli recall $O/records.jsonl --cases {cases} --min-repeats {rep} --out $O/RECALL.json > $O/RECALL.txt 2>&1
+echo "$O" > $FLAG
+"""
+
+REPLAY_JOB = """#!/bin/bash
+# polydrift {what}, L9 consumer replay {tag} at harness {c}: replays the sampled pairs of the campaign run of cell
+# {src} (its flag ~/polydrift/stability/{srcflag}-DONE names the run) through the consumers of cells/{cell}/lab.
+# Written by tools/campaign.py jobs. Flag ~/polydrift/stability/{flagtag}-DONE (first line: the replay directory).
+set -u
+C={c}; TAR=~/polydrift/harness-$C.tar; FLAG=~/polydrift/stability/{flagtag}-DONE
+[ -f $TAR ] || {{ echo "NO-HARNESS-TAR $TAR" > $FLAG; exit 1; }}
+R=$(head -1 ~/polydrift/stability/{srcflag}-DONE 2>/dev/null)
+[ -n "$R" ] && [ -f "$R/raw.jsonl" ] || {{ echo "NO-CELL-RUN {srcflag} ($R)" > $FLAG; exit 1; }}
+for img in {images}; do docker image inspect $img > /dev/null 2>&1 || {{ echo "MISSING-IMAGE $img" > $FLAG; exit 1; }}; done
+H=~/polydrift/replay/harness-$C-{tag}; rm -rf $H; mkdir -p $H; tar xf $TAR -C $H; echo $C > $H/COMMIT
+cd $H; export POLYDRIFT_COMMIT=$C
+O=$R-replay; rm -rf $O
+python3 -m polydrift.cells.{cell}.replay --run $R{targets} --lab $H/polydrift/cells/{cell}/lab --out $O --min-repeats {rep} > $O.out 2>&1
+echo "$O" > $FLAG
+"""
+
 SUMMARY = """#!/bin/bash
 # Summary of the {what} jobs at {c}. Flag ~/polydrift/{flag}
 O=~/polydrift/{summary}; : > $O
 for f in ~/polydrift/stability/{prefix}-*-DONE; do
   echo "== $(basename $f): $(head -c 300 $f)" >> $O
   d=$(head -1 $f); [ -f "$d/STABILITY.txt" ] && head -25 "$d/STABILITY.txt" >> $O
-  [ -d "$d" ] && python3 ~/labtools/stabdiff.py "$d" >> $O 2>&1
+  [ -f "$d/RECALL.txt" ] && cat "$d/RECALL.txt" >> $O
+  [ -f "$d/summary.json" ] && head -c 3000 "$d/summary.json" >> $O && echo >> $O
+  [ -f "$d/progress" ] && tail -3 "$d/progress" >> $O
+  case "$f" in *-rq5-*|*-l9-*) ;; *) [ -d "$d" ] && python3 ~/labtools/stabdiff.py "$d" >> $O 2>&1;; esac
 done
 df -h /srv/lab | tail -1 >> $O
 touch ~/polydrift/{flag}
@@ -280,6 +405,17 @@ def cmd_jobs(a) -> int:
         w(f"D-{n:03d}-polydrift-{prefix}-{c['tag']}-{a.commit}.sh", JOB_HEAD.format(
             what=what, c=a.commit, cell=c["cell"], tag=c["tag"], rep=rep, flagtag=f"{prefix}-{c['tag']}",
             fixtures=c["fixtures"], lab=" lab" if c["lab"] else ""))
+        n += 1
+    for r in m.get("recall", []):
+        w(f"D-{n:03d}-polydrift-{prefix}-{r['tag']}-{a.commit}.sh", RECALL_JOB.format(
+            what=what, c=a.commit, tag=r["tag"], cell=r["cell"], cases=",".join(r["cases"]), rep=rep,
+            flagtag=f"{prefix}-{r['tag']}", lab=f" --lab $H/polydrift/cells/{r['cell']}/lab" if r["lab"] else ""))
+        n += 1
+    for rp in m.get("replay", []):
+        w(f"D-{n:03d}-polydrift-{prefix}-l9-{rp['tag']}-{a.commit}.sh", REPLAY_JOB.format(
+            what=what, c=a.commit, tag=rp["tag"], cell=rp["cell"], src=rp["from"], srcflag=f"{prefix}-{rp['from']}",
+            flagtag=f"{prefix}-l9-{rp['tag']}", images=" ".join(rp["images"]), rep=rep,
+            targets=f" --targets $H/campaign/targets/{rp['from']}.json" if rp.get("targets") else ""))
         n += 1
     w(f"D-{n:03d}-polydrift-{prefix}-summary-{a.commit}.sh", SUMMARY.format(
         what=what, c=a.commit, prefix=prefix, summary=f"D-CAMP-{a.mode.upper()}-SUMMARY.txt",

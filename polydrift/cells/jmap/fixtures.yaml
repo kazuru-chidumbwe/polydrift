@@ -627,7 +627,7 @@ fixtures:
       - {"req_id": "JMAP-9b2317ec", "keyword": "MUST", "axis": "x7", "step": 3, "allowed": [true], "note": "the verification code has at least 16 characters"}
       - {"req_id": "JMAP-9b91073a", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "not-applicable", "note": "no OAuth access and refresh tokens in the lab"}
     steps:
-      - {"op": "call", "calls": [["PushSubscription/set", {"create": {"p": {"deviceClientId": "pd{U}dev", "url": "https://pd-push.example.com/jmap/{U}-p", "types": null, "expires": "2027-12-31T00:00:00Z"}}}, "c0"]], "extract": {"x1": "has:r0/created/p"}, "settle_ms": 3000}
+      - {"op": "call", "calls": [["PushSubscription/set", {"create": {"p": {"deviceClientId": "pd{U}dev", "url": "https://pd-push.example.com/jmap/{U}-p", "types": ["Mailbox"], "expires": "2027-12-31T00:00:00Z"}}}, "c0"]], "extract": {"x1": "has:r0/created/p"}, "settle_ms": 3000}
       - {"op": "call", "calls": [["PushSubscription/get", {"ids": ["{id:p}"]}, "c0"]], "extract": {"x2": "hoursahead:r0/list/0/expires"}}
       - {"op": "pushlog", "sub": "p", "extract": {"x3": "len:body", "x4": "eq:body/0/json/@type=\"PushVerification\"", "x5": "re:body/0/headers/content-type=application/json.*", "x6": "has:body/0/headers/ttl", "x7": "re:body/0/json/verificationCode=.{16,}"}}
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"b1": {"name": "pd{U}b1"}}}, "c0"]], "settle_ms": 4000}
@@ -635,9 +635,9 @@ fixtures:
       - {"op": "call", "calls": [["PushSubscription/set", {"update": {"{id:p}": {"verificationCode": "{push:p}"}}}, "c0"]], "extract": {"x9": "has:r0/updated"}}
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"b2": {"name": "pd{U}b2"}}}, "c0"]], "settle_ms": 4000}
       - {"op": "pushlog", "sub": "p", "extract": {"x10": "len:body"}}
-      - {"op": "call", "calls": [["PushSubscription/set", {"create": {"q": {"deviceClientId": "pd{U}devq", "url": "https://pd-push.example.com/jmap/{U}-q", "types": null, "keys": {"p256dh": "BLwLnggHtiZuzB6agMu7_6VcDAnnmZSmjr6dY3NtW6QyKgEjgFRowmALmXYYLYL9uKvrx7_pbj3GdvnwjQ062R8", "auth": "vO9WrZN3jq7SPuQyg0WO3w"}}}}, "c0"]], "extract": {"x11": "has:r0/created/q"}, "settle_ms": 3000}
+      - {"op": "call", "calls": [["PushSubscription/set", {"create": {"q": {"deviceClientId": "pd{U}devq", "url": "https://pd-push.example.com/jmap/{U}-q", "types": ["Mailbox"], "keys": {"p256dh": "BLwLnggHtiZuzB6agMu7_6VcDAnnmZSmjr6dY3NtW6QyKgEjgFRowmALmXYYLYL9uKvrx7_pbj3GdvnwjQ062R8", "auth": "vO9WrZN3jq7SPuQyg0WO3w"}}}}, "c0"]], "extract": {"x11": "has:r0/created/q"}, "settle_ms": 3000}
       - {"op": "pushlog", "sub": "q", "extract": {"x12": "body/0/headers/content-encoding"}}
-      - {"op": "call", "calls": [["PushSubscription/set", {"create": {"e": {"deviceClientId": "pd{U}deve", "url": "https://pd-push.example.com/jmap/{U}-e", "types": null, "expires": "{in:25}"}}}, "c0"]], "extract": {"x13": "has:r0/created/e"}, "settle_ms": 3000}
+      - {"op": "call", "calls": [["PushSubscription/set", {"create": {"e": {"deviceClientId": "pd{U}deve", "url": "https://pd-push.example.com/jmap/{U}-e", "types": ["Mailbox"], "expires": "{in:25}"}}}, "c0"]], "extract": {"x13": "has:r0/created/e"}, "settle_ms": 3000}
       - {"op": "pushlog", "sub": "e"}
       - {"op": "call", "calls": [["PushSubscription/set", {"update": {"{id:e}": {"verificationCode": "{push:e}"}}}, "c0"]], "settle_ms": 30000}
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"b3": {"name": "pd{U}b3"}}}, "c0"]], "settle_ms": 4000}

@@ -112,17 +112,19 @@ def _walk(root: Any, parts: list[str]) -> Any:
             items = cur if isinstance(cur, list) else (list(cur.values()) if isinstance(cur, dict) else [])
             vals = [_walk(x, parts[n + 1:]) for x in items]
             return [v for v in vals if v is not _MISSING]
+        # an index past the end, a key that is absent, or a step through a scalar or null is a missing path (so
+        # has: is false there, e.g. has:r0/created/p when a server answers "created": null)
         if isinstance(cur, list):
             try:
                 cur = cur[int(p)]
             except (ValueError, IndexError):
-                return None
+                return _MISSING
         elif isinstance(cur, dict):
             if p not in cur:
                 return _MISSING
             cur = cur[p]
         else:
-            return None
+            return _MISSING
         if cur is _MISSING:
             return cur
     return cur

@@ -92,5 +92,35 @@
    "/conf/unbound.conf"
   ],
   "build": "lab/images/unbound.Dockerfile VER=1.26.0 (NLnet Labs tarball, sha256 checked)"
+ },
+ {
+  "key": "unbound-1.16.1",
+  "impl": "unbound",
+  "version": "1.16.1",
+  "image": "pd-unbound:1.16.1",
+  "ready": 60,
+  "mounts": {},
+  "entrypoint": "/usr/local/sbin/unbound",
+  "cmd": [
+   "-d",
+   "-c",
+   "/conf/unbound.conf"
+  ],
+  "role": "recursive"
+ },
+ {
+  "key": "unbound-1.16.2",
+  "impl": "unbound",
+  "version": "1.16.2",
+  "image": "pd-unbound:1.16.2",
+  "ready": 60,
+  "mounts": {},
+  "entrypoint": "/usr/local/sbin/unbound",
+  "cmd": [
+   "-d",
+   "-c",
+   "/conf/unbound.conf"
+  ],
+  "role": "recursive"
  }
 ]

@@ -4,6 +4,8 @@ import time
 from pathlib import Path
 
 import dns.message
+import dns.rcode
+import dns.rdatatype
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "polydrift" / "cells" / "dns" / "lab"))
 import auth  # noqa: E402
@@ -68,3 +70,29 @@ def test_icmp_checksum_is_valid():
     body = b"\x03\x00\x00\x00\x00\x00\x00\x00" + b"\x45" * 28
     body = body[:2] + auth._csum(body).to_bytes(2, "big") + body[4:]
     assert auth._csum(body) == 0
+
+
+def _lab_zone(server):
+    import yaml
+    z = yaml.safe_load((Path(auth.__file__).parent / "zones.yaml").read_text(encoding="utf-8"))["servers"][server]
+    return auth.Zone(z["zone"], z["records"], z.get("behaviours"))
+
+
+def test_d5_parent_refers_then_revokes_ghost():
+    parent = _lab_zone("pdlab")
+    q = dns.message.make_query("a.ghost.pdlab.", "A")
+    r = dns.message.from_wire(auth.respond(parent, q.to_wire(), "udp", "10.0.0.9"))
+    assert not r.answer and any(x.rdtype == dns.rdatatype.NS and x.ttl == 6 for x in r.authority)
+    auth.STATE["revoke:ghost"] = time.monotonic() - 3  # first query 3 s ago, revocation after 2 s
+    for name in ("x.s.ghost.pdlab.", "ghost.pdlab."):
+        r = dns.message.from_wire(auth.respond(parent, dns.message.make_query(name, "NS").to_wire(), "udp", "10.0.0.9"))
+        assert r.rcode() == dns.rcode.NXDOMAIN
+    auth.STATE.pop("revoke:ghost")
+
+
+def test_d5_child_answers_with_a_long_child_delegation():
+    child = _lab_zone("ghost")
+    r = dns.message.from_wire(auth.respond(child, dns.message.make_query("s.ghost.pdlab.", "A").to_wire(), "udp", "x"))
+    assert [str(x) for x in r.authority] == ["s.ghost.pdlab. 3600 IN NS ns.s.ghost.pdlab."]
+    r = dns.message.from_wire(auth.respond(child, dns.message.make_query("x.s.ghost.pdlab.", "A").to_wire(), "udp", "x"))
+    assert [str(x) for x in r.answer] == ["x.s.ghost.pdlab. 300 IN A 10.0.66.2"]

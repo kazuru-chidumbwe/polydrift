@@ -242,6 +242,22 @@
       },
       "why": "RQ5 D1: affected 1.17.1, fixed 1.18.0; NLnet Labs tarball recipe"
     },
+    "pd-unbound:1.16.1": {
+      "dockerfile": "polydrift/cells/dns/lab/images/unbound.Dockerfile",
+      "context": "polydrift/cells/dns/lab/images",
+      "args": {
+        "VER": "1.16.1"
+      },
+      "why": "RQ5 D5 (CVE-2022-30698, Phoenix Domain T2): affected 1.16.1, fixed 1.16.2; NLnet Labs tarball recipe"
+    },
+    "pd-unbound:1.16.2": {
+      "dockerfile": "polydrift/cells/dns/lab/images/unbound.Dockerfile",
+      "context": "polydrift/cells/dns/lab/images",
+      "args": {
+        "VER": "1.16.2"
+      },
+      "why": "RQ5 D5 (CVE-2022-30698, Phoenix Domain T2): affected 1.16.1, fixed 1.16.2; NLnet Labs tarball recipe"
+    },
     "pd-sipb-opensips:3.4.1-src": {
       "dockerfile": "polydrift/cells/sipb/lab/images/opensips-src.Dockerfile",
       "context": "polydrift/cells/sipb/lab/images",
@@ -301,7 +317,8 @@
       "peers_from": "dns",
       "families": [
         "bind",
-        "pdns-recursor"
+        "pdns-recursor",
+        "unbound"
       ],
       "base": [
         "rq5/dns_rq5_recursive.json"

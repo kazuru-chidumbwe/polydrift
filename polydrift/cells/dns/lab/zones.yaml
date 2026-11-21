@@ -1,6 +1,7 @@
 # DNS cell lab tree (manuscript 4.5). Internal network 172.31.53.0/24, no route out.
 # root .10 (.), test .11 (pdlab.), pd .12 (pd.pdlab.), dead .13 (no server), other .14 (other.pdlab.),
-# half .15 (halflame.pdlab.), neg .16 (neg.pdlab.), resolver under test .53, client .99.
+# half .15 (halflame.pdlab.), neg .16 (neg.pdlab.), ghost .17 (ghost.pdlab., RQ5 D5), resolver under test .53,
+# client .99.
 # neg.pdlab. holds only the negative-caching fixture: no other fixture touches its SOA, so a resolver that reuses the
 # remaining TTL of a cached SOA for a new negative answer (Unbound does) cannot make the fixture order-dependent.
 # Every zone is unsigned; resolvers run with validation off for the lab root (the only deviation besides root hints,
@@ -35,6 +36,11 @@ servers:
       - "neg 3600 NS ns.neg"
       - "ns.neg 3600 A 172.31.53.16"
       - "ns2.halflame 3600 A 172.31.53.15"
+      # RQ5 D5 (Phoenix Domain T2): a short delegation that this parent withdraws 2 s after its first query
+      - "ghost 6 NS ns.ghost"
+      - "ns.ghost 6 A 172.31.53.17"
+    behaviours:
+      ghost: {kind: revoke, key: ghost, seconds: 2, below: {kind: revoke, key: ghost, seconds: 2}}
   pd:
     ip: 172.31.53.12
     zone: "pd.pdlab."
@@ -157,3 +163,19 @@ servers:
       - "flip 300 A 10.0.7.1"
     behaviours:
       flip: {kind: flip, negative_seconds: 0.5}
+  # RQ5 D5 (Phoenix Domain T2, NDSS 2023 Fig. 8c answer form): the domain owner's server answers s.ghost with a new
+  # delegation s.ghost NS ns.s.ghost (glue to itself, TTL 3600) in the authority section of an authoritative answer.
+  # After the parent revokes ghost.pdlab., a resolver that kept the child delegation still reaches this server.
+  ghost:
+    ip: 172.31.53.17
+    zone: "ghost.pdlab."
+    records:
+      - "@ 3600 SOA ns.ghost.pdlab. host.ghost.pdlab. 1 3600 600 86400 5"
+      - "@ 6 NS ns"
+      - "ns 6 A 172.31.53.17"
+      - "a 300 A 10.0.66.1"
+      - "b 300 A 10.0.66.4"
+      - "x.s 300 A 10.0.66.2"
+    behaviours:
+      s: {kind: craft, answer: ["s.ghost.pdlab. 300 A 10.0.66.3"], authority: ["s.ghost.pdlab. 3600 NS ns.s.ghost.pdlab."],
+          additional: ["ns.s.ghost.pdlab. 3600 A 172.31.53.17"]}

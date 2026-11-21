@@ -257,9 +257,10 @@
    "targets": "campaign/targets/rq5-dns-rec.json",
    "cases": [
     "D10",
+    "D5",
     "D9"
    ],
-   "n_targets": 7,
+   "n_targets": 9,
    "keys": [
     "bind-9.20.30",
     "bind-9.16.13",
@@ -267,7 +268,9 @@
     "knot-6.5.1",
     "pdns-recursor-5.3.14",
     "pdns-recursor-4.7.3",
-    "unbound-1.26.0"
+    "unbound-1.26.0",
+    "unbound-1.16.1",
+    "unbound-1.16.2"
    ]
   },
   {

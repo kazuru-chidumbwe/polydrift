@@ -27,6 +27,17 @@ cases:
     fixed: ["4.9.0"]
     source: "ResolverFuzz RC3 (PowerDNS Recursor 4.7.0); RD=0 forwarding changed in 4.9.0-alpha1 (PR 12425), not described as the fix"
     clause: "RFC 1034 4.3.1"
+  D5:
+    cell: dns
+    family: unbound
+    fixtures: [rq5_d5_ghost_subdomain]
+    axes: [answers, decision_class]
+    affected: ["1.16.1"]
+    fixed: ["1.16.2"]
+    known: [{fixture: rq5_d5_ghost_subdomain, axis: answers, step: 3, value: ["x.s.ghost.pdlab a 10.0.66.2"]}]
+    source: "Phoenix Domain T2 (Li et al., NDSS 2023, VII-B: Unbound fixed, CVE-2022-30698, 1.16.2); ResolverFuzz CP4"
+    clause: "RFC 2181 5.4.1"
+    note: "known steps count observations (the sleep step gives none); Phoenix Table I: T2 also affects BIND, Knot, PowerDNS, so the affected version may agree with every peer (expected miss)"
   D9:
     cell: dns
     family: pdns-recursor

@@ -43,7 +43,7 @@
    "fixtures": "all",
    "lab": true,
    "targets": "campaign/targets/dns-fwd.json",
-   "n_targets": 19,
+   "n_targets": 22,
    "versions": {
     "bind-fwdall": [
      "9.20.30",
@@ -70,6 +70,11 @@
      "5.3.14",
      "5.2.13",
      "5.1.10"
+    ],
+    "technitium-fwdall": [
+     "15.6.2",
+     "15.5.1",
+     "15.4.0"
     ],
     "unbound-fwdall": [
      "1.26.0",

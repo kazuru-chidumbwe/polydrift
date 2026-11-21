@@ -220,6 +220,70 @@ def respond(zone: Zone, wire: bytes, transport: str, src: str | None = None) -> 
         kind = beh["kind"]
         if kind == "silent":
             return None
+        if kind == "craft":
+            # a response written in full: flags and every section as given, any owner name (out-of-bailiwick data
+            # for the cache-poisoning cases: MaginotDNS Fig. 5, Phoenix Domain Fig. 8, ResolverFuzz Fig. 8)
+            r = dns.message.make_response(q)
+            r.flags &= ~(dns.flags.RA | dns.flags.AA)
+            if beh.get("aa", True):
+                r.flags |= dns.flags.AA
+            if beh.get("rcode"):
+                r.set_rcode(dns.rcode.from_text(beh["rcode"]))
+            for sec, lines in (("answer", r.answer), ("authority", r.authority), ("additional", r.additional)):
+                for line in beh.get(sec, []):
+                    lines.append(_split(line, zone))
+            return r.to_wire()
+        if kind == "big" and transport == "udp":
+            # an answer of `count` A records sent over UDP whatever size the querier advertised (ResolverFuzz CP3:
+            # does the resolver accept a UDP response above 1232 bytes)
+            resp.flags |= dns.flags.AA
+            addrs = [f"10.{60 + i // 250}.{i % 250}.1" for i in range(int(beh.get("count", 120)))]
+            resp.answer.append(dns.rrset.from_text_list(qname, 300, "IN", "A", addrs))
+            return resp.to_wire(max_size=65535)
+        if kind == "malformed" and transport == "udp":
+            # TuDoor state machine inputs: a broken packet on the query's four-tuple first, then (if `then_ms` is
+            # set) the valid answer; a resolver should drop the first and keep waiting
+            form = beh.get("form", "empty")
+            if form == "empty":
+                bad = b""
+            elif form == "short":
+                bad = wire[:2] + b"\x81\x80" + b"\x00" * 4
+            elif form == "qr0":
+                bad = wire
+            elif form == "badtxid":
+                lookup(zone, qname, qtype, resp)
+                resp.id = (resp.id + 1) & 0xFFFF
+                bad = resp.to_wire()
+                resp = dns.message.make_response(q)
+            else:
+                raise ValueError(f"malformed form {form}")
+            out: list = [(0.0, bad)]
+            if beh.get("then_ms") is not None:
+                good = dns.message.make_response(q)
+                good.flags &= ~dns.flags.RA
+                lookup(zone, qname, qtype, good)
+                out.append((float(beh["then_ms"]) / 1000, good.to_wire()))
+            return out
+        if kind == "tcp_null":
+            # TuDoor VRC (Knot): UDP says truncated, TCP accepts the query and closes without a payload
+            if transport == "udp":
+                resp.flags |= dns.flags.TC | dns.flags.AA
+                return resp.to_wire()
+            return CLOSE
+        if kind == "icmp" and transport == "udp":
+            # TuDoor VRC/VDS (BIND): ICMP destination unreachable (type 3, `code`) for the query instead of an answer
+            return [(0.0, ICMP, int(beh.get("code", 0)))]
+        if kind == "revoke":
+            # a delegation that the parent withdraws `seconds` after its first query (Phoenix Domain: revocation);
+            # before that the zone answers normally (referral), after it NXDOMAIN
+            now = time.monotonic()
+            with LOCK:
+                first = STATE.setdefault("revoke:" + beh.get("key", qname.to_text()), now)
+            if now - first >= float(beh.get("seconds", 5)):
+                resp.flags |= dns.flags.AA
+                resp.set_rcode(dns.rcode.NXDOMAIN)
+                resp.authority.append(zone.negative_soa())
+                return resp.to_wire()
         if kind == "delay":
             # answers like the zone after `ms` (concurrency clauses: a slow upstream must not block other clients)
             time.sleep(float(beh.get("ms", 3000)) / 1000)
@@ -299,12 +363,54 @@ def _finish(resp: dns.message.Message, beh: dict, limit: int) -> bytes:
         return resp.to_wire()
 
 
+CLOSE = object()  # TCP: close the connection without a reply
+ICMP = object()   # UDP: answer with ICMP destination unreachable instead of DNS
+
+
+def _csum(b: bytes) -> int:
+    if len(b) % 2:
+        b += b"\0"
+    s = sum(struct.unpack(f"!{len(b) // 2}H", b))
+    s = (s >> 16) + (s & 0xFFFF)
+    s += s >> 16
+    return ~s & 0xFFFF
+
+
+def send_icmp_unreach(client: tuple[str, int], query: bytes, code: int) -> None:
+    """ICMP type 3 for the resolver's query, quoting the IP header and first 8 bytes of the query datagram (RFC 792),
+    so the resolver's kernel matches it to the query socket. Needs CAP_NET_RAW (in Docker's default set)."""
+    probe = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    probe.connect((client[0], 9))
+    me = probe.getsockname()[0]
+    probe.close()
+    udp = struct.pack("!HHHH", client[1], 53, 8 + len(query), 0)
+    iph = struct.pack("!BBHHHBBH4s4s", 0x45, 0, 20 + 8 + len(query), 0, 0, 64, socket.IPPROTO_UDP, 0,
+                      socket.inet_aton(client[0]), socket.inet_aton(me))
+    iph = iph[:10] + struct.pack("!H", _csum(iph)) + iph[12:]
+    body = struct.pack("!BBHI", 3, code, 0, 0) + iph + udp
+    body = body[:2] + struct.pack("!H", _csum(body)) + body[4:]
+    s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_ICMP)
+    try:
+        s.sendto(body, (client[0], 0))
+    finally:
+        s.close()
+
+
 class UDP(socketserver.BaseRequestHandler):
     def handle(self):
         data, sock = self.request
         out = respond(self.server.zone, data, "udp", self.client_address[0])
-        if out is not None:
+        if out is None:
+            return
+        if isinstance(out, bytes):
             sock.sendto(out, self.client_address)
+            return
+        for item in out:  # [(delay_s, bytes)] or [(delay_s, ICMP, code)]
+            time.sleep(item[0])
+            if item[1] is ICMP:
+                send_icmp_unreach(self.client_address, data, item[2])
+            else:
+                sock.sendto(item[1], self.client_address)
 
 
 class TCP(socketserver.BaseRequestHandler):
@@ -321,6 +427,10 @@ class TCP(socketserver.BaseRequestHandler):
                     return
                 data += chunk
             out = respond(self.server.zone, data, "tcp", self.client_address[0])
+            if out is CLOSE:
+                return
+            if isinstance(out, list):
+                out = out[-1][1] if out and isinstance(out[-1][1], bytes) else None
             if out is not None:
                 self.request.sendall(struct.pack("!H", len(out)) + out)
 

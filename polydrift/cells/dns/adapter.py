@@ -145,10 +145,12 @@ def _upstream_fields(obs: dict[str, Any]) -> dict[str, Any]:
     for q in qs:
         k = f"{q['qname'].lower()} {q['qtype']}"
         count[k] = count.get(k, 0) + 1
-    extra = {"upstream_volume": volume_bucket(len(qs))} if obs.get("volume") else {}
+    # A step that asks for the volume measures an amplification: there the exact count moves with retry timing (7
+    # or 8 copies within one bucket), so the bucket replaces it.
+    vol = {"upstream_volume": volume_bucket(len(qs))} if obs.get("volume") else \
+        {"upstream_count": tuple(sorted(count.items()))}
     return {
-        **extra,
-        "upstream_count": tuple(sorted(count.items())),
+        **vol,
         "upstream_rd": sorted({bool(q["rd"]) for q in qs}),
         "upstream_opt_codes": sorted({c for q in qs for c in q.get("opts") or []}),
         "upstream_edns": sorted({int(q["edns"]) for q in qs}),

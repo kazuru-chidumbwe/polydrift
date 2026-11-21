@@ -179,9 +179,21 @@ def build_recall(spec: dict, cell_targets: dict[str, list[dict]]) -> list[dict]:
 LABEL = "pd.build-args"
 
 
+def recipe_hash(b: dict) -> str:
+    """sha256 over the Dockerfile and every file in the build context (path and content, CRLF read as LF), so an
+    image built from an older recipe never passes as current, also when the recipe takes no build arguments."""
+    import hashlib
+    h = hashlib.sha256()
+    files = {ROOT / b["dockerfile"]} | {p for p in (ROOT / b["context"]).rglob("*")
+                                        if p.is_file() and "__pycache__" not in p.parts}
+    for p in sorted(files):
+        h.update(p.relative_to(ROOT).as_posix().encode() + b"\0" + p.read_bytes().replace(b"\r\n", b"\n") + b"\0")
+    return h.hexdigest()[:16]
+
+
 def build_label(b: dict) -> str:
-    """The build arguments of a recipe image as one string, stored on the image as a label."""
-    return ";".join(f"{k}={v}" for k, v in sorted(b.get("args", {}).items()))
+    """The build arguments and recipe hash of a recipe image as one string, stored on the image as a label."""
+    return ";".join([*(f"{k}={v}" for k, v in sorted(b.get("args", {}).items())), f"recipe={recipe_hash(b)}"])
 
 
 def host_images() -> tuple[set[str], callable]:

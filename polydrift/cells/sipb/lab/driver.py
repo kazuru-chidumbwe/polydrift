@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import base64
 import json
+import math
 import random
 import re
 import select
@@ -135,6 +136,7 @@ class Party:
         if not data.strip():
             return  # keep-alive CRLF
         m = parse(data, transport)
+        m["at"] = round(time.time(), 3)  # arrival time, for the retransmission-timer extracts (retx, firstat)
         self.inbox.append(m)
         if self.aside is not None and self.aside(m):
             # a probe or a stray (another fixture's late retransmission) is recorded but never becomes the message
@@ -387,7 +389,7 @@ def _walk(cur, parts):
     return cur
 
 
-FN = r"^(len|keys|type|has|eq|ne|in|re|allre|allin|sorted|lower|ge|le|hasall|count|codes|methods|same|nre|ncodes|hascode|ackresp):"
+FN = r"^(len|keys|type|has|eq|ne|in|re|allre|allin|sorted|lower|ge|le|hasall|count|codes|methods|same|nre|ncodes|hascode|ackresp|retx|firstat):"
 
 
 def _lit(s):
@@ -415,6 +417,20 @@ def evaluate(expr: str, ctx: dict):
         return not missing
     if fn == "len":
         return len(v) if isinstance(v, (list, dict, str)) else 0 if missing else None
+    if fn in ("retx", "firstat"):
+        # retx:party=KEY: copies of one request method (or response code) the party received in the step, and the
+        # gaps between successive copies on the T1 doubling scale (0.5, 1, 2, 4, 8, 16 s: each gap goes to the
+        # nearest power of two times 0.5 s), so timers A/E/G and their T2 cap are compared, not network jitter.
+        # firstat:party=KEY: seconds from the step's start to the first copy, rounded down to 10 s (None if none);
+        # for timers measured in minutes (Timer C).
+        key = lit.upper()
+        hits = [m for m in v or [] if (m.get("kind") == "req" and str(m.get("method", "")).upper() == key)
+                or (m.get("kind") == "resp" and str(m.get("code")) == key)]
+        times = sorted(m["at"] for m in hits if "at" in m)
+        if fn == "firstat":
+            return None if not times else int((times[0] - ctx.get("t0", times[0])) // 10 * 10)
+        gaps = [0.5 * 2 ** round(math.log2(max(b - a, 0.125) / 0.5)) for a, b in zip(times, times[1:])]
+        return {"copies": len(hits), "gaps": [int(g) if g >= 1 else g for g in gaps]}
     if fn == "codes":   # final and provisional status codes in a party's inbox, in order
         return [m.get("code") for m in v or [] if m.get("kind") == "resp"]
     if fn == "ncodes":
@@ -558,7 +574,7 @@ def run(req: dict) -> list[dict]:
         if st.get("extract"):
             # step messages per party, the last request each party sent, and every message each party received so
             # far in the fixture ("hist", for clauses that compare a retransmission with the first transmission)
-            ctx = {**got, "sent": lab.sent,
+            ctx = {**got, "sent": lab.sent, "t0": t0,
                    "hist": {n: [m for m in p.inbox if not set_aside(m, lab.own_callids, opened)] for n, p in lab.parties.items()}}
             obs["extract"] = {k: _unu(evaluate(lab.fill(e, obs["actor"]), ctx), lab) for k, e in st["extract"].items()}
         out.append(obs)

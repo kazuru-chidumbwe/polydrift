@@ -152,19 +152,28 @@ fixtures:
       - {"req_id": "SIP-ef39663c", "keyword": "MUST", "axis": "x1", "step": 5, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-7cb7a2af", "keyword": "MUST", "axis": "x8", "step": 2, "allowed": [[100]]}
       - {"req_id": "SIP-d4f59db1", "keyword": "MUST", "axis": "x1", "step": 5, "allowed": [["ACK"]]}
-      - {"req_id": "SIP-1fece042", "keyword": "MUST", "axis": "x8", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
-      - {"req_id": "SIP-e63b8928", "keyword": "MUST", "axis": "x8", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
-      - {"req_id": "SIP-a716df3f", "keyword": "MUST", "axis": "x3", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
-      - {"req_id": "SIP-24a10821", "keyword": "MUST", "axis": "x3", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
-      - {"req_id": "SIP-4e480356", "keyword": "MUST", "axis": "x8", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
-      - {"req_id": "SIP-8eafe080", "keyword": "MUST", "axis": "x8", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
-      - {"req_id": "SIP-86bb70e0", "keyword": "MUST", "axis": "x8", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
     steps:
       - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
       - {"op": "send", "from": "alice", "window_ms": 400, "msg": "INVITE sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nX-Pd-Unknown: keep me\nX-Pd-Multi: one\nX-Pd-Multi: two\nSubject: pd census\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "bob/0/hdr/max-forwards/0", "x2": "len:bob/0/hdr/via", "x3": "re:bob/0/hdr/via/0=SIP/2.0/UDP .*;branch=z9hG4bK.*", "x4": "same:bob/0/body,sent/alice/body", "x5": "bob/0/hdr/x-pd-multi", "x6": "has:bob/0/hdr/x-pd-unknown", "x7": "re:bob/0/ruri=sip:bob@{lab}:{port:bob}.*", "x8": "codes:alice"}}
       - {"op": "reply", "from": "bob", "code": 180, "reason": "Ringing", "window_ms": 600, "extract": {"x1": "len:alice/0/hdr/via", "x2": "re:alice/0/hdr/to/0=.*;tag={tag:bob}.*", "x3": "codes:alice"}}
       - {"op": "reply", "from": "bob", "code": 200, "reason": "OK", "window_ms": 600, "headers": {"Content-Type": "application/sdp"}, "body": "v=0\no=bob 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "codes:alice", "x2": "re:alice/0/hdr/to/0=.*;tag={tag:bob}.*", "x3": "same:alice/0/body,bob/0/body", "x4": "has:alice/0/hdr/record-route"}}
       - {"op": "ack", "from": "alice", "window_ms": 600, "extract": {"x1": "methods:bob"}}
+
+  px_timer_c:
+    kind: probe
+    roles: ["proxy"]
+    spec_refs:
+      - {"req_id": "SIP-1fece042", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [180, 190, null], "note": "first CANCEL toward the ringing callee, seconds after the 180 (tens): Timer C over 3 minutes gives 180 or 190; none in 200 s if the proxy reset it"}
+      - {"req_id": "SIP-e63b8928", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [180, 190, null], "note": "Timer C over 3 minutes: the first CANCEL comes no earlier than 180 s after the provisional"}
+      - {"req_id": "SIP-a716df3f", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [180, 190, null], "note": "the 180 resets Timer C, so the CANCEL time is measured from the 180"}
+      - {"req_id": "SIP-24a10821", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [180, 190, null], "note": "a reset value is also over 3 minutes"}
+      - {"req_id": "SIP-4e480356", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [180, 190, null], "note": "on expiry the proxy resets the timer (no CANCEL in the window) or ends the transaction with a CANCEL"}
+      - {"req_id": "SIP-8eafe080", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [180, 190, null], "note": "the transaction had a provisional response, so ending it is a CANCEL toward the callee"}
+      - {"req_id": "SIP-86bb70e0", "keyword": "MUST", "axis": "x1", "step": 3, "basis": "conditional", "note": "binds when Timer C fires before any provisional response; without one, Timer B (32 s) ends the client transaction first"}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 400, "msg": "INVITE sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nX-Pd-Unknown: keep me\nX-Pd-Multi: one\nX-Pd-Multi: two\nSubject: pd census\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "bob/0/hdr/max-forwards/0", "x2": "len:bob/0/hdr/via", "x3": "re:bob/0/hdr/via/0=SIP/2.0/UDP .*;branch=z9hG4bK.*", "x4": "same:bob/0/body,sent/alice/body", "x5": "bob/0/hdr/x-pd-multi", "x6": "has:bob/0/hdr/x-pd-unknown", "x7": "re:bob/0/ruri=sip:bob@{lab}:{port:bob}.*", "x8": "codes:alice"}}
+      - {"op": "reply", "from": "bob", "code": 180, "reason": "Ringing", "window_ms": 200000, "extract": {"x1": "firstat:bob=CANCEL", "x2": "codes:alice", "x3": "methods:bob"}}
 
   px_record_route:
     kind: control
@@ -990,15 +999,32 @@ fixtures:
       - {"req_id": "SIP-a53270d1", "keyword": "MUST", "axis": "x3", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-e902fa4f", "keyword": "SHOULD", "axis": "x3", "step": 2, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
       - {"req_id": "SIP-5669801c", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [true]}
-      - {"req_id": "SIP-d58f53ab", "keyword": "MUST", "axis": "x4", "step": 4, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
-      - {"req_id": "SIP-fc4d96a2", "keyword": "SHOULD", "axis": "x4", "step": 4, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-ba004fd6", "keyword": "MUST", "axis": "x5", "step": 4, "allowed": [0], "note": "an ACK answered by the element (CSeq method ACK) was not matched to the Completed transaction"}
-      - {"req_id": "SIP-3d49cb0e", "keyword": "MUST", "axis": "x4", "step": 4, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-3d49cb0e", "keyword": "MUST", "axis": "x4", "step": 4, "basis": "not-observable", "note": "Timer I absorbs ACK retransmissions silently after the ACK; nothing is sent either way"}
     steps:
       - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:inv};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
       - {"op": "send", "from": "alice", "window_ms": 800, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:inv};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x3": "codes:alice"}}
       - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "CANCEL sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:inv};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 CANCEL\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "in:alice/0/hdr/cseq/0=CANCEL", "x2": "same:alice/-1/hdr/to/0,alice/0/hdr/to/0"}}
       - {"op": "ack", "from": "alice", "window_ms": 800, "extract": {"x4": "hascode:hist/alice=487", "x5": "ackresp:alice"}}
+
+  uas_final_no_ack:
+    kind: probe
+    roles: ["uas-ring"]
+    spec_refs:
+      - {"req_id": "SIP-d58f53ab", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [{"copies": 11, "gaps": [0.5, 1, 2, 4, 4, 4, 4, 4, 4, 4]}], "note": "no ACK for the 487: copies at 0, 0.5, 1.5, 3.5 s, then every T2 to 31.5 s; Timer H (64*T1) ends them"}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:inv};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
+      - {"op": "send", "from": "alice", "window_ms": 40000, "msg": "CANCEL sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:inv};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 CANCEL\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "retx:alice=487"}}
+
+  uas_completed_retransmission:
+    kind: probe
+    roles: ["uas-ring"]
+    spec_refs:
+      - {"req_id": "SIP-fc4d96a2", "keyword": "SHOULD", "axis": "x2", "step": 3, "allowed": [true], "note": "an INVITE retransmission while the 487 transaction is Completed gets the 487 again"}
+    steps:
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:inv};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "CANCEL sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:inv};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 CANCEL\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "in:alice/0/hdr/cseq/0=CANCEL", "x2": "same:alice/-1/hdr/to/0,alice/0/hdr/to/0"}}
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:inv};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x2": "hascode:alice=487"}}
 
   uas_invite_2xx_retransmission:
     kind: probe
@@ -1017,18 +1043,20 @@ fixtures:
     roles: ["uas"]
     spec_refs:
       - {"req_id": "SIP-e713c84b", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [[200]]}
-      - {"req_id": "SIP-c2d35f1f", "keyword": "MUST", "axis": "x2", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
-      - {"req_id": "SIP-6708907f", "keyword": "MUST", "axis": "x2", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
-      - {"req_id": "SIP-11835b44", "keyword": "MUST", "axis": "x2", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
-      - {"req_id": "SIP-6bee34e6", "keyword": "MUST", "axis": "x2", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
-      - {"req_id": "SIP-1e8ac344", "keyword": "MUST", "axis": "x2", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
-      - {"req_id": "SIP-1b76dadc", "keyword": "MUST", "axis": "x2", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
-      - {"req_id": "SIP-6f72c1a6", "keyword": "MUST", "axis": "x2", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
-      - {"req_id": "SIP-3aeed68b", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
-      - {"req_id": "SIP-53af39bb", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-c2d35f1f", "keyword": "MUST", "axis": "x2", "step": 1, "basis": "conditional", "note": "binds only when the TU sends a provisional response to a non-INVITE request, which an OPTIONS answered at once never induces"}
+      - {"req_id": "SIP-6708907f", "keyword": "MUST", "axis": "x2", "step": 1, "basis": "conditional", "note": "binds only when the TU sends a provisional response to a non-INVITE request, which an OPTIONS answered at once never induces"}
+      - {"req_id": "SIP-11835b44", "keyword": "MUST", "axis": "x2", "step": 1, "basis": "conditional", "note": "binds only when the TU sends a provisional response to a non-INVITE request, which an OPTIONS answered at once never induces"}
+      - {"req_id": "SIP-6bee34e6", "keyword": "MUST", "axis": "x2", "step": 1, "basis": "conditional", "note": "binds only when the TU sends a provisional response to a non-INVITE request, which an OPTIONS answered at once never induces"}
+      - {"req_id": "SIP-1e8ac344", "keyword": "MUST", "axis": "x4", "step": 3, "allowed": [true], "note": "the final response passed to the transport in Completed is the same response (same To tag) when retransmitted"}
+      - {"req_id": "SIP-1b76dadc", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [[200]], "note": "a retransmission about 20 s after the first request, inside Timer J (32 s on UDP), is answered again"}
+      - {"req_id": "SIP-6f72c1a6", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [[200]], "note": "a retransmission about 20 s after the first request, inside Timer J (32 s on UDP), is answered again"}
+      - {"req_id": "SIP-3aeed68b", "keyword": "MUST", "axis": "x4", "step": 3, "allowed": [true], "note": "state changes once: the retransmission is answered from the transaction, not as a new request (same To tag)"}
+      - {"req_id": "SIP-53af39bb", "keyword": "MUST", "axis": "x4", "step": 3, "allowed": [true], "note": "state changes once: the retransmission is answered from the transaction, not as a new request (same To tag)"}
     steps:
       - {"op": "send", "from": "alice", "window_ms": 600, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:o};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x2": "codes:alice"}}
       - {"op": "send", "from": "alice", "window_ms": 600, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:o};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
+      - {"op": "wait", "ms": 18000}
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch:o};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x3": "codes:alice", "x4": "same:alice/0/hdr/to,hist/alice/0/hdr/to"}}
 
   uas_response_routing:
     kind: probe
@@ -1253,7 +1281,6 @@ fixtures:
       - {"req_id": "SIP-b43143f4", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [3, 4]}
       - {"req_id": "SIP-f692bec7", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [3, 4]}
       - {"req_id": "SIP-8576917e", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [3, 4]}
-      - {"req_id": "SIP-44eab6ac", "keyword": "MUST", "axis": "x1", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-69e583be", "keyword": "SHOULD", "axis": "x2", "step": 2, "allowed": [0]}
       - {"req_id": "SIP-91c71044", "keyword": "SHOULD", "axis": "x2", "step": 2, "allowed": [0]}
       - {"req_id": "SIP-f552f9e0", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [["ACK"]]}
@@ -1377,8 +1404,9 @@ fixtures:
       - {"req_id": "SIP-db7b84ce", "keyword": "MUST", "axis": "x1", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-7986a878", "keyword": "MUST", "axis": "x1", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-3a05d515", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
+      - {"req_id": "SIP-44eab6ac", "keyword": "MUST", "axis": "x2", "step": 1, "allowed": [{"copies": 7, "gaps": [0.5, 1, 2, 4, 8, 16]}], "note": "Timer A doubles from T1 without a cap; Timer B (64*T1) ends the transaction before an eighth copy at 63.5 s"}
     steps:
-      - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 34000, "extract": {"x1": "len:bob"}}
+      - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 70000, "extract": {"x1": "len:bob", "x2": "retx:bob=INVITE"}}
 
   uac_message_transaction:
     kind: probe
@@ -1386,18 +1414,25 @@ fixtures:
     spec_refs:
       - {"req_id": "SIP-bbb8229a", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [2, 3]}
       - {"req_id": "SIP-2283739a", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [2, 3]}
-      - {"req_id": "SIP-9b909912", "keyword": "MUST", "axis": "x2", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
-      - {"req_id": "SIP-cd68663b", "keyword": "MUST", "axis": "x2", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
-      - {"req_id": "SIP-80f4fc88", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-9b909912", "keyword": "MUST", "axis": "x4", "step": 2, "allowed": [{"copies": 3, "gaps": [4, 4]}], "note": "after the 100, copies at about 3.5, 7.5 and 11.5 s: Timer E at T2 (an uncapped timer gives 3.5 and 7.5 s only)"}
+      - {"req_id": "SIP-cd68663b", "keyword": "MUST", "axis": "x2", "step": 2, "basis": "not-observable", "note": "passing the provisional response to the TU has no wire effect; the state change shows only through Timer E (SIP-9b909912)"}
       - {"req_id": "SIP-9002bfd5", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [[]]}
       - {"req_id": "SIP-d97fe81a", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [[]]}
-      - {"req_id": "SIP-c9cc9fe3", "keyword": "MUST", "axis": "x3", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
-      - {"req_id": "SIP-7c2109ae", "keyword": "MUST", "axis": "x3", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
-      - {"req_id": "SIP-c0790545", "keyword": "MUST", "axis": "x3", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-c9cc9fe3", "keyword": "MUST", "axis": "x3", "step": 3, "basis": "not-observable", "note": "Timer K absorbs retransmitted responses silently: a UA that has already terminated sends nothing either"}
+      - {"req_id": "SIP-7c2109ae", "keyword": "MUST", "axis": "x3", "step": 3, "basis": "not-observable", "note": "the transition after Timer K has no wire effect"}
     steps:
       - {"op": "uac", "action": "message", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 1200, "extract": {"x1": "len:bob"}}
-      - {"op": "reply", "from": "bob", "code": 100, "reason": "Trying", "window_ms": 1200, "extract": {"x2": "len:bob"}}
+      - {"op": "reply", "from": "bob", "code": 100, "reason": "Trying", "window_ms": 14000, "extract": {"x2": "len:bob", "x4": "retx:bob=MESSAGE"}}
       - {"op": "reply", "from": "bob", "code": 200, "reason": "OK", "window_ms": 2500, "extract": {"x3": "methods:bob"}}
+
+  uac_message_no_answer:
+    kind: probe
+    roles: ["uac"]
+    spec_refs:
+      - {"req_id": "SIP-80f4fc88", "keyword": "SHOULD", "axis": "x1", "step": 1, "allowed": [{"copies": 11, "gaps": [0.5, 1, 2, 4, 4, 4, 4, 4, 4, 4]}], "note": "no response: copies at 0, 0.5, 1.5, 3.5 s and then every T2 (4 s) to 31.5 s; Timer F (64*T1) ends it before 35.5 s"}
+      - {"req_id": "SIP-c0790545", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [{"copies": 11, "gaps": [0.5, 1, 2, 4, 4, 4, 4, 4, 4, 4]}], "note": "no response: copies at 0, 0.5, 1.5, 3.5 s and then every T2 (4 s) to 31.5 s; Timer F (64*T1) ends it before 35.5 s"}
+    steps:
+      - {"op": "uac", "action": "message", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 40000, "extract": {"x1": "retx:bob=MESSAGE"}}
 
   uac_response_transport:
     kind: probe

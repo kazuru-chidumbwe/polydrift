@@ -1,0 +1,523 @@
+[
+ {
+  "key": "coredns-1.13.2",
+  "impl": "coredns",
+  "version": "1.13.2",
+  "image": "coredns/coredns:1.13.2",
+  "ready": 60,
+  "mounts": {},
+  "entrypoint": "/coredns",
+  "cmd": [
+   "-conf",
+   "/conf/Corefile.forward"
+  ],
+  "role": "forwarding",
+  "upstream": {
+   "key": "unbound-1.26.0",
+   "impl": "unbound",
+   "version": "1.26.0",
+   "image": "pd-unbound:1.26.0",
+   "ready": 60,
+   "mounts": {},
+   "entrypoint": "/usr/local/sbin/unbound",
+   "cmd": [
+    "-d",
+    "-c",
+    "/conf/unbound.conf"
+   ]
+  }
+ },
+ {
+  "key": "coredns-1.14.7",
+  "impl": "coredns",
+  "version": "1.14.7",
+  "image": "coredns/coredns:1.14.7",
+  "ready": 60,
+  "mounts": {},
+  "entrypoint": "/coredns",
+  "cmd": [
+   "-conf",
+   "/conf/Corefile.forward"
+  ],
+  "role": "forwarding",
+  "upstream": {
+   "key": "unbound-1.26.0",
+   "impl": "unbound",
+   "version": "1.26.0",
+   "image": "pd-unbound:1.26.0",
+   "ready": 60,
+   "mounts": {},
+   "entrypoint": "/usr/local/sbin/unbound",
+   "cmd": [
+    "-d",
+    "-c",
+    "/conf/unbound.conf"
+   ]
+  }
+ },
+ {
+  "key": "coredns-1.15.0",
+  "impl": "coredns",
+  "version": "1.15.0",
+  "image": "coredns/coredns:1.15.0",
+  "ready": 60,
+  "mounts": {},
+  "entrypoint": "/coredns",
+  "cmd": [
+   "-conf",
+   "/conf/Corefile.forward"
+  ],
+  "role": "forwarding",
+  "upstream": {
+   "key": "unbound-1.26.0",
+   "impl": "unbound",
+   "version": "1.26.0",
+   "image": "pd-unbound:1.26.0",
+   "ready": 60,
+   "mounts": {},
+   "entrypoint": "/usr/local/sbin/unbound",
+   "cmd": [
+    "-d",
+    "-c",
+    "/conf/unbound.conf"
+   ]
+  }
+ },
+ {
+  "key": "dnsmasq-2.91",
+  "impl": "dnsmasq",
+  "version": "2.91",
+  "image": "pd-dnsmasq:2.91",
+  "ready": 60,
+  "mounts": {},
+  "entrypoint": null,
+  "cmd": null,
+  "role": "forwarding",
+  "upstream": {
+   "key": "unbound-1.26.0",
+   "impl": "unbound",
+   "version": "1.26.0",
+   "image": "pd-unbound:1.26.0",
+   "ready": 60,
+   "mounts": {},
+   "entrypoint": "/usr/local/sbin/unbound",
+   "cmd": [
+    "-d",
+    "-c",
+    "/conf/unbound.conf"
+   ]
+  }
+ },
+ {
+  "key": "dnsmasq-2.92",
+  "impl": "dnsmasq",
+  "version": "2.92",
+  "image": "pd-dnsmasq:2.92",
+  "ready": 60,
+  "mounts": {},
+  "entrypoint": null,
+  "cmd": null,
+  "role": "forwarding",
+  "upstream": {
+   "key": "unbound-1.26.0",
+   "impl": "unbound",
+   "version": "1.26.0",
+   "image": "pd-unbound:1.26.0",
+   "ready": 60,
+   "mounts": {},
+   "entrypoint": "/usr/local/sbin/unbound",
+   "cmd": [
+    "-d",
+    "-c",
+    "/conf/unbound.conf"
+   ]
+  }
+ },
+ {
+  "key": "dnsmasq-2.93",
+  "impl": "dnsmasq",
+  "version": "2.93",
+  "image": "pd-dnsmasq:2.93",
+  "ready": 60,
+  "mounts": {},
+  "entrypoint": null,
+  "cmd": null,
+  "role": "forwarding",
+  "upstream": {
+   "key": "unbound-1.26.0",
+   "impl": "unbound",
+   "version": "1.26.0",
+   "image": "pd-unbound:1.26.0",
+   "ready": 60,
+   "mounts": {},
+   "entrypoint": "/usr/local/sbin/unbound",
+   "cmd": [
+    "-d",
+    "-c",
+    "/conf/unbound.conf"
+   ]
+  }
+ },
+ {
+  "key": "bind-fwdall-9.16.50",
+  "impl": "bind-fwdall",
+  "version": "9.16.50",
+  "image": "pd-bind:9.16.50",
+  "ready": 60,
+  "mounts": {
+   "named-fwdall.conf": "/etc/bind/named.conf"
+  },
+  "entrypoint": null,
+  "cmd": null,
+  "role": "forwarding",
+  "upstream": {
+   "key": "unbound-1.26.0",
+   "impl": "unbound",
+   "version": "1.26.0",
+   "image": "pd-unbound:1.26.0",
+   "ready": 60,
+   "mounts": {},
+   "entrypoint": "/usr/local/sbin/unbound",
+   "cmd": [
+    "-d",
+    "-c",
+    "/conf/unbound.conf"
+   ]
+  }
+ },
+ {
+  "key": "bind-fwdall-9.18.50",
+  "impl": "bind-fwdall",
+  "version": "9.18.50",
+  "image": "internetsystemsconsortium/bind9@sha256:1ffb29c718ee2540c5643c1e8166629a07bbd505f99107baae535e9f86eb7eef",
+  "ready": 60,
+  "mounts": {
+   "named-fwdall.conf": "/etc/bind/named.conf"
+  },
+  "entrypoint": null,
+  "cmd": null,
+  "role": "forwarding",
+  "upstream": {
+   "key": "unbound-1.26.0",
+   "impl": "unbound",
+   "version": "1.26.0",
+   "image": "pd-unbound:1.26.0",
+   "ready": 60,
+   "mounts": {},
+   "entrypoint": "/usr/local/sbin/unbound",
+   "cmd": [
+    "-d",
+    "-c",
+    "/conf/unbound.conf"
+   ]
+  }
+ },
+ {
+  "key": "bind-fwdall-9.20.30",
+  "impl": "bind-fwdall",
+  "version": "9.20.30",
+  "image": "internetsystemsconsortium/bind9@sha256:66092edb53c081fa11b1fa8219e99065b0f497cb38f568ba789702a4c10e2590",
+  "ready": 60,
+  "mounts": {
+   "named-fwdall.conf": "/etc/bind/named.conf"
+  },
+  "entrypoint": null,
+  "cmd": null,
+  "role": "forwarding",
+  "upstream": {
+   "key": "unbound-1.26.0",
+   "impl": "unbound",
+   "version": "1.26.0",
+   "image": "pd-unbound:1.26.0",
+   "ready": 60,
+   "mounts": {},
+   "entrypoint": "/usr/local/sbin/unbound",
+   "cmd": [
+    "-d",
+    "-c",
+    "/conf/unbound.conf"
+   ]
+  }
+ },
+ {
+  "key": "knot-fwdall-5.7.9",
+  "impl": "knot-fwdall",
+  "version": "5.7.9",
+  "image": "pd-knot:5.7.9",
+  "ready": 90,
+  "mounts": {},
+  "entrypoint": "/usr/sbin/kresd",
+  "cmd": [
+   "-n",
+   "-c",
+   "/conf/knot5-fwdall.lua"
+  ],
+  "role": "forwarding",
+  "upstream": {
+   "key": "unbound-1.26.0",
+   "impl": "unbound",
+   "version": "1.26.0",
+   "image": "pd-unbound:1.26.0",
+   "ready": 60,
+   "mounts": {},
+   "entrypoint": "/usr/local/sbin/unbound",
+   "cmd": [
+    "-d",
+    "-c",
+    "/conf/unbound.conf"
+   ]
+  }
+ },
+ {
+  "key": "knot-fwdall-6.3.0",
+  "impl": "knot-fwdall",
+  "version": "6.3.0",
+  "image": "pd-knot:6.3.0",
+  "ready": 90,
+  "mounts": {},
+  "entrypoint": "/usr/bin/knot-resolver",
+  "cmd": [
+   "-c",
+   "/conf/knot6-fwdall.yaml"
+  ],
+  "role": "forwarding",
+  "upstream": {
+   "key": "unbound-1.26.0",
+   "impl": "unbound",
+   "version": "1.26.0",
+   "image": "pd-unbound:1.26.0",
+   "ready": 60,
+   "mounts": {},
+   "entrypoint": "/usr/local/sbin/unbound",
+   "cmd": [
+    "-d",
+    "-c",
+    "/conf/unbound.conf"
+   ]
+  }
+ },
+ {
+  "key": "knot-fwdall-6.4.2",
+  "impl": "knot-fwdall",
+  "version": "6.4.2",
+  "image": "pd-knot:6.4.2",
+  "ready": 90,
+  "mounts": {},
+  "entrypoint": "/usr/bin/knot-resolver",
+  "cmd": [
+   "-c",
+   "/conf/knot6-fwdall.yaml"
+  ],
+  "role": "forwarding",
+  "upstream": {
+   "key": "unbound-1.26.0",
+   "impl": "unbound",
+   "version": "1.26.0",
+   "image": "pd-unbound:1.26.0",
+   "ready": 60,
+   "mounts": {},
+   "entrypoint": "/usr/local/sbin/unbound",
+   "cmd": [
+    "-d",
+    "-c",
+    "/conf/unbound.conf"
+   ]
+  }
+ },
+ {
+  "key": "knot-fwdall-6.5.1",
+  "impl": "knot-fwdall",
+  "version": "6.5.1",
+  "image": "pd-knot:6.5.1",
+  "ready": 90,
+  "mounts": {},
+  "entrypoint": "/usr/bin/knot-resolver",
+  "cmd": [
+   "-c",
+   "/conf/knot6-fwdall.yaml"
+  ],
+  "role": "forwarding",
+  "upstream": {
+   "key": "unbound-1.26.0",
+   "impl": "unbound",
+   "version": "1.26.0",
+   "image": "pd-unbound:1.26.0",
+   "ready": 60,
+   "mounts": {},
+   "entrypoint": "/usr/local/sbin/unbound",
+   "cmd": [
+    "-d",
+    "-c",
+    "/conf/unbound.conf"
+   ]
+  }
+ },
+ {
+  "key": "pdns-recursor-fwdall-5.1.10",
+  "impl": "pdns-recursor-fwdall",
+  "version": "5.1.10",
+  "image": "powerdns/pdns-recursor-51@sha256:8b726b17f97c4bf3cf1c7b357951e2552cd8a813e1de39aa5e10db5a9753c61b",
+  "ready": 60,
+  "mounts": {
+   "recursor-fwdall.yml": "/etc/powerdns/recursor.d/lab.yml"
+  },
+  "entrypoint": null,
+  "cmd": null,
+  "role": "forwarding",
+  "upstream": {
+   "key": "unbound-1.26.0",
+   "impl": "unbound",
+   "version": "1.26.0",
+   "image": "pd-unbound:1.26.0",
+   "ready": 60,
+   "mounts": {},
+   "entrypoint": "/usr/local/sbin/unbound",
+   "cmd": [
+    "-d",
+    "-c",
+    "/conf/unbound.conf"
+   ]
+  }
+ },
+ {
+  "key": "pdns-recursor-fwdall-5.2.13",
+  "impl": "pdns-recursor-fwdall",
+  "version": "5.2.13",
+  "image": "powerdns/pdns-recursor-52@sha256:81c49604b3afdd0f7f3e8e5d3119d0fdcc4dcf7f80401d1bc2469692f2949be6",
+  "ready": 60,
+  "mounts": {
+   "recursor-fwdall.yml": "/etc/powerdns/recursor.d/lab.yml"
+  },
+  "entrypoint": null,
+  "cmd": null,
+  "role": "forwarding",
+  "upstream": {
+   "key": "unbound-1.26.0",
+   "impl": "unbound",
+   "version": "1.26.0",
+   "image": "pd-unbound:1.26.0",
+   "ready": 60,
+   "mounts": {},
+   "entrypoint": "/usr/local/sbin/unbound",
+   "cmd": [
+    "-d",
+    "-c",
+    "/conf/unbound.conf"
+   ]
+  }
+ },
+ {
+  "key": "pdns-recursor-fwdall-5.3.14",
+  "impl": "pdns-recursor-fwdall",
+  "version": "5.3.14",
+  "image": "powerdns/pdns-recursor-53@sha256:87d7766f156df1af123de4087317178120725ec3141745256166d17e4cb9fe6e",
+  "ready": 60,
+  "mounts": {
+   "recursor-fwdall.yml": "/etc/powerdns/recursor.d/lab.yml"
+  },
+  "entrypoint": null,
+  "cmd": null,
+  "role": "forwarding",
+  "upstream": {
+   "key": "unbound-1.26.0",
+   "impl": "unbound",
+   "version": "1.26.0",
+   "image": "pd-unbound:1.26.0",
+   "ready": 60,
+   "mounts": {},
+   "entrypoint": "/usr/local/sbin/unbound",
+   "cmd": [
+    "-d",
+    "-c",
+    "/conf/unbound.conf"
+   ]
+  }
+ },
+ {
+  "key": "unbound-fwdall-1.24.2",
+  "impl": "unbound-fwdall",
+  "version": "1.24.2",
+  "image": "pd-unbound:1.24.2",
+  "ready": 60,
+  "mounts": {},
+  "entrypoint": "/usr/local/sbin/unbound",
+  "cmd": [
+   "-d",
+   "-c",
+   "/conf/unbound-fwdall.conf"
+  ],
+  "role": "forwarding",
+  "upstream": {
+   "key": "unbound-1.26.0",
+   "impl": "unbound",
+   "version": "1.26.0",
+   "image": "pd-unbound:1.26.0",
+   "ready": 60,
+   "mounts": {},
+   "entrypoint": "/usr/local/sbin/unbound",
+   "cmd": [
+    "-d",
+    "-c",
+    "/conf/unbound.conf"
+   ]
+  }
+ },
+ {
+  "key": "unbound-fwdall-1.25.1",
+  "impl": "unbound-fwdall",
+  "version": "1.25.1",
+  "image": "pd-unbound:1.25.1",
+  "ready": 60,
+  "mounts": {},
+  "entrypoint": "/usr/local/sbin/unbound",
+  "cmd": [
+   "-d",
+   "-c",
+   "/conf/unbound-fwdall.conf"
+  ],
+  "role": "forwarding",
+  "upstream": {
+   "key": "unbound-1.26.0",
+   "impl": "unbound",
+   "version": "1.26.0",
+   "image": "pd-unbound:1.26.0",
+   "ready": 60,
+   "mounts": {},
+   "entrypoint": "/usr/local/sbin/unbound",
+   "cmd": [
+    "-d",
+    "-c",
+    "/conf/unbound.conf"
+   ]
+  }
+ },
+ {
+  "key": "unbound-fwdall-1.26.0",
+  "impl": "unbound-fwdall",
+  "version": "1.26.0",
+  "image": "pd-unbound:1.26.0",
+  "ready": 60,
+  "mounts": {},
+  "entrypoint": "/usr/local/sbin/unbound",
+  "cmd": [
+   "-d",
+   "-c",
+   "/conf/unbound-fwdall.conf"
+  ],
+  "role": "forwarding",
+  "upstream": {
+   "key": "unbound-1.26.0",
+   "impl": "unbound",
+   "version": "1.26.0",
+   "image": "pd-unbound:1.26.0",
+   "ready": 60,
+   "mounts": {},
+   "entrypoint": "/usr/local/sbin/unbound",
+   "cmd": [
+    "-d",
+    "-c",
+    "/conf/unbound.conf"
+   ]
+  }
+ }
+]

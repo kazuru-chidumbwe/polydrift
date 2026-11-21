@@ -33,6 +33,8 @@ CELL_DIR = Path(__file__).resolve().parent
 FIXTURES_PATH = CELL_DIR / "fixtures.yaml"
 NET, SUBNET = "pd-dns", "172.31.53.0/24"
 RESOLVER_IP, CLIENT_IP, UPSTREAM_IP = "172.31.53.53", "172.31.53.99", "172.31.53.54"
+# a chain's second hop (NodeLocal -> CoreDNS -> recursive): the middle element at .54, its upstream here
+UPSTREAM2_IP = "172.31.53.55"
 LAB_IMAGE = "pd-dns-py:lab"
 CANARY = [{"qname": "ok.pd.pdlab", "qtype": "A", "timeout": 3}]
 CANARY_ANSWER = ["ok.pd.pdlab A 10.0.0.1"]
@@ -101,14 +103,17 @@ def lab_up(lab: str, zones: dict) -> None:
 def lab_down(zones: dict) -> None:
     for name in zones["servers"]:
         sh(["docker", "rm", "-f", f"pdns-auth-{name}"])
-    sh(["docker", "rm", "-f", "pdns-client", "pdns-res", "pdns-up"])
+    sh(["docker", "rm", "-f", "pdns-client", "pdns-res", "pdns-up", "pdns-up2"])
 
 
 def start_resolver(t: dict[str, Any], lab: str, name: str = "pdns-res", ip: str = RESOLVER_IP) -> None:
     """Start the element under test at .53. Forwarding-role targets name an `upstream` (a recursive resolver
     target, same fields) that is started first at .54; the forwarder's config points at that address."""
-    if name == "pdns-res" and t.get("upstream"):
-        start_resolver(t["upstream"], lab, "pdns-up", UPSTREAM_IP)
+    if t.get("upstream"):
+        nxt = {"pdns-res": ("pdns-up", UPSTREAM_IP), "pdns-up": ("pdns-up2", UPSTREAM2_IP)}.get(name)
+        if nxt is None:
+            raise RuntimeError("role chains have at most two hops behind the element under test")
+        start_resolver(t["upstream"], lab, *nxt)
     sh(["docker", "rm", "-f", name])
     args = ["docker", "run", "-d", "--name", name, "--network", NET, "--ip", ip, "--cpus=2",
             "--memory=2g", "-v", f"{lab}/resolvers:/conf:ro"]
@@ -145,6 +150,9 @@ def main() -> int:
     if a.only:
         targets = [t for t in targets if t["key"] in set(a.only.split(","))]
     fixtures = load_fixtures()
+    # Behind a forwarder the lab authorities see the upstream resolver's queries, not the element under test's, so
+    # fixtures with an `upstream` step are left out for targets that forward to an upstream resolver (role chains).
+    upstream_fx = {k for k, v in fixtures.items() if any(st.get("op") == "upstream" for st in v.get("steps", []))}
     if a.fixtures:
         fixtures = {k: v for k, v in fixtures.items() if k in set(a.fixtures.split(","))}
     spec = adapter.load_spec()
@@ -167,6 +175,8 @@ def main() -> int:
                 batch = []
                 alive = ok_start
                 for fid, fx in fixtures.items():
+                    if t.get("upstream") and fid in upstream_fx:
+                        continue
                     try:
                         obs = drive(fx["steps"]) if alive else []
                     except Exception as e:  # noqa: BLE001

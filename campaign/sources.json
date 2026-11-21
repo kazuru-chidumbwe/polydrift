@@ -23,6 +23,24 @@
       }
     },
     {
+      "tag": "dns-fwd",
+      "cell": "dns",
+      "fixtures": "all",
+      "lab": true,
+      "base": [
+        "dns_fwd.json"
+      ]
+    },
+    {
+      "tag": "dns-chain",
+      "cell": "dns",
+      "fixtures": "all",
+      "lab": true,
+      "base": [
+        "dns_chain.json"
+      ]
+    },
+    {
       "tag": "mqtt",
       "cell": "mqtt",
       "fixtures": "all",
@@ -199,6 +217,30 @@
         "VER": "9.16.50"
       },
       "why": "no upstream image for the 9.16 line (Docker Hub has no bind9:9.16 tag, checked 18 Nov 2026); 9.16.50 is the last 9.16 release on downloads.isc.org"
+    },
+    "pd-dnsmasq:2.91": {
+      "dockerfile": "polydrift/cells/dns/lab/images/dnsmasq.Dockerfile",
+      "context": "polydrift/cells/dns/lab/images",
+      "args": {
+        "VER": "2.91"
+      },
+      "why": "forwarding-role cell: dnsmasq has no minor-release structure, so the releases of the preceding 24 months (2.91 2025-03-20, 2.92 2026-01-14, 2.93 2026-06-04, thekelleys.org.uk listing); author's tarball, PGP-checked"
+    },
+    "pd-dnsmasq:2.92": {
+      "dockerfile": "polydrift/cells/dns/lab/images/dnsmasq.Dockerfile",
+      "context": "polydrift/cells/dns/lab/images",
+      "args": {
+        "VER": "2.92"
+      },
+      "why": "forwarding-role cell: dnsmasq has no minor-release structure, so the releases of the preceding 24 months (2.91 2025-03-20, 2.92 2026-01-14, 2.93 2026-06-04, thekelleys.org.uk listing); author's tarball, PGP-checked"
+    },
+    "pd-dnsmasq:2.93": {
+      "dockerfile": "polydrift/cells/dns/lab/images/dnsmasq.Dockerfile",
+      "context": "polydrift/cells/dns/lab/images",
+      "args": {
+        "VER": "2.93"
+      },
+      "why": "forwarding-role cell: dnsmasq has no minor-release structure, so the releases of the preceding 24 months (2.91 2025-03-20, 2.92 2026-01-14, 2.93 2026-06-04, thekelleys.org.uk listing); author's tarball, PGP-checked"
     },
     "pd-apacheds:2.0.0.AM26": {
       "dockerfile": "polydrift/cells/ldap/images/apacheds.Dockerfile",

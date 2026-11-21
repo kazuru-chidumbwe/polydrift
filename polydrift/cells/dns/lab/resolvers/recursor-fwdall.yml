@@ -1,0 +1,13 @@
+# PowerDNS Recursor 5.x as a forwarder (forwarding-role cell): forward_zones_recurse for the root, so every query
+# goes to the lab recursive upstream at .54 with RD set.
+recursor:
+  hint_file: /conf/root.hints
+  forward_zones_recurse:
+    - zone: .
+      forwarders: [172.31.53.54]
+dnssec:
+  validation: "off"
+incoming:
+  allow_from: [0.0.0.0/0]
+outgoing:
+  dont_query: []

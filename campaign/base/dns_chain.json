@@ -1,0 +1,233 @@
+[
+ {
+  "key": "coredns-1.14.7",
+  "impl": "coredns",
+  "version": "1.14.7",
+  "image": "coredns/coredns:1.14.7",
+  "ready": 60,
+  "mounts": {},
+  "entrypoint": "/coredns",
+  "cmd": [
+   "-conf",
+   "/conf/Corefile.forward"
+  ],
+  "role": "forwarding",
+  "upstream": {
+   "key": "unbound-1.26.0",
+   "impl": "unbound",
+   "version": "1.26.0",
+   "image": "pd-unbound:1.26.0",
+   "ready": 60,
+   "mounts": {},
+   "entrypoint": "/usr/local/sbin/unbound",
+   "cmd": [
+    "-d",
+    "-c",
+    "/conf/unbound.conf"
+   ]
+  }
+ },
+ {
+  "key": "coredns-1.13.2",
+  "impl": "coredns",
+  "version": "1.13.2",
+  "image": "coredns/coredns:1.13.2",
+  "ready": 60,
+  "mounts": {},
+  "entrypoint": "/coredns",
+  "cmd": [
+   "-conf",
+   "/conf/Corefile.forward"
+  ],
+  "role": "forwarding",
+  "upstream": {
+   "key": "unbound-1.26.0",
+   "impl": "unbound",
+   "version": "1.26.0",
+   "image": "pd-unbound:1.26.0",
+   "ready": 60,
+   "mounts": {},
+   "entrypoint": "/usr/local/sbin/unbound",
+   "cmd": [
+    "-d",
+    "-c",
+    "/conf/unbound.conf"
+   ]
+  }
+ },
+ {
+  "key": "coredns-1.15.0",
+  "impl": "coredns",
+  "version": "1.15.0",
+  "image": "coredns/coredns:1.15.0",
+  "ready": 60,
+  "mounts": {},
+  "entrypoint": "/coredns",
+  "cmd": [
+   "-conf",
+   "/conf/Corefile.forward"
+  ],
+  "role": "forwarding",
+  "upstream": {
+   "key": "unbound-1.26.0",
+   "impl": "unbound",
+   "version": "1.26.0",
+   "image": "pd-unbound:1.26.0",
+   "ready": 60,
+   "mounts": {},
+   "entrypoint": "/usr/local/sbin/unbound",
+   "cmd": [
+    "-d",
+    "-c",
+    "/conf/unbound.conf"
+   ]
+  }
+ },
+ {
+  "key": "nodelocal-1.25.0-coredns-1.15.0",
+  "impl": "nodelocal",
+  "version": "1.25.0",
+  "image": "registry.k8s.io/dns/k8s-dns-node-cache:1.25.0",
+  "ready": 90,
+  "mounts": {},
+  "entrypoint": "/node-cache",
+  "cmd": [
+   "-localip",
+   "172.31.53.53",
+   "-conf",
+   "/conf/Corefile.nodelocal",
+   "-setupinterface=false",
+   "-setupiptables=false",
+   "-skipteardown=true",
+   "-health-port",
+   "8080"
+  ],
+  "role": "chain",
+  "upstream": {
+   "key": "coredns-1.15.0-mid",
+   "impl": "coredns",
+   "version": "1.15.0",
+   "image": "coredns/coredns:1.15.0",
+   "ready": 60,
+   "mounts": {},
+   "entrypoint": "/coredns",
+   "cmd": [
+    "-conf",
+    "/conf/Corefile.chain-mid"
+   ],
+   "role": "forwarding",
+   "upstream": {
+    "key": "unbound-1.26.0",
+    "impl": "unbound",
+    "version": "1.26.0",
+    "image": "pd-unbound:1.26.0",
+    "ready": 60,
+    "mounts": {},
+    "entrypoint": "/usr/local/sbin/unbound",
+    "cmd": [
+     "-d",
+     "-c",
+     "/conf/unbound.conf"
+    ]
+   }
+  }
+ },
+ {
+  "key": "nodelocal-1.26.8-coredns-1.15.0",
+  "impl": "nodelocal",
+  "version": "1.26.8",
+  "image": "registry.k8s.io/dns/k8s-dns-node-cache:1.26.8",
+  "ready": 90,
+  "mounts": {},
+  "entrypoint": "/node-cache",
+  "cmd": [
+   "-localip",
+   "172.31.53.53",
+   "-conf",
+   "/conf/Corefile.nodelocal",
+   "-setupinterface=false",
+   "-setupiptables=false",
+   "-skipteardown=true",
+   "-health-port",
+   "8080"
+  ],
+  "role": "chain",
+  "upstream": {
+   "key": "coredns-1.15.0-mid",
+   "impl": "coredns",
+   "version": "1.15.0",
+   "image": "coredns/coredns:1.15.0",
+   "ready": 60,
+   "mounts": {},
+   "entrypoint": "/coredns",
+   "cmd": [
+    "-conf",
+    "/conf/Corefile.chain-mid"
+   ],
+   "role": "forwarding",
+   "upstream": {
+    "key": "unbound-1.26.0",
+    "impl": "unbound",
+    "version": "1.26.0",
+    "image": "pd-unbound:1.26.0",
+    "ready": 60,
+    "mounts": {},
+    "entrypoint": "/usr/local/sbin/unbound",
+    "cmd": [
+     "-d",
+     "-c",
+     "/conf/unbound.conf"
+    ]
+   }
+  }
+ },
+ {
+  "key": "nodelocal-1.27.1-coredns-1.15.0",
+  "impl": "nodelocal",
+  "version": "1.27.1",
+  "image": "registry.k8s.io/dns/k8s-dns-node-cache:1.27.1",
+  "ready": 90,
+  "mounts": {},
+  "entrypoint": "/node-cache",
+  "cmd": [
+   "-localip",
+   "172.31.53.53",
+   "-conf",
+   "/conf/Corefile.nodelocal",
+   "-setupinterface=false",
+   "-setupiptables=false",
+   "-skipteardown=true",
+   "-health-port",
+   "8080"
+  ],
+  "role": "chain",
+  "upstream": {
+   "key": "coredns-1.15.0-mid",
+   "impl": "coredns",
+   "version": "1.15.0",
+   "image": "coredns/coredns:1.15.0",
+   "ready": 60,
+   "mounts": {},
+   "entrypoint": "/coredns",
+   "cmd": [
+    "-conf",
+    "/conf/Corefile.chain-mid"
+   ],
+   "role": "forwarding",
+   "upstream": {
+    "key": "unbound-1.26.0",
+    "impl": "unbound",
+    "version": "1.26.0",
+    "image": "pd-unbound:1.26.0",
+    "ready": 60,
+    "mounts": {},
+    "entrypoint": "/usr/local/sbin/unbound",
+    "cmd": [
+     "-d",
+     "-c",
+     "/conf/unbound.conf"
+    ]
+   }
+  }
+ }
+]

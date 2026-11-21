@@ -1,0 +1,6 @@
+# CoreDNS as the middle hop of a role chain (NodeLocal DNSCache -> CoreDNS -> recursive): Corefile.forward with the
+# upstream at .55, because .54 is this element's own address in a chain.
+.:53 {
+    forward . 172.31.53.55
+    cache
+}

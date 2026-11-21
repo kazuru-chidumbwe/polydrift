@@ -1,0 +1,10 @@
+# Knot Resolver 6 as a forwarder (forwarding-role cell): everything to the lab recursive upstream at .54.
+workers: 1
+network:
+  listen:
+    - interface: 0.0.0.0@53
+dnssec:
+  enable: false
+forward:
+  - subtree: .
+    servers: [172.31.53.54]

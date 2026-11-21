@@ -109,12 +109,18 @@ def test_recall_peers_are_the_campaign_current_versions():
 def test_campaign_jobs_include_recall_replay_and_summary(tmp_path):
     r = run("jobs", "--mode", "campaign", "--commit", "abc1234", "--start", "1", "--out", str(tmp_path))
     assert r.returncode == 0, r.stderr
-    names = sorted(p.name for p in tmp_path.iterdir())
+    names = sorted(p.name for p in tmp_path.iterdir() if p.suffix == ".sh")
     m = json.loads((ROOT / "campaign" / "manifest.json").read_text())
     assert sum("-rq5-" in n for n in names) == len(m["recall"])
     assert sum("-l9-" in n for n in names) == len(m["replay"])
+    assert sum("-pardiff-" in n for n in names) == 1
     assert names[-1].startswith(f"D-{len(names):03d}-") and "summary" in names[-1]
+    route = dict(reversed(line.split()) for line in (tmp_path / "ROUTE.txt").read_text().splitlines() if line)
+    assert set(route) == set(names) and route[names[-1]] == "labq"
+    assert all(route[n] == "labq-mqtt" for n in names if "-mqtt-" in n and "pardiff" not in n)
     for p in tmp_path.iterdir():
+        if p.suffix != ".sh":
+            continue
         body = p.read_text()
         assert "/home/test" not in body and "abc1234" in body
         if "-rq5-" in p.name:

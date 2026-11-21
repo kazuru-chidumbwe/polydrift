@@ -470,10 +470,11 @@ def cmd_jobs(a) -> int:
     w(f"D-{n:03d}-polydrift-{prefix}-summary-{a.commit}.sh", SUMMARY.format(
         what=what, c=a.commit, prefix=prefix, summary=f"D-CAMP-{a.mode.upper()}-SUMMARY.txt",
         flag=f"D-CAMP-{a.mode.upper()}-DONE", expected=" ".join(flags)))
-    # Queue routing on Testbed D (one queue per cell, ~/labq-<queue>): the image job first in every queue's line is
-    # not needed, each job checks its own images; jobs of one cell share a queue so they never overlap.
+    # Queue routing on Testbed D (one queue per cell, ~/labq-<queue>): jobs of one cell share a queue so they never
+    # overlap; the image job, ParDiff and the summary go to ~/labq. With --pull every cell queue first waits for the
+    # image job.
     route = []
-    for name in written:
+    for name in list(written):
         q = "labq"
         for key, queue in (("-dns", "dns"), ("-mqtt", "mqtt"), ("-ldap", "ldap"), ("-jmap", "jmap"),
                            ("-sieve", "ldap"), ("-sipb", "sip")):
@@ -481,7 +482,13 @@ def cmd_jobs(a) -> int:
                 q = f"labq-{queue}"
                 break
         route.append(f"{q} {name}")
-    (out / "ROUTE.txt").write_text("\n".join(route) + "\n")
+    if a.pull:
+        for q in sorted({r.split()[0] for r in route} - {"labq"}):
+            wn = f"D-{a.start:03d}w-{q}-wait-pull-{a.commit}.sh"
+            w(wn, f"#!/bin/bash\n# waits for the image job at {a.commit} (~/labq) before this queue's jobs start\n"
+                  f"while [ ! -f ~/polydrift/campaign-{a.commit}-PULL-DONE ]; do sleep 60; done\n")
+            route.append(f"{q} {wn}")
+    (out / "ROUTE.txt").write_text("\n".join(sorted(route, key=lambda r: r.split()[1])) + "\n")
     print("\n".join(written))
     return 0
 

@@ -101,6 +101,10 @@ servers:
       - "rq5-loop 300 DNAME rq5-loop.pd.pdlab."
       - "rq5-rd0 300 A 10.0.12.1"
       - "rq5-inj 300 A 10.0.67.2"
+      - "rq5-mal-short 300 A 10.0.69.1"
+      - "rq5-mal-empty 300 A 10.0.69.2"
+      - "rq5-mal-txid 300 A 10.0.69.3"
+      - "rq5-mal-qr0 300 A 10.0.69.4"
       - "tcpa 300 A 10.0.11.8"
       - "tcpb 300 A 10.0.11.9"
       - "tcpc 300 A 10.0.11.10"
@@ -138,6 +142,12 @@ servers:
               additional: ["ns1.rogue.pdlab. 300 A 172.31.53.17"]}
       # RQ5 D4 (ResolverFuzz RC2): an A record placed in the authority section of an answer for another name
       rq5-authx: {kind: craft, answer: ["rq5-authx.pd.pdlab. 300 A 10.0.67.1"], authority: ["rq5-inj.pd.pdlab. 300 A 6.6.6.9"]}
+      # RQ5 D14 (TuDoor VDS): a malformed packet on the query's four-tuple, then the valid answer 300 ms later; a
+      # resolver must drop the first and keep waiting (TuDoor state machine)
+      rq5-mal-short: {kind: malformed, form: short, then_ms: 300}
+      rq5-mal-empty: {kind: malformed, form: empty, then_ms: 300}
+      rq5-mal-txid: {kind: malformed, form: badtxid, then_ms: 300}
+      rq5-mal-qr0: {kind: malformed, form: qr0, then_ms: 300}
       # RQ5 D13 (ResolverFuzz RC7): truncated over UDP, TCP connection closed without a payload
       rq5-tcpnull: {kind: tcp_null}
       x.dn0: {kind: answer, answer: ["dn0.pd.pdlab. 300 DNAME dtarget.other.pdlab.", "x.dn0.pd.pdlab. 0 CNAME x.dtarget.other.pdlab."]}

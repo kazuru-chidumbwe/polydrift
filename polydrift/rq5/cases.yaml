@@ -70,6 +70,16 @@ cases:
     source: "MaginotDNS (Li et al., USENIX Security 2023) V1, Section 7: BIND fixed in 9.18.1 (CVE-2021-25220); ResolverFuzz CP1"
     clause: "RFC 2181 5.4.1"
     note: "profile: atk.pd.pdlab. forwarded with fallback (BIND forward first, Unbound forward-first); Knot (form b/c) and Technitium (form d) need other answer forms"
+  D14:
+    cell: dns
+    family: technitium
+    fixtures: [rq5_d14_tudoor_vds]
+    axes: [decision_class, answers]
+    affected: ["11.0.2"]
+    fixed: ["11.0.3"]
+    source: "TuDoor (Li et al., IEEE S&P 2024) VDS, Section 7: Technitium fixed DNSDoS; Technitium CHANGELOG 11.0.3 (11 Mar 2023): bad-formatted UDP packet DoS, reported by Xiang Li"
+    clause: "RFC 5452 4.1"
+    note: "TuDoor does not name the malformed form for Technitium, so the fixture sends four forms in turn; no known value"
   D9:
     cell: dns
     family: pdns-recursor

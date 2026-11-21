@@ -19,6 +19,13 @@
               "pd-bind:9.16.50"
             ]
           ]
+        },
+        "technitium": {
+          "from": "15.6.2",
+          "to": [
+            "15.5.1",
+            "15.4.0"
+          ]
         }
       }
     },
@@ -492,7 +499,8 @@
         "bind",
         "pdns-recursor",
         "unbound",
-        "knot"
+        "knot",
+        "technitium"
       ],
       "base": [
         "rq5/dns_rq5_recursive.json"

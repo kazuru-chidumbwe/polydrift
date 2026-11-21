@@ -56,6 +56,19 @@ fixtures:
       - {qname: rq5-authx.pd.pdlab, qtype: A}
       - {qname: rq5-inj.pd.pdlab, qtype: A}
 
+  # D14, TuDoor (IEEE S&P 2024) VDS: the upstream answer is preceded by a malformed packet on the same four-tuple
+  # (short payload under 12 octets, empty payload, a wrong transaction ID, the query echoed with QR=0), the valid
+  # answer follows 300 ms later. A resolver that takes the bad packet as the reply fails the query (SERVFAIL, then
+  # negative caching); Technitium fixed this in 11.0.3 (CHANGELOG 11 Mar 2023, reported by Xiang Li, NISL).
+  rq5_d14_tudoor_vds:
+    kind: probe
+    clause: "RFC 5452 4.1 to 4.3 (accept only a matching response); RFC 1035 7.3"
+    steps:
+      - {qname: rq5-mal-short.pd.pdlab, qtype: A}
+      - {qname: rq5-mal-empty.pd.pdlab, qtype: A}
+      - {qname: rq5-mal-txid.pd.pdlab, qtype: A}
+      - {qname: rq5-mal-qr0.pd.pdlab, qtype: A}
+
   # D13, ResolverFuzz RC7: the authority answers over UDP with TC set and closes every TCP connection without a
   # reply. Knot Resolver before 5.6.0 reconnected up to about 100 times per client query (NEWS 5.6.0, !1380:
   # "a DNS server that just closes connections without answer could cause lots of work for the resolver").

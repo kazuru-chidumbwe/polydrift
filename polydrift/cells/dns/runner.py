@@ -119,12 +119,51 @@ def start_resolver(t: dict[str, Any], lab: str, name: str = "pdns-res", ip: str 
             "--memory=2g", "-v", f"{lab}/resolvers:/conf:ro"]
     for f, dst in (t.get("mounts") or {}).items():
         args += ["-v", f"{lab}/resolvers/{f}:{dst}:ro"]
+    for k, v in (t.get("env") or {}).items():
+        args += ["-e", f"{k}={v}"]
     if t.get("entrypoint"):
         args += ["--entrypoint", t["entrypoint"]]
     args += [t["image"], *(t.get("cmd") or [])]
     r = sh(args)
     if r.returncode != 0:
         raise RuntimeError(f"resolver start: {r.stderr.strip()[-200:]}")
+    if t.get("setup"):
+        api_setup(t["setup"], ip, int(t.get("ready", 90)))
+
+
+# A resolver configured over its HTTP API (Technitium), from the lab client: log in, set the lab deviations, flush the
+# cache. Retries until the API answers or `ready` seconds pass. Same deviations as the other resolvers: validation
+# off (the lab zones are unsigned), recursion for the lab network, IPv4 only, no blocking lists.
+API_SETUP = r'''
+import json, sys, time, urllib.parse, urllib.request
+s, ip, ready = json.loads(sys.argv[1]), sys.argv[2], float(sys.argv[3])
+base = f"http://{ip}:{s.get('port', 5380)}"
+def get(path, **q):
+    with urllib.request.urlopen(base + path + "?" + urllib.parse.urlencode(q), timeout=10) as r:
+        return json.loads(r.read())
+t0, tok, err = time.time(), None, ""
+while time.time() - t0 < ready and not tok:
+    try:
+        tok = get(s["login"], user=s.get("user", "admin"), **{"pass": s["pass"]}).get("token")
+    except Exception as e:
+        err = repr(e)[:120]
+        time.sleep(2)
+if not tok:
+    sys.exit(f"login failed: {err}")
+w = get(s["set"], token=tok, **{k: str(v).lower() if isinstance(v, bool) else str(v) for k, v in s["params"].items()})
+if w.get("status") != "ok":
+    sys.exit(f"settings refused: {w}"[:200])
+if s.get("flush"):
+    get(s["flush"], token=tok)
+print("setup ok")
+'''
+
+
+def api_setup(setup: dict[str, Any], ip: str, ready: int) -> None:
+    r = sh(["docker", "exec", "pdns-client", "python3", "-c", API_SETUP, json.dumps(setup), ip, str(ready)],
+           timeout=ready + 60)
+    if r.returncode != 0:
+        raise RuntimeError(f"resolver setup: {(r.stderr or r.stdout).strip()[-200:]}")
 
 
 def main() -> int:

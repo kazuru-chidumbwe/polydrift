@@ -167,5 +167,61 @@
    "/conf/unbound.conf"
   ],
   "role": "recursive"
+ },
+ {
+  "key": "technitium-11.0.2",
+  "impl": "technitium",
+  "version": "11.0.2",
+  "image": "technitium/dns-server:11.0.2",
+  "ready": 90,
+  "mounts": {
+   "root.hints": "/opt/technitium/dns/named.root"
+  },
+  "env": {
+   "DNS_SERVER_ADMIN_PASSWORD": "pdlab"
+  },
+  "entrypoint": null,
+  "cmd": null,
+  "setup": {
+   "login": "/api/user/login",
+   "pass": "pdlab",
+   "set": "/api/settings/set",
+   "flush": "/api/cache/flush",
+   "params": {
+    "recursion": "Allow",
+    "dnssecValidation": false,
+    "preferIPv6": false,
+    "enableBlocking": false
+   }
+  },
+  "role": "recursive"
+ },
+ {
+  "key": "technitium-11.0.3",
+  "impl": "technitium",
+  "version": "11.0.3",
+  "image": "technitium/dns-server:11.0.3",
+  "ready": 90,
+  "mounts": {
+   "root.hints": "/opt/technitium/dns/named.root"
+  },
+  "env": {
+   "DNS_SERVER_ADMIN_PASSWORD": "pdlab"
+  },
+  "entrypoint": null,
+  "cmd": null,
+  "setup": {
+   "login": "/api/user/login",
+   "pass": "pdlab",
+   "set": "/api/settings/set",
+   "flush": "/api/cache/flush",
+   "params": {
+    "recursion": "Allow",
+    "dnssecValidation": false,
+    "preferIPv6": false,
+    "enableBlocking": false
+   }
+  },
+  "role": "recursive"
  }
 ]

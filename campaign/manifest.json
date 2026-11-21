@@ -7,7 +7,7 @@
    "fixtures": "all",
    "lab": true,
    "targets": "campaign/targets/dns.json",
-   "n_targets": 13,
+   "n_targets": 16,
    "versions": {
     "bind": [
      "9.20.30",
@@ -24,6 +24,11 @@
      "5.3.14",
      "5.2.13",
      "5.1.10"
+    ],
+    "technitium": [
+     "15.6.2",
+     "15.5.1",
+     "15.4.0"
     ],
     "unbound": [
      "1.26.0",
@@ -320,11 +325,12 @@
    "cases": [
     "D10",
     "D13",
+    "D14",
     "D4",
     "D5",
     "D9"
    ],
-   "n_targets": 12,
+   "n_targets": 15,
    "keys": [
     "bind-9.20.30",
     "bind-9.16.13",
@@ -334,6 +340,9 @@
     "knot-5.6.0",
     "pdns-recursor-5.3.14",
     "pdns-recursor-4.7.3",
+    "technitium-11.0.2",
+    "technitium-11.0.3",
+    "technitium-15.6.2",
     "unbound-1.26.0",
     "unbound-1.16.0",
     "unbound-1.16.1",

@@ -135,6 +135,93 @@
   "tag": "powerdns/pdns-recursor-53:5.3.14"
  },
  {
+  "key": "technitium-15.4.0",
+  "impl": "technitium",
+  "version": "15.4.0",
+  "image": "technitium/dns-server:15.4.0",
+  "ready": 90,
+  "mounts": {
+   "root.hints": "/opt/technitium/dns/named.root"
+  },
+  "env": {
+   "DNS_SERVER_ADMIN_PASSWORD": "pdlab"
+  },
+  "entrypoint": null,
+  "cmd": null,
+  "setup": {
+   "login": "/api/user/login",
+   "pass": "pdlab",
+   "set": "/api/settings/set",
+   "flush": "/api/cache/flush",
+   "params": {
+    "recursion": "Allow",
+    "dnssecValidation": false,
+    "preferIPv6": false,
+    "enableBlocking": false
+   }
+  },
+  "role": "recursive",
+  "cloned_from": "technitium-15.6.2"
+ },
+ {
+  "key": "technitium-15.5.1",
+  "impl": "technitium",
+  "version": "15.5.1",
+  "image": "technitium/dns-server:15.5.1",
+  "ready": 90,
+  "mounts": {
+   "root.hints": "/opt/technitium/dns/named.root"
+  },
+  "env": {
+   "DNS_SERVER_ADMIN_PASSWORD": "pdlab"
+  },
+  "entrypoint": null,
+  "cmd": null,
+  "setup": {
+   "login": "/api/user/login",
+   "pass": "pdlab",
+   "set": "/api/settings/set",
+   "flush": "/api/cache/flush",
+   "params": {
+    "recursion": "Allow",
+    "dnssecValidation": false,
+    "preferIPv6": false,
+    "enableBlocking": false
+   }
+  },
+  "role": "recursive",
+  "cloned_from": "technitium-15.6.2"
+ },
+ {
+  "key": "technitium-15.6.2",
+  "impl": "technitium",
+  "version": "15.6.2",
+  "image": "technitium/dns-server:15.6.2",
+  "ready": 90,
+  "mounts": {
+   "root.hints": "/opt/technitium/dns/named.root"
+  },
+  "env": {
+   "DNS_SERVER_ADMIN_PASSWORD": "pdlab"
+  },
+  "entrypoint": null,
+  "cmd": null,
+  "setup": {
+   "login": "/api/user/login",
+   "pass": "pdlab",
+   "set": "/api/settings/set",
+   "flush": "/api/cache/flush",
+   "params": {
+    "recursion": "Allow",
+    "dnssecValidation": false,
+    "preferIPv6": false,
+    "enableBlocking": false
+   }
+  },
+  "role": "recursive",
+  "tag": "dns"
+ },
+ {
   "key": "unbound-1.24.2",
   "impl": "unbound",
   "version": "1.24.2",

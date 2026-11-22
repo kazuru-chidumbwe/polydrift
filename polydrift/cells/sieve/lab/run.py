@@ -95,7 +95,48 @@ def _facts(m, args: list[str]) -> dict:
         "dsn_action": _part_field(m, "message/delivery-status", "Action"),
         # fixtures put PD-MARKER into a reject/ereject reason: is it in the human-readable text that went out
         "marker": "PD-MARKER" in m.as_string(),
+        # RFC 5230 5.1: NOTIFY=NEVER on the RCPT (sendmail -N never, or the SMTP RCPT parameter the sink keeps)
+        "notify_never": _notify(args) == "never",
+        # RFC 5429 2.2.1: the first (human-readable) part says more than the reason itself
+        "text_beyond_reason": _text_beyond_reason(m),
+        # RFC 5429 2.4: an addheader in the script ("X-PD: added") shows in the notice's copy of the message
+        "notice_has_script_edit": _notice_has_edit(m),
     }
+
+
+def _notify(args: list[str]):
+    for i, a in enumerate(args):
+        if a == "-N" and i + 1 < len(args):
+            return args[i + 1].strip().lower()
+        if a.startswith("-N") and len(a) > 2:
+            return a[2:].strip().lower()
+    return None
+
+
+def _first_text(m):
+    for p in (m.walk() if m.is_multipart() else [m]):
+        if p.get_content_maintype() == "text" and not p.is_multipart():
+            pl = p.get_payload(decode=True) or b""
+            return pl.decode(p.get_content_charset() or "utf-8", "replace")
+    return None
+
+
+def _text_beyond_reason(m):
+    t = _first_text(m)
+    if t is None or "PD-MARKER" not in t:
+        return None
+    rest = t.replace("PD-MARKER refused by policy", "").replace("PD-MARKER", "")
+    return any(ch.isalnum() for ch in rest)
+
+
+def _notice_has_edit(m):
+    if not m.is_multipart():
+        return None
+    for p in m.walk():
+        ct = p.get_content_type().lower()
+        if ct in ("message/rfc822", "text/rfc822-headers", "message/rfc822-headers"):
+            return "X-PD: added" in p.as_string() or "x-pd: added" in p.as_string().lower()
+    return None
 
 
 def emitted() -> list[dict]:
@@ -787,13 +828,16 @@ class SmtpSink:
                     return
                 cmd = line.decode("utf-8", "replace").strip()
                 up = cmd.upper()
-                if up.startswith(("EHLO", "HELO")):
+                if up.startswith("EHLO"):
+                    c.sendall(b"250-pd-sink\r\n250 DSN\r\n")  # NOTARY (RFC 3461) offered: NOTIFY=NEVER applies
+                elif up.startswith("HELO"):
                     send("250 pd-sink")
                 elif up.startswith("MAIL FROM:"):
-                    mfrom, rcpts = cmd[10:].split()[0].strip("<>") if cmd[10:].strip() else "", []
+                    mfrom, rcpts, notify = (cmd[10:].split()[0].strip("<>") if cmd[10:].strip() else ""), [], []
                     send("250 OK")
                 elif up.startswith("RCPT TO:"):
                     rcpts.append(cmd[8:].split()[0].strip("<>"))
+                    notify += [p.split("=", 1)[1] for p in cmd[8:].split()[1:] if p.upper().startswith("NOTIFY=")]
                     send("250 OK")
                 elif up == "DATA":
                     send("354 go")
@@ -805,7 +849,7 @@ class SmtpSink:
                         body.append(ln[1:] if ln.startswith(b"..") else ln)
                     n, self.n = self.n, self.n + 1
                     (OUT / f"{n}.eml").write_bytes(b"".join(body))
-                    (OUT / f"{n}.args").write_text("\n".join(["-f", mfrom, *rcpts]))
+                    (OUT / f"{n}.args").write_text("\n".join(["-f", mfrom, *(["-N", notify[0]] if notify else []), *rcpts]))
                     self.last = time.time()
                     send("250 OK queued")
                 elif up == "QUIT":

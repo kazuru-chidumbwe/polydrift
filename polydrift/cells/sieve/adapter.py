@@ -88,6 +88,11 @@ def effect_step(res: dict[str, Any], spec: CellSpec) -> StepRecord | None:
         vals["dsn_action"] = per("dsn", "dsn_action")
         vals["reason_in_text"] = tuple((e.get("facts") or {}).get("marker") for e in sent
                                        if e.get("kind") in ("reject", "dsn"))
+        vals["vacation_notify_never"] = per("vacation", "notify_never")
+        vals["reject_text_extra"] = tuple((e.get("facts") or {}).get("text_beyond_reason") for e in sent
+                                          if e.get("kind") in ("reject", "dsn"))
+        vals["notice_has_script_edit"] = tuple((e.get("facts") or {}).get("notice_has_script_edit") for e in sent
+                                               if e.get("kind") in ("reject", "dsn"))
     return StepRecord(status=Status.RESPONDED, fields=_f(spec, vals))
 
 

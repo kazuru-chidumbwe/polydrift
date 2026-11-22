@@ -792,7 +792,7 @@ fixtures:
       - {"req_id": "SIEVE-eb9713e9", "keyword": "SHOULD", "axis": "vacation_to", "step": 1, "layer": "effect", "allowed": [["probe@example.invalid"]]}
       - {"req_id": "SIEVE-bd230d0c", "keyword": "MUST", "axis": "vacation_in_reply_to", "step": 1, "layer": "effect", "allowed": [[true]]}
       - {"req_id": "SIEVE-36518d02", "keyword": "SHOULD", "axis": "vacation_env_from", "step": 1, "layer": "effect", "allowed": [[], [""], null], "note": "the vacation response goes out with an empty envelope sender"}
-      - {"req_id": "SIEVE-11f22447", "keyword": "SHOULD", "axis": "emitted_headers", "step": 1, "layer": "effect", "basis": "not-observable", "note": "the RCPT parameters are not recorded"}
+      - {"req_id": "SIEVE-11f22447", "keyword": "SHOULD", "axis": "vacation_notify_never", "step": 1, "layer": "effect", "allowed": [[true], []], "note": "the lab MTA offers DSN (sink EHLO; capture.sh takes -N); empty: no vacation reply"}
     script: |
       require "vacation";
       vacation "Away";
@@ -835,7 +835,7 @@ fixtures:
     message: clean.eml
     spec_refs:
       - {"req_id": "SIEVE-7f171b25", "keyword": "MUST", "axis": "mdn_disposition", "step": 1, "layer": "effect", "allowed": [[], ["automatic-action/mdn-sent-automatically; deleted"]]}
-      - {"req_id": "SIEVE-7a3135f5", "keyword": "SHOULD", "axis": "emitted_headers", "step": 1, "layer": "effect", "basis": "not-observable", "note": "the MDN text is recorded only as marker presence"}
+      - {"req_id": "SIEVE-7a3135f5", "keyword": "SHOULD", "axis": "reject_text_extra", "step": 1, "layer": "effect", "allowed": [[true], []], "note": "text beyond the reason in the first part; empty: no notice sent"}
       - {"req_id": "SIEVE-fea6d9e0", "keyword": "MUST", "axis": "stored", "step": 1, "layer": "effect", "allowed": [[]]}
     script: |
       require "reject";
@@ -888,7 +888,7 @@ fixtures:
     kind: probe
     message: clean.eml
     spec_refs:
-      - {"req_id": "SIEVE-f7cad0a0", "keyword": "MUST", "axis": "emitted_headers", "step": 1, "layer": "effect", "basis": "not-observable", "note": "added header fields are not recorded in the notification facts"}
+      - {"req_id": "SIEVE-f7cad0a0", "keyword": "MUST", "axis": "notice_has_script_edit", "step": 1, "layer": "effect", "allowed": [[false], [null], []], "note": "the added X-PD header does not appear in the notice's copy; null: no copy returned; empty: no notice"}
     script: |
       require ["reject", "editheader"];
       addheader "X-PD" "added";

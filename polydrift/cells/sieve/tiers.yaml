@@ -63,6 +63,15 @@ axes:
   vacation_to:
     tier: 2
     clause: "T2: To of each vacation reply (RFC 5230 5.5)"
+  vacation_notify_never:
+    tier: 3
+    clause: "T3: the vacation reply asks for no delivery notifications (RCPT NOTIFY=NEVER, RFC 5230 5.1); the sender's MTA would otherwise report on an automatic reply"
+  reject_text_extra:
+    tier: 3
+    clause: "T3: the refusal notice's human-readable part says, beyond the reason, that a filter refused the message (RFC 5429 2.2.1)"
+  notice_has_script_edit:
+    tier: 2
+    clause: "T2: the refusal notice returns the message as received, not as the script edited it (RFC 5429 2.4); the sender sees what was refused"
   mdn_disposition:
     tier: 2
     clause: "T2: Disposition field of each reject MDN (RFC 5429 2.2.1)"

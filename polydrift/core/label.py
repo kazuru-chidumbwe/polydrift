@@ -31,7 +31,7 @@ from enum import Enum
 from typing import Any, Iterable, Mapping
 
 from polydrift.core.oracle import END_STATE, STATUS_AXIS, Outcome, PairResult, effective_step
-from polydrift.core.record import ObservationRecord, Status, Tier, freeze_value
+from polydrift.core.record import NOT_OBSERVED, ObservationRecord, Status, Tier, freeze_value
 from polydrift.core.spec import DECISION_AXIS, FixtureSpec
 
 MUST_WORDS = {"MUST", "MUST NOT", "SHALL", "SHALL NOT", "REQUIRED"}
@@ -123,6 +123,11 @@ def _elements(value: Any) -> tuple:
 def inside(rec: ObservationRecord, ref: Mapping[str, Any], refusal_class: str | None = None) -> bool:
     if not labels(ref):
         return True
+    st_ref = _step_of(ref)
+    if st_ref != END_STATE and isinstance(st_ref, int) and 0 < st_ref <= len(rec.steps):
+        fld = rec.steps[st_ref - 1].fields.get(ref["axis"])
+        if fld is not None and fld.raw == NOT_OBSERVED:
+            return True  # the implementation cannot show this axis: the row has nothing to bind
     cond = ref.get("when")
     if cond and observed(rec, cond["axis"], cond.get("step", 1), refusal_class) not in allowed_set(cond):
         # the row binds only after the step it depends on went the stated way (an add that the server refused

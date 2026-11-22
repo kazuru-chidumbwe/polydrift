@@ -5,5 +5,6 @@ O=${PD_OUT:-/tmp/pd-out}
 mkdir -p "$O"
 n=$(ls "$O" 2>/dev/null | grep -c '\.eml$')
 printf '%s\n' "$@" > "$O/$n.args"
-cat > "$O/$n.eml"
+# the MTA hop: an engine that hands its message to sendmail leaves the trace line to the MTA (RFC 5321 4.4)
+{ printf 'Received: by pd-lab-mta (sendmail interface); Mon, 14 Sep 2026 19:00:00 +0000\r\n'; cat; } > "$O/$n.eml"
 exit 0

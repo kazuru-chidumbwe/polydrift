@@ -71,6 +71,11 @@ def _part_field(m, ctype: str, name: str) -> str | None:
 
 
 def facts(m, args: list[str]) -> dict:
+    return {**_facts(m, args), "shape": {"multipart_report": (m.get_content_type() or "").lower() == "multipart/report",
+                                          "parts": _part_types(m)}}
+
+
+def _facts(m, args: list[str]) -> dict:
     """Header facts of a sent message that the Sieve RFCs fix (RFC 5228 4.2, RFC 5230 5, RFC 5429 2.1 and 2.2)."""
     env_from = None
     if "-f" in args and args.index("-f") + 1 < len(args):
@@ -100,16 +105,7 @@ def emitted() -> list[dict]:
         m = email.message_from_bytes(f.read_bytes(), policy=policy.compat32)
         ctype = (m.get("Content-Type") or "").lower()
         auto = (m.get("Auto-Submitted") or "").lower()
-        if "disposition-notification" in ctype or "report-type=disposition" in ctype:
-            kind = "reject"
-        elif "delivery-status" in ctype:
-            kind = "dsn"
-        elif auto.startswith("auto-replied") or m.get("X-Sieve-Vacation"):
-            kind = "vacation"
-        elif m.get("Message-ID") and m.get("Subject") is not None and not auto:
-            kind = "redirect"
-        else:
-            kind = "other"
+        kind = classify(m)
         rcpt = sorted(a for a in args if "@" in a and not a.startswith("-"))
         if not rcpt:
             rcpt = sorted(x.strip().strip("<>") for x in (m.get("To") or "").split(",") if "@" in x)
@@ -117,12 +113,22 @@ def emitted() -> list[dict]:
     return out
 
 
+def _part_types(m) -> list[str]:
+    return [p.get_content_type().lower() for p in m.walk()] if m.is_multipart() else [m.get_content_type().lower()]
+
+
 def classify(m) -> str:
+    """Kind of a message the engine sent. A rejection is recognised by what it carries, not only by the MDN form
+    RFC 5429 asks for: a message/disposition-notification part is an MDN reject; a message/delivery-status part is a
+    DSN, and a DSN-shaped message that returns the original after a reject action is still the reject's message
+    (GNU Mailutils sends multipart/mixed with a delivery-status part). The shape is kept apart in the facts."""
     ctype = (m.get("Content-Type") or "").lower()
     auto = (m.get("Auto-Submitted") or "").lower()
-    if "disposition-notification" in ctype or "report-type=disposition" in ctype:
+    parts = _part_types(m)
+    if "disposition-notification" in ctype or "report-type=disposition" in ctype \
+            or "message/disposition-notification" in parts:
         return "reject"
-    if "delivery-status" in ctype:
+    if "delivery-status" in ctype or "message/delivery-status" in parts:
         return "dsn"
     if auto.startswith("auto-replied") or m.get("X-Sieve-Vacation"):
         return "vacation"
@@ -177,7 +183,8 @@ def maildir_flags(root: Path) -> dict[str, list[str]]:
         for sub in ("cur", "new"):
             for x in sorted((d / sub).glob("*")):
                 info = x.name.split(":2,", 1)[1] if ":2," in x.name else ""
-                fl = sorted({letters.get(c) or kw.get(c, "?" + c) for c in info})
+                fl = sorted({letters.get(c) or kw.get(c, "?" + c) for c in info}
+                            - {"$HasAttachment", "$HasNoAttachment"})
                 msgs.append(" ".join(fl))
         if msgs:
             out[name] = sorted(msgs)

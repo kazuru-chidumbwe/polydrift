@@ -267,6 +267,8 @@ fixtures:
   vacation_mailer_daemon:
     kind: probe
     message: daemon.eml
+    # RFC 5230 sends the reply to the return path: the envelope sender is the daemon, not only the header From
+    from: MAILER-DAEMON@example.invalid
     spec_refs:
       - {req_id: SIEVE-49ac459c, keyword: MUST, axis: emitted, step: 1, layer: effect, allowed: [[]]}
     script: |
@@ -947,3 +949,16 @@ fixtures:
       require ["mboxmetadata", "fileinto"];
       if metadataexists "INBOX" "/private/pd" { fileinto "INBOX.Meta"; }
 
+  script_lf_line_endings:
+    kind: probe
+    message: clean.eml
+    line_endings: lf
+    # comparison only: RFC 5228's grammar uses CRLF; whether an engine also takes LF (a multi-line string) is open
+    script: |
+      require "fileinto";
+      if header :contains "Subject" text:
+      hello
+      .
+      {
+        fileinto "INBOX";
+      }

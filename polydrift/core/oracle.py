@@ -14,7 +14,7 @@ from enum import Enum
 from itertools import combinations
 from typing import Any, Iterable, Mapping
 
-from polydrift.core.record import Field, ObservationRecord, Status, StepRecord, Tier
+from polydrift.core.record import NOT_OBSERVED, Field, ObservationRecord, Status, StepRecord, Tier
 from polydrift.core.spec import DECISION_AXIS
 
 STATUS_AXIS = "__status__"
@@ -105,6 +105,8 @@ def _compare_fields(
             continue
         lf = left.get(axis)
         rf = right.get(axis)
+        if (lf is not None and lf.raw == NOT_OBSERVED) or (rf is not None and rf.raw == NOT_OBSERVED):
+            continue  # one side cannot show this axis: nothing to compare
         tier = (lf or rf).tier  # type: ignore[union-attr]
         lv = None if lf is None else lf.canon
         rv = None if rf is None else rf.canon

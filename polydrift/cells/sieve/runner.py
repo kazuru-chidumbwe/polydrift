@@ -58,7 +58,10 @@ def run_one(t: dict[str, Any], lab: str, fx: dict[str, Any], defaults: dict) -> 
     meta = {k: fx.get(k, defaults.get(k)) for k in ("from", "to", "folders")}
     with tempfile.TemporaryDirectory(prefix="pdsv-") as d:
         dp = Path(d)
-        (dp / "script.sieve").write_text(fx["script"], encoding="utf-8")
+        text = fx["script"].replace("\r\n", "\n")
+        if fx.get("line_endings", "crlf") == "crlf":
+            text = text.replace("\n", "\r\n")
+        (dp / "script.sieve").write_bytes(text.encode("utf-8"))
         shutil.copy(Path(lab) / "messages" / fx["message"], dp / "msg.eml")
         (dp / "meta.json").write_text(json.dumps(meta))
         os.chmod(d, 0o755)

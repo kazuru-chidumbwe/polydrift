@@ -13,7 +13,7 @@ from typing import Any
 import yaml
 
 from polydrift.core.canon import identity
-from polydrift.core.record import Field, ObservationRecord, Status, StepRecord, Tier
+from polydrift.core.record import NOT_OBSERVED, Field, ObservationRecord, Status, StepRecord, Tier
 from polydrift.core.spec import AxisSpec, CellSpec
 
 CELL_DIR = Path(__file__).resolve().parent
@@ -30,7 +30,7 @@ def load_spec() -> CellSpec:
 def outcome(res: dict[str, Any]) -> str:
     if res.get("compile") == "refused":
         return "refused"
-    if res.get("runtime_error") or res.get("intent") is None:
+    if res.get("runtime_error") or (res.get("intent") is None and not res.get("effect_only")):
         return "runtime-error"
     return "ok"
 
@@ -46,7 +46,11 @@ def intent_step(res: dict[str, Any], spec: CellSpec) -> StepRecord:
     vals = {"decision_class": "fix-request" if oc == "refused" else "proceed", "outcome": oc,
             "compile_class": res.get("compile_class") if oc == "refused" else None,
             "intent": tuple(sorted(res.get("intent") or [])) if oc == "ok" else None}
-    return StepRecord(status=Status.RESPONDED, fields=_f(spec, vals))
+    fields = _f(spec, vals)
+    if oc == "ok" and res.get("effect_only"):
+        # no dry run (Cyrus, Stalwart): the compile result is observed, the intent is not
+        fields["intent"] = Field(tier=spec.axis("intent").tier, raw=NOT_OBSERVED, canon=None)
+    return StepRecord(status=Status.RESPONDED, fields=fields)
 
 
 def effect_step(res: dict[str, Any], spec: CellSpec) -> StepRecord | None:
@@ -91,9 +95,9 @@ def to_records(res: dict[str, Any], impl: str, fixture: str, *, spec: CellSpec, 
                impl_version: str = "", harness_commit: str = "") -> list[ObservationRecord]:
     base = dict(cell="sieve", impl=impl, impl_version=impl_version, repeat=repeat, harness_commit=harness_commit)
     out = []
-    # an engine without a dry run (effect_only) has no intent layer: it gives the compile record only on refusal
-    if not res.get("effect_only") or outcome(res) == "refused" or res.get("harness_error"):
-        out.append(ObservationRecord(fixture=fixture, steps=(intent_step(res, spec),), **base))
+    # every engine gives the compile record, so compile-time rows are scored for engines without a dry run too
+    # (whose intent field is marked not observed)
+    out.append(ObservationRecord(fixture=fixture, steps=(intent_step(res, spec),), **base))
     eff = effect_step(res, spec)
     if eff is not None:
         out.append(ObservationRecord(fixture=fixture + EFFECT, steps=(eff,), **base))

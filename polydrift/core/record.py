@@ -52,6 +52,11 @@ def _thaw(value: Any) -> Any:
     return value
 
 
+# raw value of an axis the implementation cannot show (an engine without a dry run has no intent): the field is
+# kept in the record so the gap is visible, and neither the oracle nor the labeller compares it
+NOT_OBSERVED = "<not-observed>"
+
+
 @dataclass(frozen=True)
 class Field:
     """One typed axis value. ``canon`` is None when the value is undefined."""

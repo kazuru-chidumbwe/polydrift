@@ -134,14 +134,14 @@
  },
  {
   "impl": "linphone",
-  "version": "5.3.105",
-  "image": "pd-sipb-linphone:trixie",
+  "version": "5.5.41",
+  "image": "pd-sipb-linphone:5.5.41",
   "ctl": {
    "kind": "linphone",
    "port": 4444
   },
   "ready": 60,
-  "key": "linphone-5.3.105",
+  "key": "linphone-5.5.41",
   "roles": [
    "uas",
    "uac"
@@ -151,14 +151,14 @@
  },
  {
   "impl": "linphone",
-  "version": "5.3.105",
-  "image": "pd-sipb-linphone:trixie",
+  "version": "5.5.41",
+  "image": "pd-sipb-linphone:5.5.41",
   "ctl": {
    "kind": "linphone",
    "port": 4444
   },
   "ready": 60,
-  "key": "linphone-5.3.105-ring",
+  "key": "linphone-5.5.41-ring",
   "roles": [
    "uas-ring"
   ],
@@ -170,14 +170,14 @@
  },
  {
   "impl": "linphone",
-  "version": "5.3.105",
-  "image": "pd-sipb-linphone:trixie",
+  "version": "5.5.41",
+  "image": "pd-sipb-linphone:5.5.41",
   "ctl": {
    "kind": "linphone",
    "port": 4444
   },
   "ready": 60,
-  "key": "linphone-5.3.105-reg",
+  "key": "linphone-5.5.41-reg",
   "roles": [
    "uac-reg"
   ],

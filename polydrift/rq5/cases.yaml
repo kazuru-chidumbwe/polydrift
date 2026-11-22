@@ -159,6 +159,17 @@ cases:
     fixed: ["0.22.2", "0.24.13"]
     source: "nanomq issue #1782 (NanoMQ 0.21.8); CVE-2024-42655; MBFuzzer N29 (0.21.10)"
     clause: "MQTT-4.7.2-1"
+  L1:
+    cell: ldap
+    family: 389ds
+    fixtures: [rq5_l1_attrs_with_1_1]
+    axes: [attr_names]
+    affected: ["1.4.0.26"]
+    fixed: ["1.4.0.27"]
+    known: [{fixture: rq5_l1_attrs_with_1_1, axis: attr_names, step: 2, value: []}]
+    source: "389-ds issue #3586 (Pagure 50530, RHBZ 1723545), fix b543627, first tag 389-ds-base-1.4.0.27"
+    clause: "RFC 4511 4.5.1.8"
+    note: "keywordless clause (\"1.1\" is ignored when other attributes are listed): not in the keyword census"
   L2:
     cell: ldap
     family: lldap

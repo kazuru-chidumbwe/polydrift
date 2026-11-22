@@ -217,15 +217,15 @@
           ]
         },
         "linphone": {
-          "from": "5.3.105",
+          "from": "5.5.41",
           "to": [
+            [
+              "5.3.105",
+              "pd-sipb-linphone:trixie"
+            ],
             [
               "5.1.65",
               "pd-sipb-linphone:bookworm"
-            ],
-            [
-              "4.4.21",
-              "pd-sipb-linphone:bullseye"
             ]
           ]
         }
@@ -463,7 +463,7 @@
       "args": {
         "BASE": "debian:trixie-slim"
       },
-      "why": "SIP UA cell: liblinphone 5.3.105, the Debian trixie build of that upstream release (three minor lines 5.3, 5.1, 4.4)"
+      "why": "SIP UA cell: liblinphone 5.3.105, the Debian trixie build of that upstream release (lines 5.5, 5.3, 5.1)"
     },
     "pd-sipb-linphone:bookworm": {
       "dockerfile": "polydrift/cells/sipb/lab/images/linphone.Dockerfile",
@@ -471,22 +471,37 @@
       "args": {
         "BASE": "debian:bookworm-slim"
       },
-      "why": "SIP UA cell: liblinphone 5.1.65, the Debian bookworm build of that upstream release (three minor lines 5.3, 5.1, 4.4)"
-    },
-    "pd-sipb-linphone:bullseye": {
-      "dockerfile": "polydrift/cells/sipb/lab/images/linphone.Dockerfile",
-      "context": "polydrift/cells/sipb/lab/images",
-      "args": {
-        "BASE": "debian:bullseye-slim",
-        "ARCHIVE": "bullseye"
-      },
-      "why": "SIP UA cell: liblinphone 4.4.21, the Debian bullseye build of that upstream release (three minor lines 5.3, 5.1, 4.4)"
+      "why": "SIP UA cell: liblinphone 5.1.65, the Debian bookworm build of that upstream release (lines 5.5, 5.3, 5.1)"
     },
     "pd-jmap-push:lab": {
       "dockerfile": "polydrift/cells/jmap/lab/push/Dockerfile",
       "context": "polydrift/cells/jmap/lab/push",
       "args": {},
       "why": "JMAP push sink (RFC 8620 7.2): records what the servers push to https://pd-push.example.com/ on the closed lab network"
+    },
+    "pd-sipb-linphone:5.5.41": {
+      "dockerfile": "polydrift/cells/sipb/lab/images/linphone-sdk.Dockerfile",
+      "context": "polydrift/cells/sipb/lab/images",
+      "args": {
+        "SDK_TAG": "5.5.41"
+      },
+      "why": "SIP UA cell: linphonec from the linphone-sdk 5.5.41 release tag, the newest linphone line (5.5, 5.3, 5.1); Debian ships 5.3.105"
+    },
+    "pd-389ds:1.4.0.26": {
+      "dockerfile": "polydrift/cells/ldap/images/389ds-140.Dockerfile",
+      "context": "polydrift/cells/ldap/images",
+      "args": {
+        "VER": "1.4.0.26"
+      },
+      "why": "RQ5 L1: 389-ds-base 1.4.0.26 from the Fedora 29 release builds (fix b543627 first tagged in 1.4.0.27)"
+    },
+    "pd-389ds:1.4.0.27": {
+      "dockerfile": "polydrift/cells/ldap/images/389ds-140.Dockerfile",
+      "context": "polydrift/cells/ldap/images",
+      "args": {
+        "VER": "1.4.0.27"
+      },
+      "why": "RQ5 L1: 389-ds-base 1.4.0.27 from the Fedora 29 release builds (fix b543627 first tagged in 1.4.0.27)"
     }
   },
   "recall": [
@@ -569,7 +584,8 @@
       "lab": false,
       "peers_from": "ldap",
       "families": [
-        "lldap"
+        "lldap",
+        "389ds"
       ],
       "base": [
         "rq5/ldap_rq5.json"

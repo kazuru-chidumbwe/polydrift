@@ -8,3 +8,13 @@ fixtures:
     clause: "RFC 4513 5.1.1 and 5.1.2; RFC 4511 4.2.2"
     steps:
       - {op: bind, args: {dn: "", password: ""}}
+
+  # L1, 389-ds #3586 (Pagure 50530): a search listing "1.1" together with other attributes returned no attributes;
+  # "1.1" means no attributes only when it is the only one listed (RFC 4511 4.5.1.8). Fix b543627, first tagged in
+  # 389-ds-base 1.4.0.27.
+  rq5_l1_attrs_with_1_1:
+    kind: probe
+    clause: "RFC 4511 4.5.1.8"
+    steps:
+      - {op: bind, args: {dn: "{A}", password: "{P}"}}
+      - {op: search, args: {base: "{B}", scope: base, attributes: ["1.1", "dc"]}}

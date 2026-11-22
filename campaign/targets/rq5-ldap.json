@@ -1,5 +1,41 @@
 [
  {
+  "key": "389ds-1.4.0.26",
+  "impl": "389ds",
+  "version": "1.4.0.26",
+  "image": "pd-389ds:1.4.0.26",
+  "port": 3389,
+  "extra": [
+   "-e",
+   "DS_DM_PASSWORD=Lab-Pass-2026",
+   "-e",
+   "DS_SUFFIX_NAME=dc=lab,dc=test"
+  ],
+  "cmd": null,
+  "ready": 300,
+  "base": "dc=lab,dc=test",
+  "admin": "cn=Directory Manager",
+  "password": "Lab-Pass-2026"
+ },
+ {
+  "key": "389ds-1.4.0.27",
+  "impl": "389ds",
+  "version": "1.4.0.27",
+  "image": "pd-389ds:1.4.0.27",
+  "port": 3389,
+  "extra": [
+   "-e",
+   "DS_DM_PASSWORD=Lab-Pass-2026",
+   "-e",
+   "DS_SUFFIX_NAME=dc=lab,dc=test"
+  ],
+  "cmd": null,
+  "ready": 300,
+  "base": "dc=lab,dc=test",
+  "admin": "cn=Directory Manager",
+  "password": "Lab-Pass-2026"
+ },
+ {
   "key": "389ds-3.1",
   "impl": "389ds",
   "version": "3.1",

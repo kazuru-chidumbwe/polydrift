@@ -163,61 +163,6 @@
  },
  {
   "impl": "linphone",
-  "version": "4.4.21",
-  "image": "pd-sipb-linphone:bullseye",
-  "ctl": {
-   "kind": "linphone",
-   "port": 4444
-  },
-  "ready": 60,
-  "key": "linphone-4.4.21",
-  "roles": [
-   "uas",
-   "uac"
-  ],
-  "config": "linphonerc",
-  "config_dst": "/etc/linphone/linphonerc",
-  "cloned_from": "linphone-5.3.105"
- },
- {
-  "impl": "linphone",
-  "version": "4.4.21",
-  "image": "pd-sipb-linphone:bullseye",
-  "ctl": {
-   "kind": "linphone",
-   "port": 4444
-  },
-  "ready": 60,
-  "key": "linphone-4.4.21-ring",
-  "roles": [
-   "uas-ring"
-  ],
-  "config": "linphonerc",
-  "config_dst": "/etc/linphone/linphonerc",
-  "env": {
-   "AUTO": "0"
-  },
-  "cloned_from": "linphone-5.3.105-ring"
- },
- {
-  "impl": "linphone",
-  "version": "4.4.21",
-  "image": "pd-sipb-linphone:bullseye",
-  "ctl": {
-   "kind": "linphone",
-   "port": 4444
-  },
-  "ready": 60,
-  "key": "linphone-4.4.21-reg",
-  "roles": [
-   "uac-reg"
-  ],
-  "config": "linphonerc-reg",
-  "config_dst": "/etc/linphone/linphonerc",
-  "cloned_from": "linphone-5.3.105-reg"
- },
- {
-  "impl": "linphone",
   "version": "5.1.65",
   "image": "pd-sipb-linphone:bookworm",
   "ctl": {
@@ -232,7 +177,7 @@
   ],
   "config": "linphonerc",
   "config_dst": "/etc/linphone/linphonerc",
-  "cloned_from": "linphone-5.3.105"
+  "cloned_from": "linphone-5.5.41"
  },
  {
   "impl": "linphone",
@@ -252,7 +197,7 @@
   "env": {
    "AUTO": "0"
   },
-  "cloned_from": "linphone-5.3.105-ring"
+  "cloned_from": "linphone-5.5.41-ring"
  },
  {
   "impl": "linphone",
@@ -269,7 +214,7 @@
   ],
   "config": "linphonerc-reg",
   "config_dst": "/etc/linphone/linphonerc",
-  "cloned_from": "linphone-5.3.105-reg"
+  "cloned_from": "linphone-5.5.41-reg"
  },
  {
   "impl": "linphone",
@@ -286,7 +231,8 @@
    "uac"
   ],
   "config": "linphonerc",
-  "config_dst": "/etc/linphone/linphonerc"
+  "config_dst": "/etc/linphone/linphonerc",
+  "cloned_from": "linphone-5.5.41"
  },
  {
   "impl": "linphone",
@@ -305,7 +251,8 @@
   "config_dst": "/etc/linphone/linphonerc",
   "env": {
    "AUTO": "0"
-  }
+  },
+  "cloned_from": "linphone-5.5.41-ring"
  },
  {
   "impl": "linphone",
@@ -317,6 +264,59 @@
   },
   "ready": 60,
   "key": "linphone-5.3.105-reg",
+  "roles": [
+   "uac-reg"
+  ],
+  "config": "linphonerc-reg",
+  "config_dst": "/etc/linphone/linphonerc",
+  "cloned_from": "linphone-5.5.41-reg"
+ },
+ {
+  "impl": "linphone",
+  "version": "5.5.41",
+  "image": "pd-sipb-linphone:5.5.41",
+  "ctl": {
+   "kind": "linphone",
+   "port": 4444
+  },
+  "ready": 60,
+  "key": "linphone-5.5.41",
+  "roles": [
+   "uas",
+   "uac"
+  ],
+  "config": "linphonerc",
+  "config_dst": "/etc/linphone/linphonerc"
+ },
+ {
+  "impl": "linphone",
+  "version": "5.5.41",
+  "image": "pd-sipb-linphone:5.5.41",
+  "ctl": {
+   "kind": "linphone",
+   "port": 4444
+  },
+  "ready": 60,
+  "key": "linphone-5.5.41-ring",
+  "roles": [
+   "uas-ring"
+  ],
+  "config": "linphonerc",
+  "config_dst": "/etc/linphone/linphonerc",
+  "env": {
+   "AUTO": "0"
+  }
+ },
+ {
+  "impl": "linphone",
+  "version": "5.5.41",
+  "image": "pd-sipb-linphone:5.5.41",
+  "ctl": {
+   "kind": "linphone",
+   "port": 4444
+  },
+  "ready": 60,
+  "key": "linphone-5.5.41-reg",
   "roles": [
    "uac-reg"
   ],

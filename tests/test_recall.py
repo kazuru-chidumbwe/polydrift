@@ -130,7 +130,7 @@ def test_recall_cli(tmp_path):
     p = tmp_path / "r.jsonl"
     write_jsonl(str(p), recs)
     out = tmp_path / "o.json"
-    assert main(["recall", str(p), "--out", str(out)]) == 0
+    assert main(["recall", str(p), "--cases", "L2", "--out", str(out)]) == 0
     res = json.loads(out.read_text())
     (l2,) = res["cases"]
     assert l2["case"] == "L2" and l2["outcome"] == "recalled, fix confirmed" and l2["reproduced"] is True

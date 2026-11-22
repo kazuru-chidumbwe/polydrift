@@ -308,9 +308,9 @@
      "4.11.0"
     ],
     "linphone": [
+     "5.5.41",
      "5.3.105",
-     "5.1.65",
-     "4.4.21"
+     "5.1.65"
     ],
     "pjsip": [
      "2.17",
@@ -501,10 +501,13 @@
    "lab": false,
    "targets": "campaign/targets/rq5-ldap.json",
    "cases": [
+    "L1",
     "L2"
    ],
-   "n_targets": 7,
+   "n_targets": 9,
    "keys": [
+    "389ds-1.4.0.26",
+    "389ds-1.4.0.27",
     "389ds-3.1",
     "apacheds-2.0.0.AM27",
     "lldap-0.5.0",

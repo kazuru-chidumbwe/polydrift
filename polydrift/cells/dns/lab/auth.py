@@ -278,7 +278,7 @@ def respond(zone: Zone, wire: bytes, transport: str, src: str | None = None) -> 
             # before that the zone answers normally (referral), after it NXDOMAIN
             now = time.monotonic()
             with LOCK:
-                first = STATE.setdefault("revoke:" + beh.get("key", qname.to_text()), now)
+                first = STATE.setdefault("revoke:" + beh.get("key", qname.to_text().lower()), now)
             if now - first >= float(beh.get("seconds", 5)):
                 resp.flags |= dns.flags.AA
                 resp.set_rcode(dns.rcode.NXDOMAIN)
@@ -311,9 +311,11 @@ def respond(zone: Zone, wire: bytes, transport: str, src: str | None = None) -> 
         if kind == "flip":
             # time-based: NXDOMAIN until `negative_seconds` after the first query for the name, then the record.
             # (A count-based flip broke when a resolver sent two upstream queries for one client query.)
+            # Keyed by the lower-cased name: a resolver that randomises the case of its upstream queries (0x20,
+            # Knot Resolver) would otherwise start a new timer on every refetch and see NXDOMAIN for ever.
             now = time.monotonic()
             with LOCK:
-                first = STATE.setdefault(qname.to_text(), now)
+                first = STATE.setdefault(qname.to_text().lower(), now)
             if now - first < float(beh.get("negative_seconds", 0.5)):
                 resp.flags |= dns.flags.AA
                 resp.set_rcode(dns.rcode.NXDOMAIN)

@@ -163,6 +163,11 @@ class Lab:
         self.creds: dict[str, str] = req.get("creds") or {}
         self.ctl: dict = req.get("ctl") or {}
         self.own_callids: set[str] = set()  # every Call-ID the lab sent in this fixture (see is_probe)
+        # answered digest challenges: per party, the branches of the challenged transactions (their responses are
+        # left out of extracts, which read the outcome after authentication), and old branch -> (new branch, CSeq
+        # number) of the resent request, so a later CANCEL matches the INVITE that was last sent (RFC 3261 9.1)
+        self.challenged: dict[str, set[str]] = {}
+        self.rebranch: dict[str, tuple[str, int]] = {}
         for p in self.parties.values():
             p.aside = self.is_aside
 
@@ -262,6 +267,14 @@ class Lab:
     def step_send(self, st: dict) -> str | None:
         party = st.get("from", "alice")
         text = self.fill(st["msg"], party)
+        if text.lstrip().upper().startswith("CANCEL "):
+            # a CANCEL carries the branch and CSeq number of the INVITE it cancels; after an answered challenge that
+            # is the resent INVITE, not the one the fixture text names
+            mb = re.search(r"branch=([^;\s]+)", text)
+            if mb and mb.group(1) in self.rebranch:
+                nb, n = self.rebranch[mb.group(1)]
+                text = text.replace(f"branch={mb.group(1)}", f"branch={nb}")
+                text = re.sub(r"(?im)^(CSeq:\s*)\d+(\s+CANCEL)", rf"\g<1>{n}\g<2>", text)
         data = self.finish(text)
         self.sent[party] = parse(data, st.get("transport", "udp"))
         self.last_raw[party] = data.decode("utf-8", "replace")
@@ -389,7 +402,53 @@ def _walk(cur, parts):
     return cur
 
 
-FN = r"^(len|keys|type|has|eq|ne|in|re|allre|allin|sorted|lower|ge|le|hasall|count|codes|methods|same|nre|ncodes|hascode|ackresp|retx|firstat):"
+FN = r"^(len|keys|type|has|eq|ne|in|re|allre|allin|sorted|lower|ge|le|hasall|count|codes|methods|same|nre|ncodes|hascode|ackresp|retx|firstat|vals):"
+
+
+def _branch(m: dict) -> str:
+    v = str(((m.get("hdr") or {}).get("via") or [""])[0])
+    mb = re.search(r"branch=([^;\s,]+)", v)
+    return mb.group(1) if mb else ""
+
+
+def _txkey(m: dict) -> tuple:
+    """One message per transaction and outcome: a retransmitted copy has the same key (code or method, CSeq, top
+    Via branch, and for responses the To tag, so the 2xx of two forks stay apart)."""
+    h = m.get("hdr") or {}
+    cseq = " ".join(str((h.get("cseq") or [""])[0]).split())
+    if m.get("kind") == "resp":
+        mt = re.search(r";\s*tag=([^;\s]+)", str((h.get("to") or [""])[0]))
+        return ("resp", m.get("code"), cseq, _branch(m), mt.group(1) if mt else "")
+    return ("req", str(m.get("method", "")).upper(), cseq, _branch(m))
+
+
+def _once(msgs) -> list:
+    seen, out = set(), []
+    for m in msgs or []:
+        k = _txkey(m)
+        if k not in seen:
+            seen.add(k)
+            out.append(m)
+    return out
+
+
+def _split_list(row: str) -> list[str]:
+    """Split one header row into its comma-separated values (RFC 3261 7.3.1), not inside quotes or <...>."""
+    out, cur, q, a = [], "", False, 0
+    for ch in row:
+        if ch == '"':
+            q = not q
+        elif not q and ch == "<":
+            a += 1
+        elif not q and ch == ">" and a:
+            a -= 1
+        if ch == "," and not q and not a:
+            out.append(cur.strip())
+            cur = ""
+            continue
+        cur += ch
+    out.append(cur.strip())
+    return [x for x in out if x]
 
 
 def _lit(s):
@@ -400,6 +459,10 @@ def _lit(s):
 
 
 def evaluate(expr: str, ctx: dict):
+    if expr.startswith("when:"):
+        # when:COND?EXPR: EXPR where COND holds, else None (the row does not bind: recorded as null)
+        cond, _, rest = expr[5:].partition("?")
+        return evaluate(rest, ctx) if evaluate(cond, ctx) else None
     fn, _, body = expr.partition(":") if re.match(FN, expr) else ("", "", expr)
     if fn == "same":
         # same:p1,p2: the values at two paths are equal (a forwarded body against the sent one)
@@ -431,8 +494,14 @@ def evaluate(expr: str, ctx: dict):
             return None if not times else int((times[0] - ctx.get("t0", times[0])) // 10 * 10)
         gaps = [0.5 * 2 ** round(math.log2(max(b - a, 0.125) / 0.5)) for a, b in zip(times, times[1:])]
         return {"copies": len(hits), "gaps": [int(g) if g >= 1 else g for g in gaps]}
-    if fn == "codes":   # final and provisional status codes in a party's inbox, in order
-        return [m.get("code") for m in v or [] if m.get("kind") == "resp"]
+    if fn == "codes":
+        # final and provisional status codes in a party's inbox, in order, one per transaction and outcome: a
+        # retransmitted copy is not a second response (copies are counted by ncodes: and retx:)
+        return [m.get("code") for m in _once(v) if m.get("kind") == "resp"]
+    if fn == "vals":
+        # vals:path: the values of a header, rows split at commas, so two rows and one comma list compare equal
+        rows = v if isinstance(v, list) else ([] if missing else [v])
+        return [x for r in rows for x in _split_list(str(r))]
     if fn == "ncodes":
         # ncodes:party=code: how many responses with that status code the party received (retransmissions)
         return sum(1 for m in v or [] if m.get("kind") == "resp" and m.get("code") == int(lit))
@@ -448,7 +517,7 @@ def evaluate(expr: str, ctx: dict):
             return parts[-1].upper() if parts else ""
         return sum(1 for m in v or [] if m.get("kind") == "resp" and _cseq_method(m) == "ACK")
     if fn == "methods":
-        return [m.get("method") for m in v or [] if m.get("kind") == "req"]
+        return [m.get("method") for m in _once(v) if m.get("kind") == "req"]
     if fn == "keys":
         return sorted(v) if isinstance(v, dict) else None
     if fn == "type":
@@ -518,26 +587,56 @@ def authenticate(lab: "Lab", st: dict, start: int) -> str | None:
     head, _sep, body = sent.partition("\r\n\r\n")
     lines = head.split("\r\n")
     method, uri = lines[0].split(" ")[0], lines[0].split(" ")[1]
+    old_branch = ch_branch = _branch(ch)
+    new_branch, new_n = f"z9hG4bK{random.getrandbits(48):x}", None
     out = [lines[0]]
+    ack = None
     for ln in lines[1:]:
         low = ln.lower()
         if low.startswith("via:"):
-            ln = re.sub(r"branch=[^;\s]+", f"branch=z9hG4bK{random.getrandbits(48):x}", ln)
+            mb = re.search(r"branch=([^;\s]+)", ln)
+            old_branch = mb.group(1) if mb else ch_branch
+            ln = re.sub(r"branch=[^;\s]+", f"branch={new_branch}", ln)
         elif low.startswith("cseq:"):
             n, m = ln.split(":", 1)[1].split()
-            ln = f"CSeq: {int(n) + 1} {m}"
+            new_n = int(n) + 1
+            ln = f"CSeq: {new_n} {m}"
         out.append(ln)
+    if method == "INVITE":
+        # the 407/401 to an INVITE is a final response: the UAC acknowledges it (RFC 3261 17.1.1.3) on the challenged
+        # transaction, before the authenticated INVITE, so the element stops retransmitting the challenge
+        h = ch.get("hdr") or {}
+        orig = {ln.split(":", 1)[0].strip().lower(): ln for ln in lines[1:] if ":" in ln}
+        n0 = (orig.get("cseq", "CSeq: 1 INVITE").split(":", 1)[1].split() or ["1"])[0]
+        ack = "\r\n".join([f"ACK {uri} SIP/2.0", orig.get("via", ""), "Max-Forwards: 70", orig.get("from", ""),
+                            f"To: {(h.get('to') or [''])[0]}", orig.get("call-id", ""), f"CSeq: {n0} ACK",
+                            "Content-Length: 0"]) + "\r\n\r\n"
+    lab.challenged.setdefault(party, set()).add(old_branch)
+    if new_n is not None:
+        lab.rebranch[old_branch] = (new_branch, new_n)
     user, pw = st["auth"]["user"], st["auth"]["password"]
     out.insert(1, f"{'Authorization' if ch['code'] == 401 else 'Proxy-Authorization'}: "
                   f"{digest_header(challenge, method, uri, user, pw)}")
     data = ("\r\n".join(out) + "\r\n\r\n" + body).encode()
     lab.last_raw[party] = data.decode("utf-8", "replace")
+    if method == "INVITE":
+        lab.last_invite[party] = lab.last_raw[party]
+    if ack is not None:
+        err = lab.send_bytes(party, ack.encode(), st.get("transport", "udp"))
+        if err:
+            return err
     return lab.send_bytes(party, data, st.get("transport", "udp"))
 
 
 def run(req: dict) -> list[dict]:
     lab = Lab(req)
     out = []
+    if lab.ctl.get("kind") and req.get("reset_calls", True):
+        # a user agent under test starts every fixture with no call: calls an earlier fixture left answered would
+        # count against its call limit (pjsua --max-calls: 486 to the next INVITE, no new UAC call). Messages this
+        # causes (BYE to an earlier fixture's Call-ID) arrive before step 1 and belong to no step.
+        lab.step_uac({"action": "hangup_all"})
+        lab.listen(int(req.get("reset_ms", 600)))
     for i, st in enumerate(req["steps"], 1):
         op = st.get("op", "send")
         if op == "wait":
@@ -551,9 +650,11 @@ def run(req: dict) -> list[dict]:
             err = f"driver: {e!r}"[:200]
         lab.listen(int(st.get("window_ms", 1500)))
         party = st.get("from", "alice")
-        if op == "send" and not st.get("auth") and lab.creds.get(party):
-            # the element requires authentication (target credentials): answer its challenge once
-            st = {**st, "auth": {"user": party, "password": lab.creds[party]}}
+        who = st.get("auth_as", party)
+        if op == "send" and not st.get("auth") and lab.creds.get(who):
+            # the element requires authentication (target credentials): answer its challenge once, as the user
+            # the request acts for (`auth_as`: a second contact registered for bob's AOR uses bob's credentials)
+            st = {**st, "auth": {"user": who, "password": lab.creds[who]}}
         if op == "send" and st.get("auth") and err is None:
             # listen a second window only when a challenge was answered (the authenticated request is a new
             # transaction); without a challenge the step keeps its single window
@@ -574,8 +675,14 @@ def run(req: dict) -> list[dict]:
         if st.get("extract"):
             # step messages per party, the last request each party sent, and every message each party received so
             # far in the fixture ("hist", for clauses that compare a retransmission with the first transmission)
-            ctx = {**got, "sent": lab.sent, "t0": t0,
-                   "hist": {n: [m for m in p.inbox if not set_aside(m, lab.own_callids, opened)] for n, p in lab.parties.items()}}
+            def _after_auth(n, msgs):
+                # responses on a challenged transaction (the 401/407, its 100 and retransmissions) are left out, so
+                # index 0 and code lists read the outcome of the authenticated request; observations keep them
+                gone = lab.challenged.get(n) or set()
+                return [m for m in msgs if not (m.get("kind") == "resp" and _branch(m) in gone)]
+            ctx = {**{n: _after_auth(n, msgs) for n, msgs in got.items()}, "sent": lab.sent, "t0": t0,
+                   "hist": {n: _after_auth(n, [m for m in p.inbox if not set_aside(m, lab.own_callids, opened)])
+                            for n, p in lab.parties.items()}}
             obs["extract"] = {k: _unu(evaluate(lab.fill(e, obs["actor"]), ctx), lab) for k, e in st["extract"].items()}
         out.append(obs)
     return out

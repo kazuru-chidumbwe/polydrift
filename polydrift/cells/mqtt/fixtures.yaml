@@ -96,7 +96,9 @@ fixtures:
   connect_bad_protocol_name:
     kind: probe
     spec_refs:
-      - {native: MQTT-3.1.2-1, keyword: MUST, axis: status, step: 1, allowed: [closed, "fix-request"]}
+      # MQTT-3.1.2-1 lets a server that does not process the CONNECT as MQTT stay silent (another protocol may own
+      # the name); closing and staying silent both conform, an answer as MQTT does not
+      - {native: MQTT-3.1.2-1, keyword: MUST, axis: status, step: 1, allowed: [closed, silent, "fix-request"]}
     steps:
       - {client: a, op: connect, args: {client_id: "{C}a", protocol_name: MQTX}}
 

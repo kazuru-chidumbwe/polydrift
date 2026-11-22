@@ -743,9 +743,9 @@ fixtures:
   census_server_capabilities:
     kind: control
     spec_refs:
-      - {"native": "MQTT-3.2.2-9", "keyword": "MUST", "axis": "connack_props", "step": 1, "note": "Maximum QoS present when QoS 2 is not supported", "basis": "conditional"}
-      - {"native": "MQTT-3.2.2-10", "keyword": "MUST", "axis": "connack_props", "step": 1, "basis": "conditional"}
-      - {"native": "MQTT-3.2.2-22", "keyword": "MUST", "axis": "connack_props", "step": 1, "note": "Server Keep Alive; the keep-alive the server enforces is not exercised within the fixture", "basis": "not-observable"}
+      - {"native": "MQTT-3.2.2-9", "keyword": "MUST", "axis": "announced_config", "step": 1, "note": "Maximum QoS present when QoS 2 is not supported", "basis": "conditional"}
+      - {"native": "MQTT-3.2.2-10", "keyword": "MUST", "axis": "announced_config", "step": 1, "basis": "conditional"}
+      - {"native": "MQTT-3.2.2-22", "keyword": "MUST", "axis": "announced_config", "step": 1, "note": "Server Keep Alive; the keep-alive the server enforces is not exercised within the fixture", "basis": "not-observable"}
     steps:
       - {"client": "a", "op": "connect", "args": {"client_id": "{C}a", "keep_alive": 2}}
 

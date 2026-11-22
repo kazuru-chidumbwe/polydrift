@@ -46,6 +46,16 @@ def _forwarded(value: Any) -> Any:
     return tuple(sorted((c, tuple(tuple(x) for x in v)) for c, v in dict(value).items()))
 
 
+# CONNACK properties that announce limits and capabilities set by the broker's configuration (MQTT 5.0 3.2.2.3).
+# They are recorded as announced_config and not compared (manuscript 3.2): two brokers with different defaults
+# would otherwise differ on every pair whatever the fixture does.
+CONFIG_PROPS = frozenset({
+    "session_expiry_interval", "receive_maximum", "maximum_qos", "retain_available", "maximum_packet_size",
+    "topic_alias_maximum", "wildcard_subscription_available", "subscription_identifier_available",
+    "shared_subscription_available", "server_keep_alive",
+})
+
+
 def _connack_props(value: Any) -> Any:
     if value is None:
         return None
@@ -142,7 +152,9 @@ def step_fields(obs: dict[str, Any], spec: CellSpec, prefix: str, version: int) 
     ca = next((p for p in pkts if p.get("type") == "CONNACK"), None)
     if ca is not None:
         values["session_present"] = ca.get("session_present")
-        values["connack_props"] = ca.get("properties") or {}
+        props = ca.get("properties") or {}
+        values["connack_props"] = {k: v for k, v in props.items() if k not in CONFIG_PROPS}
+        values["announced_config"] = {k: v for k, v in props.items() if k in CONFIG_PROPS}
     sa = next((p for p in pkts if p.get("type") == "SUBACK"), None)
     if sa is not None:
         values["granted"] = sa.get("reason_codes")

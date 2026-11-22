@@ -633,5 +633,103 @@
     "pd-consumer-sip"
    ]
   }
+ ],
+ "flake": [
+  {
+   "tag": "dns",
+   "cell": "dns",
+   "lab": true,
+   "repeats": 10,
+   "fixtures": [
+    "census_dname_cname_ttl0",
+    "census_qid_mismatch",
+    "census_two_opt_records",
+    "cname_loop",
+    "cname_to_nxdomain",
+    "delegation_all_lame",
+    "edns_absent_not_added",
+    "rfc8020_below_nxdomain"
+   ]
+  },
+  {
+   "tag": "mqtt",
+   "cell": "mqtt",
+   "lab": false,
+   "repeats": 10,
+   "fixtures": [
+    "census_filter_plus_partial_level",
+    "census_rejected_connect_no_processing",
+    "census_reserved_bits_disconnect",
+    "census_subscription_identifiers_overlap",
+    "census_topic_empty",
+    "census_topic_name_wildcard",
+    "census_unsubscribe_exact_match",
+    "publish_topic_alias_zero"
+   ]
+  },
+  {
+   "tag": "ldap",
+   "cell": "ldap",
+   "lab": false,
+   "repeats": 10,
+   "fixtures": [
+    "bind_admin",
+    "census_add_parent_missing",
+    "census_add_rdn_not_listed",
+    "census_alias_compare",
+    "census_diagnostic_message",
+    "census_modify_atomic",
+    "census_sasl_mechanisms",
+    "rootdse_read"
+   ]
+  },
+  {
+   "tag": "jmap",
+   "cell": "jmap",
+   "lab": false,
+   "repeats": 10,
+   "fixtures": [
+    "census_email_attachments",
+    "census_language_headers",
+    "census_query_arguments",
+    "census_query_state",
+    "changes_max_changes_zero",
+    "mailbox_second_role",
+    "result_reference_unresolved",
+    "session_core_capability"
+   ]
+  },
+  {
+   "tag": "sieve-mail",
+   "cell": "sieve",
+   "lab": true,
+   "repeats": 10,
+   "fixtures": [
+    "census_body_no_cross_part",
+    "census_body_no_part_headers",
+    "census_envelope_supported",
+    "census_grammar_strings",
+    "census_reject_with_keep",
+    "fileinto_missing_folder",
+    "reject_with_vacation",
+    "vacation_mailer_daemon"
+   ]
+  },
+  {
+   "tag": "sipb-proxy",
+   "cell": "sipb",
+   "lab": true,
+   "repeats": 10,
+   "fixtures": [
+    "px_non_invite_and_max_forwards",
+    "px_stateless_forward",
+    "px_stateless_retransmission",
+    "px_unknown_scheme",
+    "sipb_register_route_invite",
+    "uac_invite_construction",
+    "uac_redirect_duplicate_contact",
+    "uas_reinvite_overlap"
+   ]
+  }
  ]
 }

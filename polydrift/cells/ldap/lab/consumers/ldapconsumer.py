@@ -130,7 +130,7 @@ def run_ldap3(host: str, port: int, script: list[dict]) -> list[dict]:
                 conn.search(a.get("base", ""), filter_text(a.get("filter", ["present", "objectClass"])),
                             search_scope=scopes[a.get("scope", "base")], attributes=a.get("attributes") or None,
                             types_only=bool(a.get("types_only")), size_limit=int(a.get("size_limit", 0)))
-                r["entries"] = [[e["dn"], {k: [text(x) for x in v] for k, v in (e.get("raw_attributes") or {}).items()}]
+                r["entries"] = [[e["dn"], {k: [text(x) for x in (v or [])] for k, v in (e.get("raw_attributes") or {}).items()}]
                                 for e in (conn.response or []) if e.get("type") == "searchResEntry"]
                 r["referrals"] = [text(x) for e in (conn.response or []) if e.get("type") == "searchResRef"
                                   for x in e.get("uri") or []]

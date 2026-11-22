@@ -84,9 +84,40 @@ def drift(impl: str, old_version: str, old: set[Signature], new_version: str, ne
     )
 
 
-def majority_key(peers: Iterable[ObservationRecord], tier: Tier, refusal_class: str | None = None) -> Any | None:
-    """Behaviour key of the largest class among peers; None if there is a tie."""
-    counts = Counter(behaviour_key(r, tier, refusal_class=refusal_class) for r in peers)
+# Declared lineage relatives (manuscript 4.3): members of a group that behave alike cast one vote in a majority.
+# The scope limits a group to fixtures citing requirements with one of the given prefixes (None: every fixture).
+# VerneMQ's topic module credits emqtt, the predecessor of EMQX, so the two are one vote on topic names and filters
+# (MQTT 5.0 4.7); OpenSIPS shares SER ancestry with Kamailio; Stalwart embeds sieve-rs.
+LINEAGE: dict[str, list[tuple[frozenset[str], tuple[str, ...] | None]]] = {
+    "mqtt": [(frozenset({"emqx", "vernemq"}), ("MQTT-4.7",))],
+    "sipb": [(frozenset({"kamailio", "opensips"}), None)],
+    "sip": [(frozenset({"kamailio", "opensips"}), None)],
+    "sieve": [(frozenset({"stalwart", "sieve-rs"}), None)],
+}
+
+
+def lineage_groups(cell: str, spec_refs: Iterable[dict[str, Any]]) -> list[frozenset[str]]:
+    natives = [str(r.get("native", "")) for r in spec_refs]
+    return [g for g, scope in LINEAGE.get(cell, [])
+            if scope is None or any(n.startswith(scope) for n in natives)]
+
+
+def majority_key(peers: Iterable[ObservationRecord], tier: Tier, refusal_class: str | None = None,
+                 groups: Iterable[frozenset[str]] = (), family: Any = None) -> Any | None:
+    """Behaviour key of the largest class among peers; None if there is a tie. Peers in one lineage group
+    (``family(record)`` names the implementation family) that share a key count once."""
+    groups = list(groups)
+    seen: set[tuple[int, Any]] = set()
+    keys = []
+    for r in peers:
+        k = behaviour_key(r, tier, refusal_class=refusal_class)
+        g = next((i for i, grp in enumerate(groups) if family is not None and family(r) in grp), None)
+        if g is not None:
+            if (g, k) in seen:
+                continue
+            seen.add((g, k))
+        keys.append(k)
+    counts = Counter(keys)
     if not counts:
         return None
     ranked = counts.most_common()
@@ -101,6 +132,8 @@ def convergence(
     peers: Iterable[ObservationRecord],
     tier: Tier = Tier.T3,
     refusal_class: str | None = None,
+    groups: Iterable[frozenset[str]] = (),
+    family: Any = None,
 ) -> str:
     """Did a release move the implementation toward its peers' majority class?
 
@@ -111,7 +144,7 @@ def convergence(
     k_new = behaviour_key(new, tier, refusal_class=refusal_class)
     if k_old == k_new:
         return "unchanged"
-    maj = majority_key(peers, tier, refusal_class)
+    maj = majority_key(peers, tier, refusal_class, groups=groups, family=family)
     if maj is None:
         return "no-majority"
     if k_new == maj:

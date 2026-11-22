@@ -24,7 +24,7 @@ from typing import Any, Callable, Iterable
 import yaml
 
 from polydrift.core.baselines import coarse_oracle, raw_oracle
-from polydrift.core.drift import convergence, drift, signatures
+from polydrift.core.drift import convergence, drift, lineage_groups, signatures
 from polydrift.core.freeze import bundle
 from polydrift.core.label import consequence, fault_class, unanimous_violations
 from polydrift.core.oracle import Outcome, compare_all, compare_pair, partition, partition_shape
@@ -167,7 +167,10 @@ def report(
             for fid, impls in by_fixture.items():
                 if vs[a] in impls and vs[b] in impls:
                     peers = [impls[k] for k in cur_peers if k in impls]
-                    conv[convergence(impls[vs[a]], impls[vs[b]], peers, Tier.T2, rc)] += 1
+                    fxs = fixtures.get(fid) or _empty_fixture(fid, cell)
+                    groups = lineage_groups(cell, fxs.spec_refs)
+                    conv[convergence(impls[vs[a]], impls[vs[b]], peers, Tier.T2, rc, groups=groups,
+                                     family=lambda r: family_version(r)[0])] += 1
         steps_all = [drift(f, a, sigs_all[a], b, sigs_all[b]).counts() | {"from": a, "to": b}
                      for a, b in zip(order, order[1:])]
         drift_out[f] = {"versions": order, "signatures_T2": {v: len(s) for v, s in sigs.items()},

@@ -20,6 +20,9 @@ from polydrift.core.spec import DECISION_AXIS
 STATUS_AXIS = "__status__"
 END_STATE = "end"  # step label used for end-state differences
 COUNTED_TIERS = (Tier.T0, Tier.T1, Tier.T2, Tier.T3)
+# axes that record configuration a server announces (limits, capabilities): kept in the record and reported per
+# implementation, never compared across implementations (manuscript 3.2)
+NOT_COMPARED = frozenset({"announced_config"})
 
 
 class Outcome(str, Enum):
@@ -37,15 +40,19 @@ class AxisDiff:
     tier: Tier
     left: Any
     right: Any
+    erased: bool = False  # a raw difference that canonicalisation erased on an axis of any tier (recorded as T4)
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        d = {
             "step": self.step,
             "axis": self.axis,
             "tier": int(self.tier),
             "left": self.left,
             "right": self.right,
         }
+        if self.erased:
+            d["erased"] = True
+        return d
 
 
 @dataclass
@@ -92,6 +99,15 @@ def effective_step(step: StepRecord, refusal_class: str | None) -> StepRecord:
     )
 
 
+def _plain(value: Any) -> Any:
+    """A raw value as it can be written to JSON (bytes as hex)."""
+    if isinstance(value, (bytes, bytearray)):
+        return value.hex()
+    if isinstance(value, tuple):
+        return tuple(_plain(v) for v in value)
+    return value
+
+
 def _compare_fields(
     step_label: int | str,
     left: Mapping[str, Field],
@@ -101,7 +117,7 @@ def _compare_fields(
     counted: list[AxisDiff] = []
     t4: list[AxisDiff] = []
     for axis in sorted(set(left) | set(right)):
-        if axis in skip:
+        if axis in skip or axis in NOT_COMPARED:
             continue
         lf = left.get(axis)
         rf = right.get(axis)
@@ -111,6 +127,11 @@ def _compare_fields(
         lv = None if lf is None else lf.canon
         rv = None if rf is None else rf.canon
         if lv == rv:
+            # canonicalisation erased a raw difference: by 3.2 that difference is T4 (gone once parsed), so it is
+            # kept and makes the pair a T4-only agreement if nothing else differs
+            if lf is not None and rf is not None and lf.raw != rf.raw:
+                t4.append(AxisDiff(step=step_label, axis=axis, tier=Tier.T4, left=_plain(lf.raw), right=_plain(rf.raw),
+                                   erased=True))
             continue
         diff = AxisDiff(step=step_label, axis=axis, tier=tier, left=lv, right=rv)
         (t4 if tier == Tier.T4 else counted).append(diff)
@@ -233,7 +254,7 @@ def behaviour_key(
             return tuple(parts)
         for axis in sorted(step.fields):
             f = step.fields[axis]
-            if axis in skip or f.tier > tier or f.canon is None:
+            if axis in skip or axis in NOT_COMPARED or f.tier > tier or f.canon is None:
                 continue
             parts.append((k, axis, f.canon))
     for axis in sorted(rec.end_state):

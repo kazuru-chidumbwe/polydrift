@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from polydrift.core.oracle import NOT_COMPARED
 from polydrift.core.record import ObservationRecord, Status
 
 NATIVE_AXIS = "native_code"
@@ -17,11 +18,14 @@ NATIVE_AXIS = "native_code"
 
 def _raw_view(rec: ObservationRecord) -> tuple[Any, ...]:
     parts: list[Any] = []
+    # announced configuration is outside the study for every oracle, the baselines included
     for k, step in enumerate(rec.steps, start=1):
         for axis in sorted(step.fields):
-            parts.append((k, axis, repr(step.fields[axis].raw)))
+            if axis not in NOT_COMPARED:
+                parts.append((k, axis, repr(step.fields[axis].raw)))
     for axis in sorted(rec.end_state):
-        parts.append(("end", axis, repr(rec.end_state[axis].raw)))
+        if axis not in NOT_COMPARED:
+            parts.append(("end", axis, repr(rec.end_state[axis].raw)))
     return tuple(parts)
 
 

@@ -37,6 +37,28 @@ def test_t4_difference_does_not_count_but_is_flagged():
     assert [d.axis for d in r.t4_diffs] == ["order"]
 
 
+def test_canonicalisation_erasure_is_a_t4_difference():
+    # same canonical value, different raw value: the pair agrees, and the erased difference is kept as T4
+    a = rec("a", step(decision_class=f(1, "proceed"), rrset=f(2, ("a", "b"), raw=("a", "b"))))
+    b = rec("b", step(decision_class=f(1, "proceed"), rrset=f(2, ("a", "b"), raw=("b", "a"))))
+    r = compare_pair(a, b)
+    assert r.outcome == Outcome.AGREEMENT
+    assert r.t4_only_agreement
+    assert [(d.axis, int(d.tier), d.left, d.right) for d in r.t4_diffs] == [("rrset", 4, ("a", "b"), ("b", "a"))]
+    # an erasure next to a counted difference does not change the grade
+    c = rec("c", step(decision_class=f(1, "stop"), rrset=f(2, ("a", "b"), raw=("b", "a"))))
+    r2 = compare_pair(a, c)
+    assert r2.outcome == Outcome.DIVERGENCE and r2.grade == Tier.T1
+    assert [d.axis for d in r2.t4_diffs] == ["rrset"]
+
+
+def test_announced_config_is_recorded_not_compared():
+    a = rec("a", step(decision_class=f(1, "proceed"), announced_config=f(3, (("receive_maximum", "10"),))))
+    b = rec("b", step(decision_class=f(1, "proceed"), announced_config=f(3, (("receive_maximum", "32"),))))
+    r = compare_pair(a, b)
+    assert r.outcome == Outcome.AGREEMENT and not r.t4_diffs
+
+
 def test_grade_is_lowest_differing_tier_across_steps():
     a = rec("a", step(info=f(3, "x")), step(decision_class=f(1, "proceed")))
     b = rec("b", step(info=f(3, "y")), step(decision_class=f(1, "stop")))

@@ -13,6 +13,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import random
+import zlib
 import re
 import subprocess
 import sys
@@ -20,6 +22,13 @@ from collections import defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+# Ten-repeat flake sample (manuscript 7): per primary cell, 5 % of its fixtures and at least 8, drawn with a fixed
+# seed when the plan is built, so the sample is part of the frozen commit.
+FLAKE_REPEATS = 10
+FLAKE_SHARE = 0.05
+FLAKE_MIN = 8
+FLAKE_SEED = 20261122
+FLAKE_CELLS = ("dns", "mqtt", "ldap", "jmap", "sieve-mail", "sipb-proxy")
 CAMP = ROOT / "campaign"
 
 
@@ -107,6 +116,18 @@ def cmd_build(_a) -> int:
                                    "cases": spec_cases(spec), "n_targets": len(ts), "keys": [e["key"] for e in ts]})
         print(f"{spec['tag']:15s} {len(ts):3d} targets  " + " ".join(e["key"] for e in ts))
     manifest["replay"] = src.get("replay", [])
+    manifest["flake"] = []
+    import yaml
+    for c in manifest["cells"]:
+        if c["tag"] not in FLAKE_CELLS:
+            continue
+        fx = sorted(yaml.safe_load((ROOT / "polydrift" / "cells" / c["cell"] / "fixtures.yaml")
+                                   .read_text(encoding="utf-8"))["fixtures"])
+        k = min(len(fx), max(FLAKE_MIN, round(FLAKE_SHARE * len(fx))))
+        pick = sorted(random.Random(FLAKE_SEED + zlib.crc32(c["tag"].encode())).sample(fx, k))
+        manifest["flake"].append({"tag": c["tag"], "cell": c["cell"], "lab": c["lab"],
+                                  "repeats": FLAKE_REPEATS, "fixtures": pick})
+        print(f"flake {c['tag']:12s} {k} of {len(fx)} fixtures, {FLAKE_REPEATS} repeats")
     (CAMP / "manifest.json").write_text(json.dumps(manifest, indent=1) + "\n", newline="\n")
     return 0
 
@@ -462,11 +483,20 @@ def cmd_jobs(a) -> int:
             flagtag=f"{prefix}-l9-{rp['tag']}", images=" ".join(rp["images"]), rep=rep,
             targets=f" --targets $H/campaign/targets/{rp['from']}.json" if rp.get("targets") else ""))
         n += 1
+    for fl in m.get("flake", []):
+        # a dry run smoke-tests the job with two repeats
+        frep = 2 if a.mode == "dry" else fl["repeats"]
+        w(f"D-{n:03d}-polydrift-{prefix}-flake-{fl['tag']}-{a.commit}.sh", JOB_HEAD.format(
+            what=what + " flake sample", c=a.commit, cell=fl["cell"], tag=fl["tag"], rep=frep,
+            flagtag=f"{prefix}-flake-{fl['tag']}", fixtures="list:" + ",".join(fl["fixtures"]),
+            lab=" lab" if fl["lab"] else ""))
+        n += 1
     w(f"D-{n:03d}-polydrift-{prefix}-pardiff-mqtt-{a.commit}.sh", PARDIFF_JOB.format(
         what=what, c=a.commit, flagtag=f"{prefix}-pardiff-mqtt"))
     n += 1
     flags = [f"{prefix}-{c['tag']}" for c in m["cells"]] + [f"{prefix}-{r['tag']}" for r in m.get("recall", [])] \
-        + [f"{prefix}-l9-{rp['tag']}" for rp in m.get("replay", [])] + [f"{prefix}-pardiff-mqtt"]
+        + [f"{prefix}-l9-{rp['tag']}" for rp in m.get("replay", [])] + [f"{prefix}-pardiff-mqtt"] \
+        + [f"{prefix}-flake-{fl['tag']}" for fl in m.get("flake", [])]
     w(f"D-{n:03d}-polydrift-{prefix}-summary-{a.commit}.sh", SUMMARY.format(
         what=what, c=a.commit, prefix=prefix, summary=f"D-CAMP-{a.mode.upper()}-SUMMARY.txt",
         flag=f"D-CAMP-{a.mode.upper()}-DONE", expected=" ".join(flags)))

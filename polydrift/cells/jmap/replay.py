@@ -33,8 +33,9 @@ from polydrift.core.canon import AlphaRenamer
 from polydrift.core.oracle import compare_all
 from polydrift.core.record import ObservationRecord, Status, read_jsonl
 from polydrift.core.repeat import MIN_REPEATS, flaky_triples
-from polydrift.core.replay import replay_summary, sample
+from polydrift.core.replay import replay_summary, sample, deciding_steps, diff_axes
 
+CELL_NAME = "jmap"  # selects the action view (core/replay_action.py)
 SEED = 20261116
 NET, SUBNET, SERVER_IP, CONSUMER_IP = "pd-replay-jmap", "172.31.63.0/24", "172.31.63.53", "172.31.63.11"
 IMAGE = "pd-consumer-jmap"
@@ -210,6 +211,8 @@ def main() -> int:
                     sides[side] = (sess, srv, vol)
                 if len(sides) == 2:
                     todo.append((k, calls, sides))
+            keep = deciding_steps(p, None)
+            todo = [t for t in todo if t[0] in keep]
             if not todo:
                 not_replayable.append(f"{p.fixture} {p.left} {p.right}")
                 continue
@@ -221,12 +224,12 @@ def main() -> int:
                         got = consume(name, user, calls)
                         res = {"out": canon(got, vol | {user}), "server": json.loads(ctl("COUNT") or "{}")}
                         ln = {"stratum": stratum, "fixture": p.fixture, "left": p.left, "right": p.right,
-                              "grade": None if p.grade is None else int(p.grade), "step": k, "consumer": name,
+                              "grade": None if p.grade is None else int(p.grade), "axes": diff_axes(p), "step": k, "consumer": name,
                               "side": side, "result": res}
                         lines.append(ln)
                         fo.write(json.dumps(ln) + "\n")
             log(f"{stratum} {p.fixture} {p.left} {p.right}: {len(todo)} steps")
-    summ = replay_summary(lines, sampled, not_replayable, tuple(CONSUMERS), SEED)
+    summ = replay_summary(lines, sampled, not_replayable, tuple(CONSUMERS), SEED, cell=CELL_NAME)
     summ.update({"run": str(run), "peers": sorted(current), "consumers": version, "not_replayable_pairs": not_replayable})
     (out / "summary.json").write_text(json.dumps(summ, indent=2, sort_keys=True, default=str) + "\n")
     sh(["docker", "rm", "-f", "pdr-jmap-server", "pdr-jmap-consumer"])

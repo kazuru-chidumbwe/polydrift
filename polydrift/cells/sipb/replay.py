@@ -31,8 +31,9 @@ from polydrift.cells.sipb.runner import load_fixtures
 from polydrift.core.oracle import compare_all
 from polydrift.core.record import ObservationRecord, Status, read_jsonl
 from polydrift.core.repeat import MIN_REPEATS, flaky_triples
-from polydrift.core.replay import replay_summary, sample
+from polydrift.core.replay import replay_summary, sample, deciding_steps, diff_axes
 
+CELL_NAME = "sipb"  # selects the action view (core/replay_action.py)
 SEED = 20261116
 NET, SUBNET, SERVER_IP, CONSUMER_IP = "pd-replay-sip", "172.31.64.0/24", "172.31.64.53", "172.31.64.11"
 IMAGE = "pd-consumer-sip"
@@ -181,6 +182,8 @@ def main() -> int:
                     plans[side] = plan
                 if len(plans) == 2:
                     todo.append((k, plans))
+            keep = deciding_steps(p, None)
+            todo = [t for t in todo if t[0] in keep]
             if not todo:
                 not_replayable.append(f"{p.fixture} {p.left} {p.right}")
                 continue
@@ -193,12 +196,12 @@ def main() -> int:
                         res = split_result(r.stdout.splitlines())
                         res["server"] = json.loads(ctl("COUNT") or "{}")
                         ln = {"stratum": stratum, "fixture": p.fixture, "left": p.left, "right": p.right,
-                              "grade": None if p.grade is None else int(p.grade), "step": k, "consumer": name,
+                              "grade": None if p.grade is None else int(p.grade), "axes": diff_axes(p), "step": k, "consumer": name,
                               "side": side, "result": res}
                         lines.append(ln)
                         fo.write(json.dumps(ln) + "\n")
             log(f"{stratum} {p.fixture} {p.left} {p.right}: {len(todo)} steps")
-    summ = replay_summary(lines, sampled, not_replayable, tuple(CONSUMERS), SEED)
+    summ = replay_summary(lines, sampled, not_replayable, tuple(CONSUMERS), SEED, cell=CELL_NAME)
     summ.update({"run": str(run), "peers": sorted(current), "consumers": version, "not_replayable_pairs": not_replayable})
     (out / "summary.json").write_text(json.dumps(summ, indent=2, sort_keys=True, default=str) + "\n")
     sh(["docker", "rm", "-f", "pdr-sip-server", "pdr-sip-consumer"])

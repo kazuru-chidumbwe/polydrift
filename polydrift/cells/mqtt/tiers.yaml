@@ -96,7 +96,11 @@ axes:
   connack_props:
     tier: 3
     kappa: connack_props
-    clause: "T3: server capabilities and limits announced in CONNACK; the assigned client identifier is compared as present/absent"
+    clause: "T3: CONNACK properties other than announced configuration (Reason String, User Property, Server Reference, Response Information); the assigned client identifier is compared as present/absent"
+  announced_config:
+    tier: 3
+    kappa: connack_props
+    clause: "not compared (3.2): limits and capabilities the broker announces from its configuration (Receive Maximum, Maximum QoS, Retain Available, Maximum Packet Size, Topic Alias Maximum, the three availability flags, Session Expiry Interval, Server Keep Alive); recorded and reported per broker"
   retained_after:
     tier: 2
     kappa: deliveries

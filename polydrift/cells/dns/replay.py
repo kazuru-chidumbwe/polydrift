@@ -30,9 +30,10 @@ from polydrift.cells.dns import adapter
 from polydrift.cells.dns.runner import load_fixtures
 from polydrift.core.oracle import compare_all
 from polydrift.core.record import ObservationRecord, Status, read_jsonl
-from polydrift.core.replay import replay_summary, sample
+from polydrift.core.replay import replay_summary, sample, deciding_steps, diff_axes
 from polydrift.core.repeat import MIN_REPEATS, flaky_triples
 
+CELL_NAME = "dns"  # selects the action view (core/replay_action.py)
 SEED = 20261116  # part of the frozen oracle specification (3.6): the replay sample is drawn with it
 NET, SUBNET, SERVER_IP = "pd-replay-dns", "172.31.65.0/24", "172.31.65.53"
 LAB_IMAGE = "pd-dns-py:lab"
@@ -94,7 +95,7 @@ def consumer_result(raw: str) -> dict[str, Any]:
 
 
 def summarise(lines: list[dict[str, Any]], sampled: list[tuple[str, Any]], not_replayable: list[str]) -> dict:
-    return replay_summary(lines, sampled, not_replayable, tuple(CONSUMERS), SEED)
+    return replay_summary(lines, sampled, not_replayable, tuple(CONSUMERS), SEED, cell=CELL_NAME)
 
 
 def sh(a: list[str], timeout: int = 120, stdin: str | None = None) -> subprocess.CompletedProcess:
@@ -177,6 +178,8 @@ def main() -> int:
                 pl = {s: side_payload(next((o for o in sides[s] if o.get("step") == k), None)) for s in sides}
                 if all(kind != "missing" for kind, _ in pl.values()):
                     todo.append((k, pl))
+            keep = deciding_steps(p, None)
+            todo = [t for t in todo if t[0] in keep]
             if not todo:
                 not_replayable.append(f"{p.fixture} {p.left} {p.right}")
                 continue
@@ -191,7 +194,7 @@ def main() -> int:
                         res["queries"] = json.loads(ctl("COUNT") or "{}")
                         res["queries"].pop("qnames", None)
                         ln = {"stratum": stratum, "fixture": p.fixture, "left": p.left, "right": p.right,
-                              "grade": None if p.grade is None else int(p.grade), "step": k, "consumer": c,
+                              "grade": None if p.grade is None else int(p.grade), "axes": diff_axes(p), "step": k, "consumer": c,
                               "side": side, "payload": kind, "result": res}
                         lines.append(ln)
                         fo.write(json.dumps(ln) + "\n")

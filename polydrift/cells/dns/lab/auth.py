@@ -141,6 +141,11 @@ def lookup(zone: Zone, qname: dns.name.Name, qtype: int, resp: dns.message.Messa
         rr = zone.get(name, qtype)
         if rr is not None:
             resp.answer.append(rr)
+            if qtype == dns.rdatatype.NS:
+                # additional section processing (RFC 1034 4.3.2 step 6): the addresses of the listed name servers
+                # that the zone holds; a root priming response carries them (RFC 8109 3.2), and a resolver may
+                # refuse a priming answer without them (Technitium)
+                resp.additional.extend(zone.glue(rr))
             return
         cname = zone.get(name, dns.rdatatype.CNAME)
         if cname is not None and qtype != dns.rdatatype.CNAME:

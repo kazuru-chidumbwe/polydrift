@@ -451,6 +451,43 @@ fixtures:
       - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@172.31.60.250:5099;transport=tcp>\nExpires: 300\nContent-Length: {clen}\n\n"}
       - {"op": "send", "from": "alice", "window_ms": 6000, "msg": "OPTIONS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice"}}
 
+  px_non_invite_timeout:
+    kind: probe
+    roles: ["proxy"]
+    # RFC 4320 Section 4 (updates RFC 3261): bob never answers an OPTIONS (Timer F, 32 s), then answers late
+    spec_refs:
+      - {"req_id": "SIP-8be570ff", "keyword": "MUST", "axis": "x1", "step": 2, "excludes": [408], "note": "no 408 to a non-INVITE request"}
+      - {"req_id": "SIP-e950b2d7", "keyword": "MUST", "axis": "x1", "step": 2, "includes": [100], "note": "a 100 once Timer E has reached T2 with no other response"}
+      - {"req_id": "SIP-d5f0f2f5", "keyword": "MUST", "axis": "x2", "step": 2, "allowed": [true, "null"], "note": "no 100 over UDP before Timer E reaches T2 (3.5 s; 3.0 s allowed for timing); null: no 100"}
+      - {"req_id": "SIP-2335988a", "keyword": "MUST", "axis": "x3", "step": 2, "allowed": [false]}
+      - {"req_id": "SIP-9b4145ed", "keyword": "MAY", "axis": "x1", "step": 2, "basis": "not-applicable", "note": "reliable transport only; the fixture uses UDP"}
+      - {"req_id": "SIP-9bd6c175", "keyword": "MUST", "axis": "x4", "step": 3, "allowed": [[]], "note": "the late 200 is not forwarded after the transaction ended"}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0
+Via: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport
+Max-Forwards: 70
+From: <sip:bob@{domain}>;tag={tag:rbob}
+To: <sip:bob@{domain}>
+Call-ID: reg-bob-{U}@{lab}
+CSeq: 1 REGISTER
+Contact: <sip:bob@{lab}:{port:bob}>
+Expires: 300
+Content-Length: {clen}
+
+"}
+      - {"op": "send", "from": "alice", "window_ms": 34000, "msg": "OPTIONS sip:bob@{domain} SIP/2.0
+Via: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport
+Max-Forwards: 70
+From: <sip:alice@{domain}>;tag={tag:alice}
+To: <sip:bob@{domain}>
+Call-ID: {callid}
+CSeq: 1 OPTIONS
+Contact: <sip:alice@{lab}:{port:alice}>
+Content-Length: {clen}
+
+", "extract": {"x1": "codes:alice", "x2": "firstafter:alice=100,3.0", "x3": "prov1xx:alice"}}
+      - {"op": "reply", "from": "bob", "code": 200, "reason": "OK", "window_ms": 1500, "extract": {"x4": "codes:alice"}}
+
   px_timeout_408:
     kind: probe
     roles: ["proxy"]

@@ -96,3 +96,13 @@ def test_d5_child_answers_with_a_long_child_delegation():
     assert [str(x) for x in r.authority] == ["s.ghost.pdlab. 3600 IN NS ns.s.ghost.pdlab."]
     r = dns.message.from_wire(auth.respond(child, dns.message.make_query("x.s.ghost.pdlab.", "A").to_wire(), "udp", "x"))
     assert [str(x) for x in r.answer] == ["x.s.ghost.pdlab. 300 IN A 10.0.66.2"]
+
+
+def test_ns_answer_carries_name_server_addresses():
+    # additional section processing (RFC 1034 4.3.2), as a root priming response needs (RFC 8109)
+    root = auth.Zone(".", [". SOA a.root.pdlab. h.pdlab. 1 3600 600 86400 300", ". NS a.root.pdlab.",
+                           "a.root.pdlab. A 172.31.53.10", "pdlab. NS ns.pdlab.", "ns.pdlab. A 172.31.53.11"], {})
+    m = dns.message.make_query(".", "NS")
+    r = dns.message.from_wire(auth.respond(root, m.to_wire(), "udp", "10.0.0.9"))
+    assert [str(x) for x in r.answer] and not r.authority
+    assert "172.31.53.10" in " ".join(str(x) for x in r.additional)

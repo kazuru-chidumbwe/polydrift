@@ -402,7 +402,7 @@ def _walk(cur, parts):
     return cur
 
 
-FN = r"^(len|keys|type|has|eq|ne|in|re|allre|allin|sorted|lower|ge|le|hasall|count|codes|methods|same|nre|ncodes|hascode|ackresp|retx|firstat|vals):"
+FN = r"^(len|keys|type|has|eq|ne|in|re|allre|allin|sorted|lower|ge|le|hasall|count|codes|methods|same|nre|ncodes|hascode|ackresp|retx|firstat|vals|firstafter|prov1xx):"
 
 
 def _branch(m: dict) -> str:
@@ -480,6 +480,19 @@ def evaluate(expr: str, ctx: dict):
         return not missing
     if fn == "len":
         return len(v) if isinstance(v, (list, dict, str)) else 0 if missing else None
+    if fn == "firstafter":
+        # firstafter:party=KEY,SECONDS: the first copy of the request method or response code KEY arrived at least
+        # SECONDS after the step started (True), earlier (False), or never (None). For RFC 4320 4.1: no 100 to a
+        # non-INVITE request over UDP before Timer E reaches T2 (0.5 + 1 + 2 s with the default timers).
+        key, _, sec = lit.partition(",")
+        key = key.upper()
+        times = sorted(m["at"] for m in v or [] if "at" in m and (
+            (m.get("kind") == "req" and str(m.get("method", "")).upper() == key)
+            or (m.get("kind") == "resp" and str(m.get("code")) == key)))
+        return None if not times else (times[0] - ctx.get("t0", times[0])) >= float(sec)
+    if fn == "prov1xx":
+        # prov1xx:party: the party received a provisional response other than 100 (RFC 4320 4.1, non-INVITE)
+        return any(m.get("kind") == "resp" and 101 <= int(m.get("code") or 0) <= 199 for m in v or [])
     if fn in ("retx", "firstat"):
         # retx:party=KEY: copies of one request method (or response code) the party received in the step, and the
         # gaps between successive copies on the T1 doubling scale (0.5, 1, 2, 4, 8, 16 s: each gap goes to the

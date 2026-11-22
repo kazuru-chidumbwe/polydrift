@@ -112,14 +112,14 @@ The classification contract is in [`docs/METRICS.md`](docs/METRICS.md).
 
 ## Reproducibility
 
-The harness and oracle specification used for the study's campaign are frozen in commit `a497bdd` and deposited at
-[doi:10.5281/zenodo.24445747](https://doi.org/10.5281/zenodo.24445747), together with the analysis plan and the hash of
-every file that decides an outcome. The campaign plan is rebuilt and checked with
+The harness and oracle specification used for the study's campaign are frozen in a tagged commit (`freeze-<commit>`)
+and deposited at [doi:10.5281/zenodo.24445746](https://doi.org/10.5281/zenodo.24445746) (all versions), together with
+the analysis plan and the hash of every file that decides an outcome. The campaign plan is rebuilt and checked with
 
 ```bash
 python tools/campaign.py build     # targets, recall sets and flake sample from campaign/sources.json
 python tools/campaign.py check     # every target, image and case is consistent
-python tools/campaign.py jobs --mode campaign --commit a497bdd --out jobs/   # one detached job per cell
+python tools/campaign.py jobs --mode campaign --commit <commit> --out jobs/   # one detached job per cell
 ```
 
 JSON reports are written with sorted keys, so two runs on the same implementations can be compared by hashing their reports.

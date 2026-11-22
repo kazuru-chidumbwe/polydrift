@@ -324,8 +324,6 @@ fixtures:
       - {"req_id": "SIP-d87acbcf", "keyword": "MAY", "axis": "x1", "step": 3, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-d29de2c1", "keyword": "MAY", "axis": "x1", "step": 3, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-6ae773ad", "keyword": "MUST", "axis": "x3", "step": 3, "allowed": [false]}
-      - {"req_id": "SIP-0552a135", "keyword": "MUST", "axis": "x1", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
-      - {"req_id": "SIP-6ac2f947", "keyword": "MUST", "axis": "x1", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-388554cc", "keyword": "MUST", "axis": "x4", "step": 5, "allowed": [["CANCEL"]]}
       - {"req_id": "SIP-7e34ef58", "keyword": "MUST", "axis": "x4", "step": 5, "includes": ["CANCEL"], "note": "the pending branch is cancelled after the 2xx"}
       - {"req_id": "SIP-62218bc2", "keyword": "MAY", "axis": "x1", "step": 3, "note": "comparison only", "basis": "option"}
@@ -466,6 +464,34 @@ fixtures:
       - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
       - {"op": "send", "from": "alice", "window_ms": 34000, "msg": "OPTIONS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice", "x2": "firstafter:alice=100,3.0", "x3": "prov1xx:alice"}}
       - {"op": "reply", "from": "bob", "code": 200, "reason": "OK", "window_ms": 1500, "extract": {"x4": "codes:alice"}}
+
+  px_redirect_duplicate_targets:
+    kind: probe
+    roles: ["proxy"]
+    # RFC 3261 16.5: a URI already in the target set MUST NOT be added again (here through 3xx recursion, 16.7 step 4)
+    spec_refs:
+      - {"req_id": "SIP-0552a135", "keyword": "MUST", "axis": "x1", "step": 3, "allowed": [["INVITE"], []], "note": "one INVITE to carol; empty: the proxy returns the 3xx instead of recursing"}
+      - {"req_id": "SIP-6ac2f947", "keyword": "MUST", "axis": "x2", "step": 3, "allowed": [["ACK"]], "note": "bob, already tried, gets only the ACK for its 302"}
+      - {"req_id": "SIP-0552a135", "keyword": "MUST", "axis": "x4", "step": 4, "allowed": [["ACK"], []], "note": "no second INVITE to carol after she refuses"}
+      - {"req_id": "SIP-6ac2f947", "keyword": "MUST", "axis": "x5", "step": 4, "allowed": [[]], "note": "bob is not tried again"}
+    steps:
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 600, "msg": "INVITE sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n"}
+      - {"op": "reply", "from": "bob", "code": 302, "reason": "Moved Temporarily", "window_ms": 2000, "headers": {"Contact": ["<sip:carol@{lab}:{port:carol}>", "<sip:carol@{lab}:{port:carol}>", "<sip:bob@{lab}:{port:bob}>"]}, "extract": {"x1": "methods:carol", "x2": "methods:bob", "x3": "codes:alice"}}
+      - {"op": "reply", "from": "carol", "code": 486, "reason": "Busy Here", "window_ms": 2500, "extract": {"x4": "methods:carol", "x5": "methods:bob"}}
+      - {"op": "ack", "from": "alice", "window_ms": 600}
+
+  uac_redirect_duplicate_contact:
+    kind: probe
+    roles: ["uac"]
+    # RFC 3261 8.1.3.4: a client processing 3xx responses MUST NOT add a URI to the target set more than once
+    spec_refs:
+      - {"req_id": "SIP-267e9f2d", "keyword": "MUST", "axis": "x1", "step": 2, "allowed": [["INVITE"]], "note": "one INVITE to carol for the two identical Contacts"}
+      - {"req_id": "SIP-267e9f2d", "keyword": "MUST", "axis": "x2", "step": 3, "allowed": [["ACK"]], "note": "after carol refuses, no second INVITE to the same URI"}
+    steps:
+      - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 600}
+      - {"op": "reply", "from": "bob", "code": 302, "reason": "Moved Temporarily", "window_ms": 2000, "headers": {"Contact": ["<sip:carol@{lab}:{port:carol};pdkeep=1>", "<sip:carol@{lab}:{port:carol};pdkeep=1>"]}, "extract": {"x1": "methods:carol"}}
+      - {"op": "reply", "from": "carol", "code": 486, "reason": "Busy Here", "window_ms": 2500, "extract": {"x2": "methods:carol"}}
 
   px_timeout_408:
     kind: probe
@@ -890,7 +916,7 @@ fixtures:
       - {"req_id": "SIP-734331b0", "keyword": "MUST", "axis": "x4", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-9559f2bb", "keyword": "SHOULD", "axis": "x5", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-322499cf", "keyword": "MUST", "axis": "x6", "step": 1, "allowed": [true, "null"]}
-      - {"req_id": "SIP-a4452268", "keyword": "MUST", "axis": "x7", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-a4452268", "keyword": "MUST", "axis": "x9", "step": 1, "allowed": [true, "null"], "note": "a 100, or a first response within 200 ms (0.25 s measured)"}
       - {"req_id": "SIP-c3f2d180", "keyword": "SHOULD", "axis": "x7", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-12fb2a6f", "keyword": "MUST", "axis": "x4", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-82e0c687", "keyword": "MUST", "axis": "x4", "step": 1, "allowed": [true]}
@@ -917,7 +943,7 @@ fixtures:
       - {"req_id": "SIP-b29ee7b1", "keyword": "SHOULD", "axis": "x4", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-6e6abd28", "keyword": "SHOULD", "axis": "x4", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
     steps:
-      - {"op": "send", "from": "alice", "window_ms": 6000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nRecord-Route: <sip:{lab}:{port:dave};lr;pdrr=1>\nTimestamp: 54\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "re:alice/-1/hdr/record-route/0=.*pdrr=1.*", "x2": "re:alice/-1/hdr/contact/0=<?sips?:[^,]*", "x3": "re:alice/-1/hdr/to/0=.*;tag=.*", "x4": "re:alice/-1/body=(?s).*m=audio.*", "x5": "hasall:alice/-1/hdr=[\"allow\", \"supported\"]", "x6": "alice/0/hdr/timestamp/0", "x7": "codes:alice"}}
+      - {"op": "send", "from": "alice", "window_ms": 6000, "msg": "INVITE sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 INVITE\nContact: <sip:alice@{lab}:{port:alice}>\nRecord-Route: <sip:{lab}:{port:dave};lr;pdrr=1>\nTimestamp: 54\nContent-Type: application/sdp\nContent-Length: {clen}\n\nv=0\no=alice 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40000 RTP/AVP 0\n", "extract": {"x1": "re:alice/-1/hdr/record-route/0=.*pdrr=1.*", "x2": "re:alice/-1/hdr/contact/0=<?sips?:[^,]*", "x3": "re:alice/-1/hdr/to/0=.*;tag=.*", "x4": "re:alice/-1/body=(?s).*m=audio.*", "x5": "hasall:alice/-1/hdr=[\"allow\", \"supported\"]", "x6": "alice/0/hdr/timestamp/0", "x7": "codes:alice", "x9": "tryok:alice"}}
       - {"op": "ack", "from": "alice", "window_ms": 800}
       - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "BYE {lasturi:alice:Contact} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: {last:alice:To}\nCall-ID: {callid}\nCSeq: 2 BYE\nContact: <sip:alice@{lab}:{port:alice}>\nRoute: <sip:{lab}:{port:dave};lr;pdrr=1>\nContent-Length: {clen}\n\n", "extract": {"x8": "codes:alice"}}
 
@@ -1109,7 +1135,6 @@ fixtures:
       - {"req_id": "SIP-ae7a19b7", "keyword": "MUST", "axis": "x5", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
       - {"req_id": "SIP-7bb8841f", "keyword": "MUST", "axis": "x8", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
       - {"req_id": "SIP-cfdaa7b7", "keyword": "MUST", "axis": "x8", "step": 3, "basis": "option", "note": "several outcomes conform"}
-      - {"req_id": "SIP-4733ad85", "keyword": "MUST", "axis": "x8", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-69188367", "keyword": "MUST", "axis": "x2", "step": 3, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
       - {"req_id": "SIP-d08af2c8", "keyword": "MAY", "axis": "x5", "step": 3, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-b9c45532", "keyword": "MAY", "axis": "x5", "step": 3, "note": "comparison only", "basis": "option"}
@@ -1251,6 +1276,7 @@ fixtures:
       - {"req_id": "SIP-384874f1", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-664c47dc", "keyword": "MUST", "axis": "x3", "step": 2, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
       - {"req_id": "SIP-879263af", "keyword": "MUST", "axis": "x9", "step": 2, "allowed": [true]}
+      - {"req_id": "SIP-4733ad85", "keyword": "MUST", "axis": "x10", "step": 3, "allowed": [1], "note": "the BYE carries the INVITE's CSeq number plus one"}
       - {"req_id": "SIP-6acbc2ef", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-48de97dc", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-2dc25a84", "keyword": "MUST", "axis": "x5", "step": 3, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
@@ -1264,7 +1290,7 @@ fixtures:
     steps:
       - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 600}
       - {"op": "reply", "from": "bob", "code": 200, "reason": "OK", "window_ms": 1500, "headers": {"Content-Type": "application/sdp", "Record-Route": ["<sip:{lab}:{port:carol};lr>", "<sip:{lab}:{port:dave};lr>"]}, "body": "v=0\no=bob 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40002 RTP/AVP 0\n", "extract": {"x1": "methods:dave", "x2": "re:dave/0/hdr/cseq/0=1 ACK", "x3": "re:dave/0/hdr/route/1=<sip:{lab}:{port:carol};lr>", "x4": "re:dave/0/ruri=sip:bob@{lab}:{port:bob}.*", "x9": "subsetvals:dave/0/hdr/require,hist/bob/0/hdr/require"}}
-      - {"op": "uac", "action": "hangup", "window_ms": 2000, "extract": {"x5": "re:dave/0/hdr/to/0=.*bob@.*;tag={tag:bob}.*", "x6": "re:dave/0/hdr/cseq/0=2 BYE", "x7": "same:dave/0/hdr/call-id,hist/bob/0/hdr/call-id", "x8": "same:dave/0/hdr/from,hist/bob/0/hdr/from"}}
+      - {"op": "uac", "action": "hangup", "window_ms": 2000, "extract": {"x5": "re:dave/0/hdr/to/0=.*bob@.*;tag={tag:bob}.*", "x6": "re:dave/0/hdr/cseq/0=2 BYE", "x7": "same:dave/0/hdr/call-id,hist/bob/0/hdr/call-id", "x8": "same:dave/0/hdr/from,hist/bob/0/hdr/from", "x10": "cseqdelta:dave/0/hdr/cseq/0,hist/bob/0/hdr/cseq/0"}}
       - {"op": "reply", "from": "dave", "code": 200, "reason": "OK", "window_ms": 1200}
 
   uac_2xx_retransmitted:
@@ -1356,7 +1382,6 @@ fixtures:
       - {"req_id": "SIP-ec9a94a6", "keyword": "MUST", "axis": "x3", "step": 2, "allowed": [false, "null"]}
       - {"req_id": "SIP-fe18d4e4", "keyword": "SHOULD", "axis": "x4", "step": 2, "allowed": [true, "null"]}
       - {"req_id": "SIP-b31d2b66", "keyword": "SHOULD", "axis": "x4", "step": 2, "allowed": [true], "note": "the redirected request re-uses the Call-ID"}
-      - {"req_id": "SIP-267e9f2d", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-2e206e9c", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-ee2052a0", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-27f014ad", "keyword": "SHOULD", "axis": "x1", "step": 2, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}

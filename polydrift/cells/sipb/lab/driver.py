@@ -402,7 +402,7 @@ def _walk(cur, parts):
     return cur
 
 
-FN = r"^(len|keys|type|has|eq|ne|in|re|allre|allin|sorted|lower|ge|le|hasall|count|codes|methods|same|nre|ncodes|hascode|ackresp|retx|firstat|vals|firstafter|prov1xx|tagsin|valsall|subsetvals):"
+FN = r"^(len|keys|type|has|eq|ne|in|re|allre|allin|sorted|lower|ge|le|hasall|count|codes|methods|same|nre|ncodes|hascode|ackresp|retx|firstat|vals|firstafter|prov1xx|tagsin|valsall|subsetvals|tryok|cseqdelta):"
 
 
 def _branch(m: dict) -> str:
@@ -511,6 +511,23 @@ def evaluate(expr: str, ctx: dict):
         # final and provisional status codes in a party's inbox, in order, one per transaction and outcome: a
         # retransmitted copy is not a second response (copies are counted by ncodes: and retx:)
         return [m.get("code") for m in _once(v) if m.get("kind") == "resp"]
+    if fn == "tryok":
+        # tryok:party: RFC 3261 17.2.1, an INVITE server transaction sends 100 (Trying) unless the TU answers within
+        # 200 ms: True when a 100 arrived or the first response came within 0.25 s (0.05 s for scheduling), False
+        # when the first response came later with no 100, None when nothing arrived
+        resp = sorted((m["at"], m.get("code")) for m in v or [] if m.get("kind") == "resp" and "at" in m)
+        if not resp:
+            return None
+        return any(c == 100 for _, c in resp) or (resp[0][0] - ctx.get("t0", resp[0][0])) <= 0.25
+    if fn == "cseqdelta":
+        # cseqdelta:pathA,pathB: CSeq number at A minus CSeq number at B (an in-dialog request against the INVITE
+        # that set the local sequence number, RFC 3261 12.1.2, 12.2.1.1); None when either is missing
+        pa, pb = body.split(",", 1)
+        va, vb = _walk(ctx, [x for x in pa.split("/") if x]), _walk(ctx, [x for x in pb.split("/") if x])
+        try:
+            return int(str(va).split()[0]) - int(str(vb).split()[0])
+        except (ValueError, IndexError):
+            return None
     if fn == "subsetvals":
         # subsetvals:pathA,pathB: every value of header A (rows split at commas, case-insensitive) is a value of
         # header B; true when A is absent (an ACK for a 2xx carries only the INVITE's Require values, RFC 3261 8.2.2.3)

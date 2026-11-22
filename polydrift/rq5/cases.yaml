@@ -4,7 +4,7 @@
 # version located) cases count for recall only; their later versions are run as a bisect and reported as observed.
 # Each case's fixtures are in cells/<cell>/fixtures_rq5.yaml. `axes` are the axes on which the reported behaviour
 # shows; `known` is the value the report gives for the affected version, where it gives one.
-# Verification notes per case: CURRENT-WORK/polydrift/manuscript/RQ5-GROUND-TRUTH.md (Atlas, not in the artifact).
+# Each case was verified against its source (advisory, tracker issue or paper table) before the campaign.
 cases:
   D1:
     cell: dns

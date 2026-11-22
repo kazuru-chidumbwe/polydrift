@@ -1,6 +1,6 @@
 """Fixture census: which testable ledger rows each cell's fixtures exercise (manuscript 4.4).
 
-Reads the ledgers (default: the Atlas ledger folder, or --ledgers) and every cell's fixtures.yaml, and reports per cell
+Reads the ledgers (--ledgers) and every cell's fixtures.yaml, and reports per cell
 the testable rows covered by at least one spec_ref, and the uncovered rows by section, keyword and role.
 A row counts as covered when a fixture's spec_ref names its req_id (or, for MQTT, its native_id).
 `merged` rows are covered through the row they merge into.

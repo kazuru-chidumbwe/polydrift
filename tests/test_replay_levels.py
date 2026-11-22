@@ -40,7 +40,8 @@ def test_summary_reports_both_levels():
                       "consumer": "libldap", "side": side,
                       "result": {"ops": [{"op": "search", "result": rc}], "server": {"requests": ["search"]}}})
     s = replay_summary(lines, [("T3", None)], [], ("libldap",), 1, cell="ldap")
-    assert s["levels"]["strict"]["confusion"]["libldap"]["fn"] == 1
+    # strict: a T3 difference is predicted visible, and the code difference is visible (tp)
+    assert s["levels"]["strict"]["confusion"]["libldap"]["tp"] == 1
     assert s["levels"]["action"]["confusion"]["libldap"]["tn"] == 1
     assert s["confusion"] == s["levels"]["strict"]["confusion"]
 
@@ -76,3 +77,20 @@ def test_lineage_relatives_cast_one_vote_in_scope():
     assert majority_key(peers, Tier.T2, groups=topic, family=fam) == majority_key([peers[2]], Tier.T2)
     # elsewhere they count twice and tie with "y"
     assert majority_key(peers, Tier.T2, groups=other, family=fam) is None
+
+
+def test_strict_level_tests_t4_and_same_project_pairs_are_apart():
+    def line(stratum, left, right, consumer, side, v):
+        return {"stratum": stratum, "fixture": "f", "left": left, "right": right, "grade": None, "step": 1,
+                "consumer": consumer, "side": side, "result": {"ops": [{"op": "search", "result": v}],
+                                                               "server": {"requests": ["search"]}}}
+    lines = []
+    # a T4-only agreement the consumer sees: a false agreement at the strict level (fn)
+    lines += [line("T4-only", "389ds-3.1", "lldap-0.6.3", "ldap3", s, v) for s, v in (("left", 0), ("right", 32))]
+    # a T0-T2 pair involving OpenLDAP, replayed into libldap (same project): reported apart
+    lines += [line("T0-T2", "openldap-2.6.10", "lldap-0.6.3", "libldap", s, v) for s, v in (("left", 0), ("right", 32))]
+    s = replay_summary(lines, [("T4-only", None), ("T0-T2", None)], [], ("libldap", "ldap3"), 1, cell="ldap")
+    st = s["levels"]["strict"]
+    assert st["confusion"]["ldap3"]["fn"] == 1
+    assert st["confusion_same_project"]["libldap"]["tp"] == 1
+    assert st["confusion_independent"]["libldap"]["tp"] == 0

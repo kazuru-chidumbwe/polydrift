@@ -110,8 +110,31 @@ def diff_axes(pair: PairResult) -> list[list[Any]]:
     return [[d.axis, int(d.tier), bool(getattr(d, "erased", False))] for d in [*pair.diffs, *pair.t4_diffs]]
 
 
-def predicted_consequential(stratum: str) -> bool:
-    return stratum == "T0-T2"
+# The prediction each level tests (3.6). Strict: any difference the consumer API exposes, so a T0 to T3 divergence
+# is predicted visible and only a T4-only agreement is predicted invisible. Action: what the library does and keeps,
+# so T0 to T2 is predicted consequential and T3 and T4-only are not.
+LEVEL_MAX_TIER = {"strict": 3, "action": 2}
+STRATUM_TIER = {"T0-T2": 2, "T3": 3, "T4-only": 4}
+
+# Consumers that come from the same project as an implementation under test and may share its parsing code; their
+# results on pairs that involve that implementation are reported apart (3.6).
+SAME_PROJECT = {"libmosquitto": "mosquitto", "libldap": "openldap"}
+
+
+def predicted_consequential(stratum: str, level: str = "action") -> bool:
+    return STRATUM_TIER[stratum] <= LEVEL_MAX_TIER[level]
+
+
+def family(impl: str) -> str:
+    """Implementation family: the name without its version (emqx-6.3.2 -> emqx, hivemq-ce-2026.5 -> hivemq-ce)."""
+    import re
+
+    return re.sub(r"-v?\d[\w.]*(-.*)?$", "", impl)
+
+
+def same_project(consumer: str, left: str, right: str) -> bool:
+    fam = SAME_PROJECT.get(consumer)
+    return fam is not None and fam in (family(left), family(right))
 
 
 def _strict(r: Any) -> Any:
@@ -120,18 +143,28 @@ def _strict(r: Any) -> Any:
     return {k: v for k, v in r.items() if k != "data"} if isinstance(r, dict) else r
 
 
+def _cm(m: Confusion) -> dict[str, Any]:
+    return {"tp": m.tp, "fp": m.fp, "fn": m.fn, "tn": m.tn, "precision": m.precision, "recall": m.recall}
+
+
 def _level(by_pair: dict[tuple, dict[str, dict]], consumers: tuple[str, ...], view: Callable[[Any], Any],
-           strata: dict[str, int]) -> dict[str, Any]:
+           strata: dict[str, int], level: str) -> dict[str, Any]:
     conf = {c: Confusion() for c in consumers}
+    indep = {c: Confusion() for c in consumers}
+    same = {c: Confusion() for c in consumers}
     consequential: dict[tuple, dict[str, bool]] = {}
     for k, per_c in by_pair.items():
         for c, steps in per_c.items():
             obs = any(view(s.get("left")) != view(s.get("right")) for s in steps.values())
             consequential.setdefault(k, {})[c] = obs
-            conf[c].add(predicted_consequential(k[3]), obs)
+            pred = predicted_consequential(k[3], level)
+            conf[c].add(pred, obs)
+            (same if same_project(c, k[1], k[2]) else indep)[c].add(pred, obs)
     return {
-        "confusion": {c: {"tp": m.tp, "fp": m.fp, "fn": m.fn, "tn": m.tn, "precision": m.precision,
-                          "recall": m.recall} for c, m in conf.items()},
+        "predicts": f"T0 to T{LEVEL_MAX_TIER[level]} consequential",
+        "confusion": {c: _cm(m) for c, m in conf.items()},
+        "confusion_independent": {c: _cm(m) for c, m in indep.items()},
+        "confusion_same_project": {c: _cm(m) for c, m in same.items() if c in SAME_PROJECT},
         "consumer_disagreements": [list(k) for k, v in consequential.items() if len(set(v.values())) > 1],
         "per_stratum_consequential": {
             s: {c: sum(1 for k, v in consequential.items() if k[3] == s and v.get(c)) for c in consumers}
@@ -154,10 +187,10 @@ def cell_tiers(cell: str) -> dict[str, int]:
 
 
 def permutation_check(lines: list[dict[str, Any]], tiers: dict[str, int], view: Callable[[Any], Any],
-                      seed: int, n: int = PERMUTATIONS) -> dict[str, Any]:
+                      seed: int, n: int = PERMUTATIONS, level: str = "action") -> dict[str, Any]:
     """Non-circularity (3.6): agreement of the frozen placement with replay, against placements that give the cell's
     axes the same tiers in random order. Agreement is the share of replayed (pair, consumer) cases whose predicted
-    class (T0 to T2 or not) matches the observed consequence. Liveness (T0) and erased raw differences are not
+    class (at or below the level's highest predicted tier, or not) matches the observed consequence. Liveness (T0) and erased raw differences are not
     placements and keep their tier. Returns the frozen agreement and the share of shuffles that match or beat it."""
     obs: dict[tuple, bool] = {}
     axes: dict[tuple, list] = {}
@@ -173,13 +206,13 @@ def permutation_check(lines: list[dict[str, Any]], tiers: dict[str, int], view: 
 
     def predicted(pk: tuple, place: dict[str, int] | None) -> bool:
         if place is None:
-            return pk[3] == "T0-T2"
+            return predicted_consequential(pk[3], level)
         g = None
         for axis, tier, erased in axes[pk]:
             t = 4 if erased else place.get(axis, tier)
             if t <= 3:
                 g = t if g is None else min(g, t)
-        return g is not None and g <= 2
+        return g is not None and g <= LEVEL_MAX_TIER[level]
 
     def agreement(place: dict[str, int] | None) -> float:
         return sum(predicted(pk, place) == o for (pk, _), o in obs.items()) / len(obs)
@@ -198,7 +231,7 @@ def permutation_check(lines: list[dict[str, Any]], tiers: dict[str, int], view: 
 
 def replay_summary(lines: list[dict[str, Any]], sampled: list[tuple[str, Any]], not_replayable: list[str],
                    consumers: tuple[str, ...], seed: int, cell: str | None = None) -> dict[str, Any]:
-    """Per consumer and per level: confusion of predicted tier (T0 to T2 vs the rest) against observed consequence,
+    """Per consumer and per level: confusion of the level's prediction against observed consequence,
     consequential pairs per stratum, and pairs on which the consumers disagree (reported apart).
 
     The strict level counts any difference the consumer API exposes; it tests T4 erasure. The action level counts
@@ -209,14 +242,14 @@ def replay_summary(lines: list[dict[str, Any]], sampled: list[tuple[str, Any]], 
         k = (ln["fixture"], ln["left"], ln["right"], ln["stratum"])
         by_pair.setdefault(k, {}).setdefault(ln["consumer"], {}).setdefault(ln["step"], {})[ln["side"]] = ln["result"]
     strata = {s: sum(1 for st, _ in sampled if st == s) for s in ("T0-T2", "T3", "T4-only")}
-    strict = _level(by_pair, consumers, _strict, strata)
+    strict = _level(by_pair, consumers, _strict, strata, "strict")
     out = {"seed": seed, "sampled": strata, "replayed_pairs": len(by_pair), "not_replayable": len(not_replayable),
            **strict, "levels": {"strict": strict}}
     if cell is not None:
         view = ACTION_VIEWS[cell]
         action = lambda r: view(_strict(r))  # noqa: E731
-        out["levels"]["action"] = _level(by_pair, consumers, action, strata)
+        out["levels"]["action"] = _level(by_pair, consumers, action, strata, "action")
         tiers = cell_tiers(cell)
-        out["non_circularity"] = {"strict": permutation_check(lines, tiers, _strict, seed),
-                                  "action": permutation_check(lines, tiers, action, seed)}
+        out["non_circularity"] = {"strict": permutation_check(lines, tiers, _strict, seed, level="strict"),
+                                  "action": permutation_check(lines, tiers, action, seed, level="action")}
     return out

@@ -68,6 +68,14 @@ axes:
     tier: 3
     kappa: identity
     clause: "T3: question name as returned, case kept (RFC 1034 3.1, RFC 1035 2.3.3); 0x20 clients compare it"
+  dname_compressed:
+    tier: 3
+    kappa: identity
+    clause: "T3: a DNAME target sent in compressed form (RFC 6672 2.5); a downstream resolver that treats DNAME RDATA as uncompressed misreads it"
+  synth_ttl_follows:
+    tier: 3
+    kappa: identity
+    clause: "T3: the synthesized CNAME carries the cached DNAME's TTL (RFC 6672 3.1); how long the stub caches the synthesized name"
   answer_ttls:
     tier: 3
     kappa: ttl_classes

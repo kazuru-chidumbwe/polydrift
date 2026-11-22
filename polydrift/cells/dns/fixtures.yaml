@@ -479,14 +479,14 @@ fixtures:
     kind: probe
     spec_refs:
       - {"req_id": "DNS-98e3af0d", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
-      - {"req_id": "DNS-9b038eef", "keyword": "MUST", "axis": "answers", "step": 1, "note": "DNAME target sent uncompressed; comparison only", "basis": "not-observable"}
+      - {"req_id": "DNS-9b038eef", "keyword": "MUST", "axis": "dname_compressed", "step": 1, "allowed": [false, "null"], "note": "DNAME target sent uncompressed (read from the response bytes); null: no DNAME in the answer"}
     steps:
       - {"qname": "x.dn0.pd.pdlab", "qtype": "A"}
 
   census_dname_synth_ttl:
     kind: probe
     spec_refs:
-      - {"req_id": "DNS-e2b0f8dd", "keyword": "SHOULD", "axis": "answer_ttls", "step": 2, "note": "synthesized CNAME TTL follows the cached DNAME; comparison only", "basis": "not-observable"}
+      - {"req_id": "DNS-e2b0f8dd", "keyword": "SHOULD", "axis": "synth_ttl_follows", "step": 2, "allowed": [true, "null"], "note": "second answer, from the cache: the synthesized CNAME has the DNAME's decremented TTL; null: no DNAME and CNAME pair"}
     steps:
       - {"qname": "x.dn.pd.pdlab", "qtype": "A"}
       - {"op": "sleep", "ms": 2000}
@@ -624,7 +624,6 @@ fixtures:
       - {"req_id": "DNS-419127ba", "keyword": "MAY", "axis": "upstream_servers", "step": 3, "note": "comparison only", "basis": "option"}
       - {"req_id": "DNS-0b478274", "keyword": "MAY", "axis": "upstream_payloads", "step": 3, "note": "comparison only", "basis": "option"}
       - {"req_id": "DNS-fdef66c3", "keyword": "MAY", "axis": "upstream_payloads", "step": 3, "note": "comparison only", "basis": "option"}
-      - {"req_id": "DNS-21777f19", "keyword": "MUST", "axis": "upstream_payloads", "step": 3, "note": "advertised size not cached beyond the transaction; comparison only", "basis": "not-observable"}
       - {"req_id": "DNS-0c28ef62", "keyword": "SHOULD", "axis": "upstream_payloads", "step": 3, "note": "comparison only", "basis": "option"}
       - {"req_id": "DNS-f3cfb226", "keyword": "SHOULD", "axis": "upstream_payloads", "step": 3, "note": "comparison only", "basis": "option"}
       - {"req_id": "DNS-3942c281", "keyword": "SHOULD", "axis": "upstream_payloads", "step": 3, "note": "comparison only", "basis": "option"}
@@ -633,6 +632,17 @@ fixtures:
       - {"op": "upstream", "match": "ednsfe", "id": "up1"}
       - {"qname": "ednsfe.pd.pdlab", "qtype": "A", "id": "q"}
       - {"op": "upstream", "match": "ednsfe", "id": "up2"}
+
+  census_edns_size_per_transaction:
+    kind: probe
+    # RFC 6891 6.2.3: the requestor's payload size "MUST NOT be cached for use beyond the transaction in which it is
+    # advertised". big.pd.pdlab TXT is about 1,400 octets: asked with 4096 it fits, asked again with 512 it must be
+    # truncated (TC) over UDP, whatever the first query advertised.
+    spec_refs:
+      - {"req_id": "DNS-21777f19", "keyword": "MUST", "axis": "tc", "step": 2, "allowed": [true], "note": "the 512-octet query is answered within 512 octets, so truncated"}
+    steps:
+      - {"qname": "big.pd.pdlab", "qtype": "TXT", "payload": 4096}
+      - {"qname": "big.pd.pdlab", "qtype": "TXT", "payload": 512}
 
   census_client_option_not_forwarded:
     kind: probe

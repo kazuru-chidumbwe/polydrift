@@ -83,6 +83,56 @@ KAPPA: dict[str, Callable[[Any], Any]] = {"identity": identity, "rrset": _rrset,
 END_STATE_AXES: set[str] = set()
 
 
+def _skip_name(w: bytes, i: int) -> tuple[int, bool]:
+    """Offset after the domain name at i, and whether the name used a compression pointer."""
+    ptr = False
+    while i < len(w):
+        n = w[i]
+        if n == 0:
+            return i + 1, ptr
+        if n & 0xC0 == 0xC0:
+            return i + 2, True
+        i += 1 + n
+    return i, ptr
+
+
+def dname_compressed(wire_hex: Any) -> Any:
+    """True when a DNAME record in the answer section carries its target in compressed form (RFC 6672 2.5 forbids
+    it), False when every DNAME target is uncompressed, None when the response has no DNAME or no wire bytes."""
+    if not isinstance(wire_hex, str) or not wire_hex:
+        return None
+    try:
+        w = bytes.fromhex(wire_hex)
+        qd, an = int.from_bytes(w[4:6], "big"), int.from_bytes(w[6:8], "big")
+        i = 12
+        for _ in range(qd):
+            i, _p = _skip_name(w, i)
+            i += 4
+        seen = None
+        for _ in range(an):
+            i, _p = _skip_name(w, i)
+            rtype, rdlen = int.from_bytes(w[i:i + 2], "big"), int.from_bytes(w[i + 8:i + 10], "big")
+            rd = i + 10
+            if rtype == 39:
+                _end, ptr = _skip_name(w, rd)
+                seen = bool(seen) or ptr
+            i = rd + rdlen
+        return seen
+    except (IndexError, ValueError):
+        return None
+
+
+def synth_ttl_follows(answers: Any, ttls: Any) -> Any:
+    """For an answer with a DNAME and the CNAME synthesized from it: is the CNAME's TTL equal to the DNAME's
+    (RFC 6672 3.1, a cache answers with the cached DNAME's decremented TTL)? None when either record is absent."""
+    if not isinstance(answers, list) or not isinstance(ttls, list) or len(ttls) != len(answers):
+        return None
+    kinds = [(a.split()[1].lower() if isinstance(a, str) and len(a.split()) > 1 else "") for a in answers]
+    if "dname" not in kinds or "cname" not in kinds:
+        return None
+    return ttls[kinds.index("cname")] == ttls[kinds.index("dname")]
+
+
 def load_spec() -> CellSpec:
     tiers = yaml.safe_load(TIERS_PATH.read_text(encoding="utf-8"))
     axes = {}
@@ -202,6 +252,8 @@ def step_record(obs: dict[str, Any], spec: CellSpec) -> StepRecord:
                 "rd": obs.get("rd"),
                 "qname_case": obs.get("qname_case"),
                 "answer_ttls": obs.get("ttls"),
+                "dname_compressed": dname_compressed(obs.get("wire")),
+                "synth_ttl_follows": synth_ttl_follows(obs.get("answers"), obs.get("ttls")),
                 "additional_soa": obs.get("additional_soa"),
             })
         for name, raw in values.items():

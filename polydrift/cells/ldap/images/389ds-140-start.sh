@@ -22,4 +22,7 @@ create_suffix_entry = True
 EOF
   dscreate from-file /tmp/ds.inf
 fi
+# dscreate may leave the instance running (through the systemctl stand-in): stop it, then run in the foreground
+/usr/local/sbin/systemctl stop dirsrv@localhost
+mkdir -p /run/dirsrv /run/lock/dirsrv/slapd-localhost && chown -R dirsrv:dirsrv /run/dirsrv /run/lock/dirsrv
 exec /usr/sbin/ns-slapd -D /etc/dirsrv/slapd-localhost -i /run/dirsrv/slapd-localhost.pid -d 0

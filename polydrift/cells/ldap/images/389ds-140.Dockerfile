@@ -13,6 +13,7 @@ RUN sed -i -e 's/^metalink=/#metalink=/' \
       $K/x86_64/389-ds-base-libs-${VER}-1.fc29.x86_64.rpm $K/noarch/python3-lib389-${VER}-1.fc29.noarch.rpm hostname \
  && dnf clean all && rpm -q 389-ds-base > /389DS-VERSION
 COPY 389ds-140-start.sh /usr/local/bin/pd-389ds-start
-RUN chmod +x /usr/local/bin/pd-389ds-start
+COPY 389ds-140-systemctl.sh /usr/local/sbin/systemctl
+RUN chmod +x /usr/local/bin/pd-389ds-start /usr/local/sbin/systemctl
 EXPOSE 3389
 ENTRYPOINT ["/usr/local/bin/pd-389ds-start"]

@@ -21,6 +21,27 @@
   "ready": 180
  },
  {
+  "key": "flashmq-1.12.1",
+  "impl": "flashmq",
+  "version": "1.12.1",
+  "image": "pd-flashmq:1.12.1",
+  "port": 1883,
+  "extra": [],
+  "cmd": null,
+  "ready": 60,
+  "cloned_from": "flashmq-1.27.3"
+ },
+ {
+  "key": "flashmq-1.27.3",
+  "impl": "flashmq",
+  "version": "1.27.3",
+  "image": "pd-flashmq:1.27.3",
+  "port": 1883,
+  "extra": [],
+  "cmd": null,
+  "ready": 60
+ },
+ {
   "key": "hivemq-ce-2024.1",
   "impl": "hivemq-ce",
   "version": "2024.1",

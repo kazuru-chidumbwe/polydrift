@@ -14,8 +14,8 @@ Table 10 marks: affected (tick), confirmed by the developer (dagger), fixed (dou
 fixed versions. Until a fixed release is located in the vendor's tracker (FIXED below), a case is fix-unconfirmed
 and its later versions are the campaign's current versions of that broker (run as a bisect, reported as observed).
 
-Excluded by the selection rule (no affected broker in the cell): N2, N9, N13, N33, N46, N52 (FlashMQ only).
-N29 is case M1 (CVE-2024-42655), kept under that id.
+FlashMQ joined the cell on 22 Nov 2026 (MBFuzzer tested 1.12.1), so its 23 affected statements are included, six of
+them FlashMQ-only. N29's NanoMQ instance is case M1 (CVE-2024-42655); its FlashMQ instance uses a broker-neutral fixture.
 """
 from __future__ import annotations
 
@@ -175,8 +175,42 @@ T = {
     "N53": ("MQTT 5.0 3.1.3.3", "MUST", {"nanomq": "a+c+f"}, REJECT,
             [connect5(will={"topic": "", "payload": "w"})], 1, "zero-length Will Topic"),
 }
-EXCLUDED = {"N2": "FlashMQ only", "N9": "FlashMQ only", "N13": "FlashMQ only", "N33": "FlashMQ only",
-            "N46": "FlashMQ only", "N52": "FlashMQ only", "N29": "same bug as case M1 (CVE-2024-42655)"}
+# FlashMQ (MBFuzzer tested 1.12.1) joined the MQTT cell on 22 Nov 2026. Its Table 10 marks, read from the paper
+# (page 6196); N14 is marked "not affected, confirmed" for FlashMQ and is left out.
+FLASHMQ = {"N2": "a+c+f", "N9": "a+c+f", "N10": "a+c+f", "N11": "a+c+f", "N13": "a+c+f", "N23": "a+c+f",
+           "N24": "a+c", "N25": "a+c+f", "N28": "a+c+f", "N29": "a+c+f", "N30": "a+c+f", "N31": "a+c+f",
+           "N33": "a+c+f", "N36": "a+c+f", "N37": "a+c+f", "N38": "a+c+f", "N39": "a+c+f", "N42": "a+c+f",
+           "N43": "a+c+f", "N46": "a+c+f", "N47": "a+c+f", "N49": "a+c+f", "N52": "a+c+f"}
+AFFECTED["flashmq"] = "1.12.1"
+CURRENT["flashmq"] = "1.27.3"
+UNSUB_PROPS = "a2 8701 0001 8001 26 0001 6b 007a " + "76" * 122 + " 0001 78"
+T.update({
+    "N2": ("MQTT-3.1.2-15", "MUST", {}, REJECT,
+           [{"client": "a", "op": "connect", "args": {"client_id": "{C}a", "version": 4, "will_retain_bit": True}}], 1,
+           "MQTT 3.1.1 CONNECT with Will Flag 0 and Will Retain 1"),
+    "N9": ("MQTT-3.1.0-1", "MUST", {}, REJECT, [hx("c0 00")], 1,
+           "PINGREQ as the first packet on a new connection"),
+    "N13": ("MQTT-3.1.2-9", "MUST", {}, REJECT, [hx("10 0f 0004 4d515454 05 06 003c 00 0002 7033")], 1,
+            "MQTT 5 CONNECT with Will Flag 1 and no Will Properties, Will Topic or Will Payload"),
+    "N29": ("MQTT-4.7.2-1", "MUST", {}, ["dollar_topics"],
+            [{"client": "b", "op": "connect", "args": {"client_id": "{C}b"}, "window_ms": 500},
+             {"client": "b", "op": "subscribe", "args": {"packet_id": 1, "filters": [{"topic": "#"}]},
+              "window_ms": 12000},
+             {"client": "a", "op": "connect", "args": {"client_id": "{C}a"}, "window_ms": 3000},
+             {"client": "a", "op": "publish", "args": {"topic": "1/1/1", "payload": "123", "qos": 0}, "window_ms": 3000},
+             {"client": "a", "op": "disconnect", "window_ms": 3000}], 2,
+            "wildcard subscription receives $-topics; broker-neutral form of case M1 (FlashMQ $SYS every 10 s)"),
+    "N33": ("MQTT 5.0 3.3.2.3.9", "MUST", {}, FORWARD,
+            SUB_B + [V5, pub({"raw": "0300016103000162"})], 4, "Content Type twice (Protocol Error)"),
+    "N46": ("MQTT 5.0 3.3.2.3.5", "MUST", {}, FORWARD,
+            SUB_B + [V5, pub({"raw": "0800017208000173"})], 4, "Response Topic twice (Protocol Error)"),
+    "N52": ("MQTT 5.0 3.10.2.1.1", "MUST", {}, REJECT, [V5, hx(UNSUB_PROPS)], 2,
+            "UNSUBSCRIBE whose Property Length (128) needs a two-byte Variable Byte Integer; a UNSUBACK is expected"),
+})
+for _nid, _m in FLASHMQ.items():
+    T[_nid][2]["flashmq"] = _m
+T = dict(sorted(T.items(), key=lambda kv: int(kv[0][1:])))
+EXCLUDED = {"N29 (NanoMQ)": "same bug as case M1 (CVE-2024-42655)", "N14 (FlashMQ)": "not affected"}
 
 
 def flow(x) -> str:

@@ -30,6 +30,36 @@
   "ready": 180
  },
  {
+  "key": "flashmq-1.25.0",
+  "impl": "flashmq",
+  "version": "1.25.0",
+  "image": "pd-flashmq:1.25.0",
+  "port": 1883,
+  "extra": [],
+  "cmd": null,
+  "ready": 60
+ },
+ {
+  "key": "flashmq-1.26.2",
+  "impl": "flashmq",
+  "version": "1.26.2",
+  "image": "pd-flashmq:1.26.2",
+  "port": 1883,
+  "extra": [],
+  "cmd": null,
+  "ready": 60
+ },
+ {
+  "key": "flashmq-1.27.3",
+  "impl": "flashmq",
+  "version": "1.27.3",
+  "image": "pd-flashmq:1.27.3",
+  "port": 1883,
+  "extra": [],
+  "cmd": null,
+  "ready": 60
+ },
+ {
   "key": "hivemq-ce-2025.4",
   "impl": "hivemq-ce",
   "version": "2025.4",

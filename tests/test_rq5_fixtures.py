@@ -34,7 +34,16 @@ def test_mqtt_rq5_steps_encode():
                 assert codec.connect(args)[0] == 0x10, name
             elif op == "hex":
                 data = bytes.fromhex(st["hex"].replace(" ", ""))
-                assert len(data) >= 2 and data[1] == len(data) - 2, (name, st["hex"])
+                # remaining length is a Variable Byte Integer (MQTT 5.0 1.5.5), one to four bytes
+                n, mult, i = 0, 1, 1
+                while True:
+                    assert i < len(data) and i <= 4, (name, st["hex"])
+                    n += (data[i] & 0x7F) * mult
+                    mult *= 128
+                    if not data[i] & 0x80:
+                        break
+                    i += 1
+                assert n == len(data) - 1 - i, (name, st["hex"])
             elif op in codec.BUILDERS:
                 args.setdefault("version", version)
                 if args.get("packet_id") == "last":

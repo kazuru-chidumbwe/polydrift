@@ -502,6 +502,38 @@
         "VER": "1.4.0.27"
       },
       "why": "RQ5 L1: 389-ds-base 1.4.0.27 from the Fedora 29 release builds (fix b543627 first tagged in 1.4.0.27)"
+    },
+    "pd-flashmq:1.27.3": {
+      "dockerfile": "polydrift/cells/mqtt/lab/images/flashmq.Dockerfile",
+      "context": "polydrift/cells/mqtt/lab/images",
+      "args": {
+        "VER": "1.27.3"
+      },
+      "why": "MQTT cell: FlashMQ 1.27.3 from its release tag (latest release and the two preceding minor lines); no upstream image"
+    },
+    "pd-flashmq:1.26.2": {
+      "dockerfile": "polydrift/cells/mqtt/lab/images/flashmq.Dockerfile",
+      "context": "polydrift/cells/mqtt/lab/images",
+      "args": {
+        "VER": "1.26.2"
+      },
+      "why": "MQTT cell: FlashMQ 1.26.2 from its release tag (latest release and the two preceding minor lines); no upstream image"
+    },
+    "pd-flashmq:1.25.0": {
+      "dockerfile": "polydrift/cells/mqtt/lab/images/flashmq.Dockerfile",
+      "context": "polydrift/cells/mqtt/lab/images",
+      "args": {
+        "VER": "1.25.0"
+      },
+      "why": "MQTT cell: FlashMQ 1.25.0 from its release tag (latest release and the two preceding minor lines); no upstream image"
+    },
+    "pd-flashmq:1.12.1": {
+      "dockerfile": "polydrift/cells/mqtt/lab/images/flashmq.Dockerfile",
+      "context": "polydrift/cells/mqtt/lab/images",
+      "args": {
+        "VER": "1.12.1"
+      },
+      "why": "RQ5: FlashMQ 1.12.1, the version MBFuzzer tested"
     }
   },
   "recall": [
@@ -546,7 +578,8 @@
         "hivemq-ce",
         "mosquitto",
         "nanomq",
-        "vernemq"
+        "vernemq",
+        "flashmq"
       ],
       "base": [
         "rq5/mqtt_rq5.json"
@@ -574,6 +607,12 @@
           "from": "2026.5",
           "to": [
             "2024.1"
+          ]
+        },
+        "flashmq": {
+          "from": "1.27.3",
+          "to": [
+            "1.12.1"
           ]
         }
       }

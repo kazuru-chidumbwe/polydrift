@@ -264,6 +264,16 @@ cases:
     fixed: ["2026.5"]
     source: "MBFuzzer (USENIX Security 2025) Table 10 N1 (affected, confirmed, fixed); no fixed release located yet"
     clause: "MQTT-2.3.1-1"
+  MB-N2-flashmq:
+    cell: mqtt
+    family: flashmq
+    status: fix-unconfirmed
+    fixtures: [rq5_mb_n2]
+    axes: ["__status__", "decision_class", "native_codes", "actor_closed"]
+    affected: ["1.12.1"]
+    fixed: ["1.27.3"]
+    source: "MBFuzzer (USENIX Security 2025) Table 10 N2 (affected, confirmed, fixed); no fixed release located yet"
+    clause: "MQTT-3.1.2-15"
   MB-N3-emqx:
     cell: mqtt
     family: emqx
@@ -374,6 +384,16 @@ cases:
     fixed: ["0.25.7"]
     source: "MBFuzzer (USENIX Security 2025) Table 10 N8 (affected); no fixed release located yet"
     clause: "MQTT-3.1.3-8"
+  MB-N9-flashmq:
+    cell: mqtt
+    family: flashmq
+    status: fix-unconfirmed
+    fixtures: [rq5_mb_n9]
+    axes: ["__status__", "decision_class", "native_codes", "actor_closed"]
+    affected: ["1.12.1"]
+    fixed: ["1.27.3"]
+    source: "MBFuzzer (USENIX Security 2025) Table 10 N9 (affected, confirmed, fixed); no fixed release located yet"
+    clause: "MQTT-3.1.0-1"
   MB-N10-emqx:
     cell: mqtt
     family: emqx
@@ -392,6 +412,16 @@ cases:
     axes: ["__status__", "decision_class", "native_codes", "actor_closed"]
     affected: ["0.21.10"]
     fixed: ["0.25.7"]
+    source: "MBFuzzer (USENIX Security 2025) Table 10 N10 (affected, confirmed, fixed); no fixed release located yet"
+    clause: "MQTT-3.1.2-11"
+  MB-N10-flashmq:
+    cell: mqtt
+    family: flashmq
+    status: fix-unconfirmed
+    fixtures: [rq5_mb_n10]
+    axes: ["__status__", "decision_class", "native_codes", "actor_closed"]
+    affected: ["1.12.1"]
+    fixed: ["1.27.3"]
     source: "MBFuzzer (USENIX Security 2025) Table 10 N10 (affected, confirmed, fixed); no fixed release located yet"
     clause: "MQTT-3.1.2-11"
   MB-N11-emqx:
@@ -414,6 +444,16 @@ cases:
     fixed: ["0.25.7"]
     source: "MBFuzzer (USENIX Security 2025) Table 10 N11 (affected, confirmed, fixed); no fixed release located yet"
     clause: "MQTT-3.1.2-13"
+  MB-N11-flashmq:
+    cell: mqtt
+    family: flashmq
+    status: fix-unconfirmed
+    fixtures: [rq5_mb_n11]
+    axes: ["__status__", "decision_class", "native_codes", "actor_closed"]
+    affected: ["1.12.1"]
+    fixed: ["1.27.3"]
+    source: "MBFuzzer (USENIX Security 2025) Table 10 N11 (affected, confirmed, fixed); no fixed release located yet"
+    clause: "MQTT-3.1.2-13"
   MB-N12-nanomq:
     cell: mqtt
     family: nanomq
@@ -424,6 +464,16 @@ cases:
     fixed: ["0.25.7"]
     source: "MBFuzzer (USENIX Security 2025) Table 10 N12 (affected, confirmed, fixed); no fixed release located yet"
     clause: "MQTT-3.1.2-3"
+  MB-N13-flashmq:
+    cell: mqtt
+    family: flashmq
+    status: fix-unconfirmed
+    fixtures: [rq5_mb_n13]
+    axes: ["__status__", "decision_class", "native_codes", "actor_closed"]
+    affected: ["1.12.1"]
+    fixed: ["1.27.3"]
+    source: "MBFuzzer (USENIX Security 2025) Table 10 N13 (affected, confirmed, fixed); no fixed release located yet"
+    clause: "MQTT-3.1.2-9"
   MB-N14-vernemq:
     cell: mqtt
     family: vernemq
@@ -594,6 +644,16 @@ cases:
     fixed: ["2.2.1"]
     source: "MBFuzzer (USENIX Security 2025) Table 10 N23 (affected, confirmed, fixed); no fixed release located yet"
     clause: "MQTT-3.3.4-6"
+  MB-N23-flashmq:
+    cell: mqtt
+    family: flashmq
+    status: fix-unconfirmed
+    fixtures: [rq5_mb_n23]
+    axes: ["__status__", "decision_class", "native_codes", "actor_closed", "deliveries", "publish_meta", "forwarded_props"]
+    affected: ["1.12.1"]
+    fixed: ["1.27.3"]
+    source: "MBFuzzer (USENIX Security 2025) Table 10 N23 (affected, confirmed, fixed); no fixed release located yet"
+    clause: "MQTT-3.3.4-6"
   MB-N24-emqx:
     cell: mqtt
     family: emqx
@@ -614,6 +674,16 @@ cases:
     fixed: ["0.25.7"]
     source: "MBFuzzer (USENIX Security 2025) Table 10 N24 (affected, confirmed); no fixed release located yet"
     clause: "MQTT-3.4.2-1"
+  MB-N24-flashmq:
+    cell: mqtt
+    family: flashmq
+    status: fix-unconfirmed
+    fixtures: [rq5_mb_n24]
+    axes: ["__status__", "decision_class", "native_codes", "actor_closed"]
+    affected: ["1.12.1"]
+    fixed: ["1.27.3"]
+    source: "MBFuzzer (USENIX Security 2025) Table 10 N24 (affected, confirmed); no fixed release located yet"
+    clause: "MQTT-3.4.2-1"
   MB-N25-nanomq:
     cell: mqtt
     family: nanomq
@@ -622,6 +692,16 @@ cases:
     axes: ["__status__", "decision_class", "native_codes", "actor_closed"]
     affected: ["0.21.10"]
     fixed: ["0.25.7"]
+    source: "MBFuzzer (USENIX Security 2025) Table 10 N25 (affected, confirmed, fixed); no fixed release located yet"
+    clause: "MQTT-3.6.1-1"
+  MB-N25-flashmq:
+    cell: mqtt
+    family: flashmq
+    status: fix-unconfirmed
+    fixtures: [rq5_mb_n25]
+    axes: ["__status__", "decision_class", "native_codes", "actor_closed"]
+    affected: ["1.12.1"]
+    fixed: ["1.27.3"]
     source: "MBFuzzer (USENIX Security 2025) Table 10 N25 (affected, confirmed, fixed); no fixed release located yet"
     clause: "MQTT-3.6.1-1"
   MB-N26-emqx:
@@ -674,6 +754,26 @@ cases:
     fixed: ["2.2.1"]
     source: "MBFuzzer (USENIX Security 2025) Table 10 N28 (affected, confirmed, fixed); no fixed release located yet"
     clause: "MQTT-3.8.3-4"
+  MB-N28-flashmq:
+    cell: mqtt
+    family: flashmq
+    status: fix-unconfirmed
+    fixtures: [rq5_mb_n28]
+    axes: ["__status__", "decision_class", "native_codes", "actor_closed", "granted"]
+    affected: ["1.12.1"]
+    fixed: ["1.27.3"]
+    source: "MBFuzzer (USENIX Security 2025) Table 10 N28 (affected, confirmed, fixed); no fixed release located yet"
+    clause: "MQTT-3.8.3-4"
+  MB-N29-flashmq:
+    cell: mqtt
+    family: flashmq
+    status: fix-unconfirmed
+    fixtures: [rq5_mb_n29]
+    axes: ["dollar_topics"]
+    affected: ["1.12.1"]
+    fixed: ["1.27.3"]
+    source: "MBFuzzer (USENIX Security 2025) Table 10 N29 (affected, confirmed, fixed); no fixed release located yet"
+    clause: "MQTT-4.7.2-1"
   MB-N30-mosquitto:
     cell: mqtt
     family: mosquitto
@@ -702,6 +802,16 @@ cases:
     axes: ["__status__", "decision_class", "native_codes", "actor_closed", "granted"]
     affected: ["1.13.0"]
     fixed: ["2.2.1"]
+    source: "MBFuzzer (USENIX Security 2025) Table 10 N30 (affected, confirmed, fixed); no fixed release located yet"
+    clause: "MQTT-4.8.2-2"
+  MB-N30-flashmq:
+    cell: mqtt
+    family: flashmq
+    status: fix-unconfirmed
+    fixtures: [rq5_mb_n30]
+    axes: ["__status__", "decision_class", "native_codes", "actor_closed", "granted"]
+    affected: ["1.12.1"]
+    fixed: ["1.27.3"]
     source: "MBFuzzer (USENIX Security 2025) Table 10 N30 (affected, confirmed, fixed); no fixed release located yet"
     clause: "MQTT-4.8.2-2"
   MB-N31-emqx:
@@ -744,6 +854,16 @@ cases:
     fixed: ["2.2.1"]
     source: "MBFuzzer (USENIX Security 2025) Table 10 N31 (affected, confirmed, fixed); no fixed release located yet"
     clause: "MQTT 5.0 3.1.2.11.10"
+  MB-N31-flashmq:
+    cell: mqtt
+    family: flashmq
+    status: fix-unconfirmed
+    fixtures: [rq5_mb_n31]
+    axes: ["__status__", "decision_class", "native_codes", "actor_closed"]
+    affected: ["1.12.1"]
+    fixed: ["1.27.3"]
+    source: "MBFuzzer (USENIX Security 2025) Table 10 N31 (affected, confirmed, fixed); no fixed release located yet"
+    clause: "MQTT 5.0 3.1.2.11.10"
   MB-N32-nanomq:
     cell: mqtt
     family: nanomq
@@ -754,6 +874,16 @@ cases:
     fixed: ["0.25.7"]
     source: "MBFuzzer (USENIX Security 2025) Table 10 N32 (affected, confirmed); no fixed release located yet"
     clause: "MQTT-1.5.4-1"
+  MB-N33-flashmq:
+    cell: mqtt
+    family: flashmq
+    status: fix-unconfirmed
+    fixtures: [rq5_mb_n33]
+    axes: ["__status__", "decision_class", "native_codes", "actor_closed", "deliveries", "publish_meta", "forwarded_props"]
+    affected: ["1.12.1"]
+    fixed: ["1.27.3"]
+    source: "MBFuzzer (USENIX Security 2025) Table 10 N33 (affected, confirmed, fixed); no fixed release located yet"
+    clause: "MQTT 5.0 3.3.2.3.9"
   MB-N34-emqx:
     cell: mqtt
     family: emqx
@@ -784,6 +914,16 @@ cases:
     fixed: ["0.25.7"]
     source: "MBFuzzer (USENIX Security 2025) Table 10 N36 (affected); no fixed release located yet"
     clause: "MQTT 5.0 3.3.2.3.3"
+  MB-N36-flashmq:
+    cell: mqtt
+    family: flashmq
+    status: fix-unconfirmed
+    fixtures: [rq5_mb_n36]
+    axes: ["__status__", "decision_class", "native_codes", "actor_closed", "deliveries", "publish_meta", "forwarded_props"]
+    affected: ["1.12.1"]
+    fixed: ["1.27.3"]
+    source: "MBFuzzer (USENIX Security 2025) Table 10 N36 (affected, confirmed, fixed); no fixed release located yet"
+    clause: "MQTT 5.0 3.3.2.3.3"
   MB-N37-nanomq:
     cell: mqtt
     family: nanomq
@@ -792,6 +932,16 @@ cases:
     axes: ["__status__", "decision_class", "native_codes", "actor_closed", "deliveries", "publish_meta", "forwarded_props"]
     affected: ["0.21.10"]
     fixed: ["0.25.7"]
+    source: "MBFuzzer (USENIX Security 2025) Table 10 N37 (affected, confirmed, fixed); no fixed release located yet"
+    clause: "MQTT 5.0 3.3.2.3.2"
+  MB-N37-flashmq:
+    cell: mqtt
+    family: flashmq
+    status: fix-unconfirmed
+    fixtures: [rq5_mb_n37]
+    axes: ["__status__", "decision_class", "native_codes", "actor_closed", "deliveries", "publish_meta", "forwarded_props"]
+    affected: ["1.12.1"]
+    fixed: ["1.27.3"]
     source: "MBFuzzer (USENIX Security 2025) Table 10 N37 (affected, confirmed, fixed); no fixed release located yet"
     clause: "MQTT 5.0 3.3.2.3.2"
   MB-N38-emqx:
@@ -834,6 +984,16 @@ cases:
     fixed: ["2026.5"]
     source: "MBFuzzer (USENIX Security 2025) Table 10 N38 (affected, confirmed); no fixed release located yet"
     clause: "MQTT 5.0 3.1.3.2.3"
+  MB-N38-flashmq:
+    cell: mqtt
+    family: flashmq
+    status: fix-unconfirmed
+    fixtures: [rq5_mb_n38]
+    axes: ["__status__", "decision_class", "native_codes", "actor_closed"]
+    affected: ["1.12.1"]
+    fixed: ["1.27.3"]
+    source: "MBFuzzer (USENIX Security 2025) Table 10 N38 (affected, confirmed, fixed); no fixed release located yet"
+    clause: "MQTT 5.0 3.1.3.2.3"
   MB-N39-mosquitto:
     cell: mqtt
     family: mosquitto
@@ -874,6 +1034,16 @@ cases:
     fixed: ["2026.5"]
     source: "MBFuzzer (USENIX Security 2025) Table 10 N39 (affected, confirmed); no fixed release located yet"
     clause: "MQTT 5.0 3.3.2.3.2"
+  MB-N39-flashmq:
+    cell: mqtt
+    family: flashmq
+    status: fix-unconfirmed
+    fixtures: [rq5_mb_n39]
+    axes: ["__status__", "decision_class", "native_codes", "actor_closed", "deliveries", "publish_meta", "forwarded_props"]
+    affected: ["1.12.1"]
+    fixed: ["1.27.3"]
+    source: "MBFuzzer (USENIX Security 2025) Table 10 N39 (affected, confirmed, fixed); no fixed release located yet"
+    clause: "MQTT 5.0 3.3.2.3.2"
   MB-N40-emqx:
     cell: mqtt
     family: emqx
@@ -904,6 +1074,16 @@ cases:
     fixed: ["0.25.7"]
     source: "MBFuzzer (USENIX Security 2025) Table 10 N42 (affected); no fixed release located yet"
     clause: "MQTT 5.0 3.1.2.11.3"
+  MB-N42-flashmq:
+    cell: mqtt
+    family: flashmq
+    status: fix-unconfirmed
+    fixtures: [rq5_mb_n42]
+    axes: ["__status__", "decision_class", "native_codes", "actor_closed"]
+    affected: ["1.12.1"]
+    fixed: ["1.27.3"]
+    source: "MBFuzzer (USENIX Security 2025) Table 10 N42 (affected, confirmed, fixed); no fixed release located yet"
+    clause: "MQTT 5.0 3.1.2.11.3"
   MB-N43-nanomq:
     cell: mqtt
     family: nanomq
@@ -913,6 +1093,16 @@ cases:
     affected: ["0.21.10"]
     fixed: ["0.25.7"]
     source: "MBFuzzer (USENIX Security 2025) Table 10 N43 (affected, confirmed); no fixed release located yet"
+    clause: "MQTT 5.0 3.1.2.11.7"
+  MB-N43-flashmq:
+    cell: mqtt
+    family: flashmq
+    status: fix-unconfirmed
+    fixtures: [rq5_mb_n43]
+    axes: ["__status__", "decision_class", "native_codes", "actor_closed"]
+    affected: ["1.12.1"]
+    fixed: ["1.27.3"]
+    source: "MBFuzzer (USENIX Security 2025) Table 10 N43 (affected, confirmed, fixed); no fixed release located yet"
     clause: "MQTT 5.0 3.1.2.11.7"
   MB-N44-nanomq:
     cell: mqtt
@@ -934,6 +1124,16 @@ cases:
     fixed: ["6.3.2"]
     source: "MBFuzzer (USENIX Security 2025) Table 10 N45 (affected, confirmed, fixed); no fixed release located yet"
     clause: "MQTT 5.0 3.1.2.11.6"
+  MB-N46-flashmq:
+    cell: mqtt
+    family: flashmq
+    status: fix-unconfirmed
+    fixtures: [rq5_mb_n46]
+    axes: ["__status__", "decision_class", "native_codes", "actor_closed", "deliveries", "publish_meta", "forwarded_props"]
+    affected: ["1.12.1"]
+    fixed: ["1.27.3"]
+    source: "MBFuzzer (USENIX Security 2025) Table 10 N46 (affected, confirmed, fixed); no fixed release located yet"
+    clause: "MQTT 5.0 3.3.2.3.5"
   MB-N47-emqx:
     cell: mqtt
     family: emqx
@@ -964,6 +1164,16 @@ cases:
     fixed: ["0.25.7"]
     source: "MBFuzzer (USENIX Security 2025) Table 10 N47 (affected, confirmed); no fixed release located yet"
     clause: "MQTT 5.0 3.3.2.3.5"
+  MB-N47-flashmq:
+    cell: mqtt
+    family: flashmq
+    status: fix-unconfirmed
+    fixtures: [rq5_mb_n47]
+    axes: ["__status__", "decision_class", "native_codes", "actor_closed", "deliveries", "publish_meta", "forwarded_props"]
+    affected: ["1.12.1"]
+    fixed: ["1.27.3"]
+    source: "MBFuzzer (USENIX Security 2025) Table 10 N47 (affected, confirmed, fixed); no fixed release located yet"
+    clause: "MQTT 5.0 3.3.2.3.5"
   MB-N48-nanomq:
     cell: mqtt
     family: nanomq
@@ -982,6 +1192,16 @@ cases:
     axes: ["__status__", "decision_class", "native_codes", "actor_closed", "deliveries", "publish_meta", "forwarded_props"]
     affected: ["5.6.0"]
     fixed: ["6.3.2"]
+    source: "MBFuzzer (USENIX Security 2025) Table 10 N49 (affected, confirmed, fixed); no fixed release located yet"
+    clause: "MQTT 5.0 3.3.2.3.4"
+  MB-N49-flashmq:
+    cell: mqtt
+    family: flashmq
+    status: fix-unconfirmed
+    fixtures: [rq5_mb_n49]
+    axes: ["__status__", "decision_class", "native_codes", "actor_closed", "deliveries", "publish_meta", "forwarded_props"]
+    affected: ["1.12.1"]
+    fixed: ["1.27.3"]
     source: "MBFuzzer (USENIX Security 2025) Table 10 N49 (affected, confirmed, fixed); no fixed release located yet"
     clause: "MQTT 5.0 3.3.2.3.4"
   MB-N50-nanomq:
@@ -1004,6 +1224,16 @@ cases:
     fixed: ["2.2.1"]
     source: "MBFuzzer (USENIX Security 2025) Table 10 N51 (affected); no fixed release located yet"
     clause: "MQTT 5.0 3.1.2.6"
+  MB-N52-flashmq:
+    cell: mqtt
+    family: flashmq
+    status: fix-unconfirmed
+    fixtures: [rq5_mb_n52]
+    axes: ["__status__", "decision_class", "native_codes", "actor_closed"]
+    affected: ["1.12.1"]
+    fixed: ["1.27.3"]
+    source: "MBFuzzer (USENIX Security 2025) Table 10 N52 (affected, confirmed, fixed); no fixed release located yet"
+    clause: "MQTT 5.0 3.10.2.1.1"
   MB-N53-nanomq:
     cell: mqtt
     family: nanomq

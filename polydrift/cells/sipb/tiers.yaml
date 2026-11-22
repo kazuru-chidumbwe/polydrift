@@ -23,6 +23,18 @@ axes:
   x4:
     tier: 2
     clause: "T2: fixture-named observation 4"
+  x9:
+    tier: 2
+    clause: "T2: fixture-named observation 9"
+  x10:
+    tier: 2
+    clause: "T2: fixture-named observation 10"
+  x11:
+    tier: 2
+    clause: "T2: fixture-named observation 11"
+  x12:
+    tier: 2
+    clause: "T2: fixture-named observation 12"
   x5:
     tier: 2
     clause: "T2: fixture-named observation 5"

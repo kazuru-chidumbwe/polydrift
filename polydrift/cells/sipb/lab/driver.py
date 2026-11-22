@@ -402,7 +402,7 @@ def _walk(cur, parts):
     return cur
 
 
-FN = r"^(len|keys|type|has|eq|ne|in|re|allre|allin|sorted|lower|ge|le|hasall|count|codes|methods|same|nre|ncodes|hascode|ackresp|retx|firstat|vals|firstafter|prov1xx):"
+FN = r"^(len|keys|type|has|eq|ne|in|re|allre|allin|sorted|lower|ge|le|hasall|count|codes|methods|same|nre|ncodes|hascode|ackresp|retx|firstat|vals|firstafter|prov1xx|tagsin|valsall|subsetvals):"
 
 
 def _branch(m: dict) -> str:
@@ -511,6 +511,32 @@ def evaluate(expr: str, ctx: dict):
         # final and provisional status codes in a party's inbox, in order, one per transaction and outcome: a
         # retransmitted copy is not a second response (copies are counted by ncodes: and retx:)
         return [m.get("code") for m in _once(v) if m.get("kind") == "resp"]
+    if fn == "subsetvals":
+        # subsetvals:pathA,pathB: every value of header A (rows split at commas, case-insensitive) is a value of
+        # header B; true when A is absent (an ACK for a 2xx carries only the INVITE's Require values, RFC 3261 8.2.2.3)
+        pa, pb = body.split(",", 1)
+        va, vb = _walk(ctx, [x for x in pa.split("/") if x]), _walk(ctx, [x for x in pb.split("/") if x])
+        la = [] if va is _MISSING else [x.lower() for r in (va if isinstance(va, list) else [va]) for x in _split_list(str(r))]
+        lb = [] if vb is _MISSING else [x.lower() for r in (vb if isinstance(vb, list) else [vb]) for x in _split_list(str(r))]
+        return all(x in lb for x in la)
+    if fn == "tagsin":
+        # tagsin:party/i=[tags]: every option tag the message carries in Supported, Require or Proxy-Require is in the
+        # list (the IANA option tags, all of standards-track RFCs: RFC 3261 20.32, 20.37); true when it carries none
+        if missing or not isinstance(v, dict):
+            return None
+        h = v.get("hdr") or {}
+        tags = [x.lower() for name in ("supported", "k", "require", "proxy-require") for r in h.get(name) or []
+                for x in _split_list(str(r))]
+        allowed = {t.lower() for t in _lit(lit)}
+        return all(t in allowed for t in tags)
+    if fn == "valsall":
+        # valsall:path=[values]: the header's values (rows split at commas, case-insensitive) include every listed
+        # value; None when the header is absent
+        if missing:
+            return None
+        rows = v if isinstance(v, list) else [v]
+        have = {x.lower() for r in rows for x in _split_list(str(r))}
+        return all(str(x).lower() in have for x in _lit(lit))
     if fn == "vals":
         # vals:path: the values of a header, rows split at commas, so two rows and one comma list compare equal
         rows = v if isinstance(v, list) else ([] if missing else [v])

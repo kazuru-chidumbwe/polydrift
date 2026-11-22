@@ -755,12 +755,12 @@ fixtures:
       - {"req_id": "SIP-0feb1d36", "keyword": "MAY", "axis": "x8", "step": 1, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-695cf3bb", "keyword": "SHOULD", "axis": "x8", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-2caca8cd", "keyword": "SHOULD", "axis": "x8", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
-      - {"req_id": "SIP-c9ea4e1b", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-c9ea4e1b", "keyword": "MUST", "axis": "x9", "step": 1, "allowed": [true, "null"], "note": "ACK and CANCEL are understood by every UA; null: no Allow"}
       - {"req_id": "SIP-0949c2a7", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
-      - {"req_id": "SIP-ba71098f", "keyword": "MUST", "axis": "x6", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-ba71098f", "keyword": "MUST", "axis": "x10", "step": 1, "allowed": [true, "null"], "note": "option tags from the IANA registry, all of standards-track RFCs"}
       - {"req_id": "SIP-4581ad86", "keyword": "SHOULD", "axis": "x7", "step": 1, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
     steps:
-      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nX-Pd-Param: v;pdunknown=1\nAccept: application/sdp\nContent-Length: {clen}\n\n", "extract": {"x1": "same:alice/0/hdr/from,sent/alice/hdr/from", "x2": "same:alice/0/hdr/call-id,sent/alice/hdr/call-id", "x3": "same:alice/0/hdr/cseq,sent/alice/hdr/cseq", "x4": "same:alice/0/hdr/via,sent/alice/hdr/via", "x5": "re:alice/0/hdr/to/0=<sip:uas@{eut}>.*", "x6": "hasall:alice/0/hdr=[\"allow\", \"accept\", \"accept-encoding\", \"accept-language\", \"supported\"]", "x7": "codes:alice", "x8": "re:alice/0/body=(?s).*m=audio.*"}}
+      - {"op": "send", "from": "alice", "window_ms": 1500, "msg": "OPTIONS sip:uas@{eut} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:uas@{eut}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nX-Pd-Param: v;pdunknown=1\nAccept: application/sdp\nContent-Length: {clen}\n\n", "extract": {"x1": "same:alice/0/hdr/from,sent/alice/hdr/from", "x2": "same:alice/0/hdr/call-id,sent/alice/hdr/call-id", "x3": "same:alice/0/hdr/cseq,sent/alice/hdr/cseq", "x4": "same:alice/0/hdr/via,sent/alice/hdr/via", "x5": "re:alice/0/hdr/to/0=<sip:uas@{eut}>.*", "x6": "hasall:alice/0/hdr=[\"allow\", \"accept\", \"accept-encoding\", \"accept-language\", \"supported\"]", "x7": "codes:alice", "x8": "re:alice/0/body=(?s).*m=audio.*", "x9": "valsall:alice/0/hdr/allow=[\"ACK\", \"CANCEL\"]", "x10": "tagsin:alice/0=[\"100rel\", \"199\", \"answermode\", \"early-session\", \"eventlist\", \"explicitsub\", \"from-change\", \"geolocation-http\", \"geolocation-sip\", \"gin\", \"gruu\", \"histinfo\", \"ice\", \"join\", \"multiple-refer\", \"norefersub\", \"nosub\", \"outbound\", \"path\", \"policy\", \"precondition\", \"pref\", \"privacy\", \"recipient-list-invite\", \"recipient-list-message\", \"recipient-list-subscribe\", \"record-aware\", \"replaces\", \"resource-priority\", \"sdp-anat\", \"sec-agree\", \"siprec\", \"tdialog\", \"timer\", \"trickle-ice\", \"uui\"]"}}
 
   uas_options_max_forwards_zero:
     kind: probe
@@ -1208,7 +1208,7 @@ fixtures:
       - {"req_id": "SIP-2e9935a6", "keyword": "MUST", "axis": "x7", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-e78e2fd1", "keyword": "SHOULD", "axis": "x8", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-a1c18e5e", "keyword": "SHOULD", "axis": "x8", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
-      - {"req_id": "SIP-f7241491", "keyword": "SHOULD", "axis": "x8", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-f7241491", "keyword": "SHOULD", "axis": "x9", "step": 1, "allowed": [true]}
       - {"req_id": "SIP-08b625e2", "keyword": "MAY", "axis": "x8", "step": 1, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-db24656a", "keyword": "MAY", "axis": "x8", "step": 1, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-3e2961a8", "keyword": "MAY", "axis": "x8", "step": 1, "note": "comparison only", "basis": "option"}
@@ -1216,7 +1216,8 @@ fixtures:
       - {"req_id": "SIP-21f2f0cb", "keyword": "SHOULD", "axis": "x8", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
       - {"req_id": "SIP-95b08b8e", "keyword": "MUST", "axis": "x8", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
       - {"req_id": "SIP-0dc39f3c", "keyword": "MUST", "axis": "x8", "step": 1, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
-      - {"req_id": "SIP-28fc54cc", "keyword": "MUST", "axis": "x8", "step": 1, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-28fc54cc", "keyword": "MUST", "axis": "x10", "step": 1, "allowed": [true, "null"], "note": "option tags from the IANA registry, all of standards-track RFCs"}
+      - {"req_id": "SIP-288ed374", "keyword": "SHOULD", "axis": "x11", "step": 1, "allowed": [true], "note": "Accept in the INVITE the UA builds"}
       - {"req_id": "SIP-cee1392d", "keyword": "MUST", "axis": "x8", "step": 1, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
       - {"req_id": "SIP-14a28a45", "keyword": "MAY", "axis": "x8", "step": 1, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-7b1f4388", "keyword": "MUST", "axis": "x8", "step": 1, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
@@ -1229,7 +1230,7 @@ fixtures:
       - {"req_id": "SIP-9172209d", "keyword": "SHOULD", "axis": "x8", "step": 1, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
       - {"req_id": "SIP-23e226ce", "keyword": "MUST", "axis": "x8", "step": 1, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
     steps:
-      - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 800, "extract": {"x1": "re:bob/0/ruri=sip:bob@{lab}:{port:bob}.*", "x2": "re:bob/0/hdr/to/0=.*;tag=.*", "x3": "re:bob/0/hdr/from/0=.*;tag=.+", "x4": "re:bob/0/hdr/call-id/0=.+", "x5": "bob/0/hdr/max-forwards/0", "x6": "re:bob/0/hdr/via/0=SIP/2.0/(UDP|TCP) [^;]+;.*branch=z9hG4bK.*", "x7": "re:bob/0/hdr/contact/0=.*<?sips?:.*", "x8": "has:bob/0/hdr/allow"}}
+      - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 800, "extract": {"x1": "re:bob/0/ruri=sip:bob@{lab}:{port:bob}.*", "x2": "re:bob/0/hdr/to/0=.*;tag=.*", "x3": "re:bob/0/hdr/from/0=.*;tag=.+", "x4": "re:bob/0/hdr/call-id/0=.+", "x5": "bob/0/hdr/max-forwards/0", "x6": "re:bob/0/hdr/via/0=SIP/2.0/(UDP|TCP) [^;]+;.*branch=z9hG4bK.*", "x7": "re:bob/0/hdr/contact/0=.*<?sips?:.*", "x8": "has:bob/0/hdr/allow", "x9": "has:bob/0/hdr/supported", "x10": "tagsin:bob/0=[\"100rel\", \"199\", \"answermode\", \"early-session\", \"eventlist\", \"explicitsub\", \"from-change\", \"geolocation-http\", \"geolocation-sip\", \"gin\", \"gruu\", \"histinfo\", \"ice\", \"join\", \"multiple-refer\", \"norefersub\", \"nosub\", \"outbound\", \"path\", \"policy\", \"precondition\", \"pref\", \"privacy\", \"recipient-list-invite\", \"recipient-list-message\", \"recipient-list-subscribe\", \"record-aware\", \"replaces\", \"resource-priority\", \"sdp-anat\", \"sec-agree\", \"siprec\", \"tdialog\", \"timer\", \"trickle-ice\", \"uui\"]", "x11": "has:bob/0/hdr/accept"}}
       - {"op": "reply", "from": "bob", "code": 486, "reason": "Busy Here", "window_ms": 1200}
 
   uac_dialog_route_set:
@@ -1249,7 +1250,7 @@ fixtures:
       - {"req_id": "SIP-9f40d274", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-384874f1", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-664c47dc", "keyword": "MUST", "axis": "x3", "step": 2, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
-      - {"req_id": "SIP-879263af", "keyword": "MUST", "axis": "x2", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-879263af", "keyword": "MUST", "axis": "x9", "step": 2, "allowed": [true]}
       - {"req_id": "SIP-6acbc2ef", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-48de97dc", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-2dc25a84", "keyword": "MUST", "axis": "x5", "step": 3, "basis": "conditional", "note": "binds only in a scenario the fixture does not induce"}
@@ -1262,7 +1263,7 @@ fixtures:
       - {"req_id": "SIP-a12d8a5e", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
     steps:
       - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 600}
-      - {"op": "reply", "from": "bob", "code": 200, "reason": "OK", "window_ms": 1500, "headers": {"Content-Type": "application/sdp", "Record-Route": ["<sip:{lab}:{port:carol};lr>", "<sip:{lab}:{port:dave};lr>"]}, "body": "v=0\no=bob 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40002 RTP/AVP 0\n", "extract": {"x1": "methods:dave", "x2": "re:dave/0/hdr/cseq/0=1 ACK", "x3": "re:dave/0/hdr/route/1=<sip:{lab}:{port:carol};lr>", "x4": "re:dave/0/ruri=sip:bob@{lab}:{port:bob}.*"}}
+      - {"op": "reply", "from": "bob", "code": 200, "reason": "OK", "window_ms": 1500, "headers": {"Content-Type": "application/sdp", "Record-Route": ["<sip:{lab}:{port:carol};lr>", "<sip:{lab}:{port:dave};lr>"]}, "body": "v=0\no=bob 1 1 IN IP4 {lab}\ns=-\nc=IN IP4 {lab}\nt=0 0\nm=audio 40002 RTP/AVP 0\n", "extract": {"x1": "methods:dave", "x2": "re:dave/0/hdr/cseq/0=1 ACK", "x3": "re:dave/0/hdr/route/1=<sip:{lab}:{port:carol};lr>", "x4": "re:dave/0/ruri=sip:bob@{lab}:{port:bob}.*", "x9": "subsetvals:dave/0/hdr/require,hist/bob/0/hdr/require"}}
       - {"op": "uac", "action": "hangup", "window_ms": 2000, "extract": {"x5": "re:dave/0/hdr/to/0=.*bob@.*;tag={tag:bob}.*", "x6": "re:dave/0/hdr/cseq/0=2 BYE", "x7": "same:dave/0/hdr/call-id,hist/bob/0/hdr/call-id", "x8": "same:dave/0/hdr/from,hist/bob/0/hdr/from"}}
       - {"op": "reply", "from": "dave", "code": 200, "reason": "OK", "window_ms": 1200}
 
@@ -1315,11 +1316,12 @@ fixtures:
       - {"req_id": "SIP-4445115a", "keyword": "SHOULD", "axis": "x3", "step": 4, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-a70bf7d0", "keyword": "MUST", "axis": "x3", "step": 4, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-a4f12b01", "keyword": "SHOULD", "axis": "x1", "step": 1, "basis": "not-applicable", "note": "concerns a role, transport or condition the fixture does not exercise"}
-      - {"req_id": "SIP-f48f9ece", "keyword": "MUST", "axis": "x8", "step": 3, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
+      - {"req_id": "SIP-f48f9ece", "keyword": "MUST", "axis": "x9", "step": 3, "allowed": [false]}
+      - {"req_id": "SIP-f48f9ece", "keyword": "MUST", "axis": "x10", "step": 3, "allowed": [false]}
     steps:
       - {"op": "uac", "action": "call", "uri": "sip:bob@{lab}:{port:bob}", "window_ms": 3700, "extract": {"x1": "len:bob"}}
       - {"op": "reply", "from": "bob", "code": 180, "reason": "Ringing", "window_ms": 3000, "extract": {"x2": "len:bob"}}
-      - {"op": "reply", "from": "bob", "code": 486, "reason": "Busy Here", "window_ms": 1000, "extract": {"x3": "methods:bob", "x4": "same:bob/0/hdr/call-id,hist/bob/0/hdr/call-id", "x5": "re:bob/0/hdr/to/0=.*;tag={tag:bob}.*", "x6": "same:bob/0/hdr/via,hist/bob/0/hdr/via", "x7": "re:bob/0/hdr/cseq/0=\\d+ ACK", "x8": "len:bob/0/body"}}
+      - {"op": "reply", "from": "bob", "code": 486, "reason": "Busy Here", "window_ms": 1000, "extract": {"x3": "methods:bob", "x4": "same:bob/0/hdr/call-id,hist/bob/0/hdr/call-id", "x5": "re:bob/0/hdr/to/0=.*;tag={tag:bob}.*", "x6": "same:bob/0/hdr/via,hist/bob/0/hdr/via", "x7": "re:bob/0/hdr/cseq/0=\\d+ ACK", "x8": "len:bob/0/body", "x9": "has:bob/0/hdr/require", "x10": "has:bob/0/hdr/proxy-require"}}
       - {"op": "reply", "from": "bob", "code": 486, "reason": "Busy Here", "window_ms": 1000, "extract": {"x3": "methods:bob"}}
 
   uac_cancel:
@@ -1494,7 +1496,6 @@ fixtures:
     spec_refs:
       - {"req_id": "SIP-3b6034e6", "keyword": "MAY", "axis": "x1", "step": 2, "note": "OPTIONS in a dialog; comparison only", "basis": "option"}
       - {"req_id": "SIP-73c3bca6", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only", "basis": "option"}
-      - {"req_id": "SIP-288ed374", "keyword": "SHOULD", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}
       - {"req_id": "SIP-e6ee895b", "keyword": "MAY", "axis": "x1", "step": 2, "note": "re-INVITE without offer; comparison only", "basis": "option"}
       - {"req_id": "SIP-0ff5da14", "keyword": "MAY", "axis": "x1", "step": 2, "note": "comparison only", "basis": "option"}
       - {"req_id": "SIP-fb1c9cc7", "keyword": "MUST", "axis": "x1", "step": 2, "basis": "not-observable", "note": "not visible on this axis within the fixture (timers, internal state or choice)"}

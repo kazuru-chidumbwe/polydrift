@@ -80,7 +80,13 @@ def classify(obs: dict[str, Any]) -> Status:
     if err:
         return Status.HARNESS_FAULT
     me = obs["clients"].get(obs["actor"], {})
-    if me.get("messages"):
+    msgs = me.get("messages") or []
+    if msgs and me.get("closed_now") and all(m.get("op") == "ExtendedResponse" and m.get("id") == 0
+                                             and m.get("response_name") == NOD for m in msgs):
+        # only an unsolicited Notice of Disconnection, then the close: the server ended the session the way RFC 4511
+        # 4.1.1 and 4.4.1 ask, so the step is closed; the notice itself stays on its own axis
+        return Status.CLOSED
+    if msgs:
         return Status.RESPONDED
     if me.get("closed_now"):
         # after the client's UnbindRequest the server closing the connection is the specified outcome (4.3)

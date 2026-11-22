@@ -121,7 +121,16 @@ def main() -> int:
                 ok_start = wait_ready(port, t.get("ready", 180), f"{t['key']}-r{r}")
                 image_id = sh(["docker", "image", "inspect", "-f", "{{.Id}}", t["image"]]).stdout.strip()
                 batch = []
+                lacks = set(t.get("lacks") or ())
                 for fid, fx in fixtures.items():
+                    need = set(fx.get("requires") or ()) & lacks
+                    if need:
+                        # outside the subset the server documents (lldap: two fixed OUs, no aliases): not run, so
+                        # never compared; written down once per target with the reason
+                        if r == 1 and attempt == 1:
+                            with (out / "skipped.jsonl").open("a") as sk:
+                                sk.write(json.dumps({"impl": t["key"], "fixture": fid, "lacks": sorted(need)}) + "\n")
+                        continue
                     tp = t.get("base", "")
                     # {U}: unique per fixture (each repeat starts a fresh container), the same in every repeat and target, so
                     # records stay comparable; the adapter maps it back to the literal "{U}"

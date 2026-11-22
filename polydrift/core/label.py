@@ -123,6 +123,11 @@ def _elements(value: Any) -> tuple:
 def inside(rec: ObservationRecord, ref: Mapping[str, Any], refusal_class: str | None = None) -> bool:
     if not labels(ref):
         return True
+    cond = ref.get("when")
+    if cond and observed(rec, cond["axis"], cond.get("step", 1), refusal_class) not in allowed_set(cond):
+        # the row binds only after the step it depends on went the stated way (an add that the server refused
+        # leaves nothing for the later step to act on)
+        return True
     value = observed(rec, ref["axis"], _step_of(ref), refusal_class)
     if "allowed" in ref:
         return value in allowed_set(ref)

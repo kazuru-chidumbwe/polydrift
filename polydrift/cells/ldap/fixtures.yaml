@@ -67,7 +67,8 @@ fixtures:
     kind: security
     tags: [authentication]
     spec_refs:
-      - {req_id: LDAP-521b9618, keyword: MUST, axis: native_codes, step: 1, allowed: [[49]]}
+      - {req_id: LDAP-521b9618, keyword: MUST, axis: native_codes, step: 1, allowed: [[49]], security: false}
+      - {req_id: LDAP-521b9618, keyword: MUST, axis: native_codes, step: 1, excludes: [0], note: "security property: the bind is not granted"}
     steps:
       - {op: bind, args: {dn: "{A}", password: "pd-not-the-password"}}
 
@@ -75,7 +76,8 @@ fixtures:
     kind: security
     tags: [authentication]
     spec_refs:
-      - {req_id: LDAP-885ca99e, keyword: SHOULD, axis: native_codes, step: 1, allowed: [[53]]}
+      - {req_id: LDAP-885ca99e, keyword: SHOULD, axis: native_codes, step: 1, allowed: [[53]], security: false}
+      - {req_id: LDAP-885ca99e, keyword: SHOULD, axis: native_codes, step: 1, excludes: [0], note: "security property: the unauthenticated bind does not authenticate"}
     steps:
       - {op: bind, args: {dn: "{A}", password: ""}}
 
@@ -152,9 +154,12 @@ fixtures:
   filter_unknown_attribute:
     kind: probe
     spec_refs:
-      - {req_id: LDAP-2840ebef, keyword: MUST, axis: decision_class, step: 1, allowed: [proceed]}
+      - {req_id: LDAP-2840ebef, keyword: MUST, axis: decision_class, step: 2, allowed: [proceed]}
+      - {req_id: LDAP-2840ebef, keyword: MUST, axis: decision_class, step: 3, allowed: [proceed]}
     steps:
+      - {op: bind, args: {dn: "{A}", password: "{P}"}}
       - {op: search, args: {base: "", scope: base, filter: [eq, pdNoSuchAttribute, x]}}
+      - {op: search, args: {base: "{B}", scope: sub, filter: [eq, pdNoSuchAttribute, x]}}
 
   filter_not_undefined:
     kind: probe
@@ -212,6 +217,7 @@ fixtures:
       - {"op": "bind", "args": {"dn": "", "password": ""}}
 
   census_referral_object:
+    requires: [arbitrary-ou]
     kind: probe
     spec_refs:
       - {"req_id": "LDAP-e7e0f45a", "keyword": "MUST", "axis": "referral_shape", "step": 3, "allowed": ["none", "uris"]}
@@ -229,6 +235,7 @@ fixtures:
       - {"op": "search", "args": {"base": "ou=below,ou={U} ref,{B}", "scope": "base"}}
 
   census_referral_alias:
+    requires: [alias, arbitrary-ou]
     kind: probe
     spec_refs:
       - {"req_id": "LDAP-a19e95cb", "keyword": "MUST", "axis": "referral_uris", "step": 5, "excludes_re": "^ldaps?://[^/]*/?(\\?|$)"}
@@ -257,9 +264,10 @@ fixtures:
       - {"op": "search", "args": {"base": "", "scope": "base", "filter": ["present", "objectClass"], "attributes": ["supportedLDAPVersion"]}}
 
   census_bind_name_not_dereferenced:
+    requires: [alias]
     kind: probe
     spec_refs:
-      - {"req_id": "LDAP-7705e42d", "keyword": "MUST", "axis": "native_codes", "step": 3, "allowed": [[49], [32], [34], [53], [48], [50]]}
+      - {"req_id": "LDAP-7705e42d", "keyword": "MUST", "axis": "native_codes", "step": 3, "allowed": [[49], [32], [34], [53], [48], [50]], "when": {"axis": "native_codes", "step": 2, "allowed": [[0]]}}
     steps:
       - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
       - {"op": "add", "args": {"dn": "cn={U}ba,{B}", "attributes": [["objectClass", ["top", "alias", "extensibleObject"]], ["cn", ["{U}ba"]], ["aliasedObjectName", ["{A}"]]]}}
@@ -327,6 +335,7 @@ fixtures:
       - {"op": "search", "args": {"base": "", "scope": "base", "filter": ["present", "objectClass"], "attributes": ["supportedSASLMechanisms"]}}
 
   census_alias_modify:
+    requires: [alias, arbitrary-ou]
     kind: probe
     spec_refs:
       - {"req_id": "LDAP-6cb0620e", "keyword": "MUST", "axis": "entry_attrs", "step": 5, "allowed": [[]], "note": "the target keeps no description: the alias entry, not its target, was modified or the request failed"}
@@ -338,6 +347,7 @@ fixtures:
       - {"op": "search", "args": {"base": "ou={U}t,{B}", "scope": "base", "attributes": ["description"]}}
 
   census_alias_add_under:
+    requires: [alias, arbitrary-ou]
     kind: probe
     spec_refs:
       - {"req_id": "LDAP-8c9dcd06", "keyword": "MUST", "axis": "status", "step": 4, "allowed": ["fix-request", "stop", "authenticate", "redirect", "closed"]}
@@ -348,6 +358,7 @@ fixtures:
       - {"op": "add", "args": {"dn": "ou={U}c,cn={U}al,{B}", "attributes": [["objectClass", ["top", "organizationalUnit"]], ["ou", ["{U}c"]]]}}
 
   census_alias_delete:
+    requires: [alias, arbitrary-ou]
     kind: probe
     spec_refs:
       - {"req_id": "LDAP-aba94a91", "keyword": "MUST", "axis": "entries", "step": 5, "allowed": [["ou={U}t"]]}
@@ -359,6 +370,7 @@ fixtures:
       - {"op": "search", "args": {"base": "ou={U}t,{B}", "scope": "base"}}
 
   census_alias_moddn_superior:
+    requires: [alias, arbitrary-ou]
     kind: probe
     spec_refs:
       - {"req_id": "LDAP-dc4dbc8e", "keyword": "MUST", "axis": "status", "step": 5, "allowed": ["fix-request", "stop", "authenticate", "redirect", "closed"]}
@@ -370,6 +382,7 @@ fixtures:
       - {"op": "moddn", "args": {"dn": "ou={U}m,{B}", "newrdn": "ou={U}m", "newsuperior": "cn={U}al,{B}"}}
 
   census_alias_compare:
+    requires: [alias, arbitrary-ou]
     kind: probe
     spec_refs:
       - {"req_id": "LDAP-7f9cfa31", "keyword": "MUST", "axis": "native_codes", "step": 4, "allowed": [[5], [16], [32], [33], [34], [36], [50], [53], [18], [64]]}
@@ -380,6 +393,7 @@ fixtures:
       - {"op": "compare", "args": {"dn": "cn={U}al,{B}", "attr": "ou", "value": "{U}t"}}
 
   census_alias_loop:
+    requires: [alias]
     kind: probe
     spec_refs:
       - {"req_id": "LDAP-d80386cd", "keyword": "MUST", "axis": "status", "step": 4, "allowed": ["proceed", "fix-request", "stop", "redirect"]}
@@ -390,6 +404,7 @@ fixtures:
       - {"op": "search", "args": {"base": "cn={U}l1,{B}", "scope": "sub", "deref": "always"}}
 
   census_alias_duplicates:
+    requires: [alias, arbitrary-ou]
     kind: probe
     spec_refs:
       - {"req_id": "LDAP-93e51c3d", "keyword": "SHOULD", "axis": "entries", "step": 5, "allowed": [["ou={U}x,ou={U}d"]], "note": "the target reached directly and through the alias is returned once"}
@@ -410,6 +425,7 @@ fixtures:
       - {"op": "search", "args": {"base": "{B}", "scope": "base", "attributes": ["2.5.4.0"]}}
 
   census_modify_in_order:
+    requires: [arbitrary-ou]
     kind: stateful
     spec_refs:
       - {"req_id": "LDAP-159f5622", "keyword": "MUST", "axis": "decision_class", "step": 3, "allowed": ["proceed"]}
@@ -422,6 +438,7 @@ fixtures:
       - {"op": "search", "args": {"base": "ou={U}o,{B}", "scope": "base", "attributes": ["description"]}}
 
   census_modify_atomic:
+    requires: [arbitrary-ou]
     kind: stateful
     value_attrs: ["description"]
     spec_refs:
@@ -434,6 +451,7 @@ fixtures:
       - {"op": "search", "args": {"base": "ou={U}a,{B}", "scope": "base", "attributes": ["description"]}}
 
   census_modify_schema:
+    requires: [arbitrary-ou]
     kind: probe
     spec_refs:
       - {"req_id": "LDAP-6cd61f92", "keyword": "MUST", "axis": "status", "step": 3, "allowed": ["fix-request", "stop", "authenticate", "redirect", "closed"]}
@@ -446,6 +464,7 @@ fixtures:
       - {"op": "modify", "args": {"dn": "ou={U}s,{B}", "changes": [{"op": "add", "type": "uid", "values": ["x"]}]}}
 
   census_add_exists:
+    requires: [arbitrary-ou]
     kind: stateful
     spec_refs:
       - {"req_id": "LDAP-34bdc42a", "keyword": "MUST", "axis": "native_codes", "step": 3, "allowed": [[68]]}
@@ -455,6 +474,7 @@ fixtures:
       - {"op": "add", "args": {"dn": "ou={U}e,{B}", "attributes": [["objectClass", ["top", "organizationalUnit"]], ["ou", ["{U}e"]]]}}
 
   census_add_parent_missing:
+    requires: [arbitrary-ou]
     kind: probe
     spec_refs:
       - {"req_id": "LDAP-49e7dd1d", "keyword": "MUST", "axis": "native_codes", "step": 2, "allowed": [[32], [53], [50], [80]]}
@@ -472,6 +492,7 @@ fixtures:
       - {"op": "add", "args": {"dn": "cn={U}ns,{B}", "attributes": [["objectClass", ["top", "person"]], ["cn", ["{U}ns"]]]}}
 
   census_add_rdn_not_listed:
+    requires: [arbitrary-ou]
     kind: probe
     spec_refs:
       - {"req_id": "LDAP-5364e082", "keyword": "MAY", "axis": "decision_class", "step": 2, "basis": "option"}
@@ -480,6 +501,7 @@ fixtures:
       - {"op": "add", "args": {"dn": "ou={U}rn,{B}", "attributes": [["objectClass", ["top", "organizationalUnit"]]]}}
 
   census_moddn_superior_missing:
+    requires: [arbitrary-ou]
     kind: probe
     spec_refs:
       - {"req_id": "LDAP-b4cafca8", "keyword": "MUST", "axis": "native_codes", "step": 3, "allowed": [[32], [53], [50], [80], [64]]}
@@ -489,6 +511,7 @@ fixtures:
       - {"op": "moddn", "args": {"dn": "ou={U}n,{B}", "newrdn": "ou={U}n", "newsuperior": "ou={U}absent,{B}"}}
 
   census_moddn_schema:
+    requires: [arbitrary-ou]
     kind: probe
     spec_refs:
       - {"req_id": "LDAP-ed600da1", "keyword": "MUST", "axis": "status", "step": 3, "allowed": ["fix-request", "stop", "authenticate", "redirect", "closed"]}
@@ -517,6 +540,7 @@ fixtures:
       - {"op": "search", "args": {"base": "cn={U}io,{B}", "scope": "base", "attributes": ["objectClass"]}}
 
   census_objectclass_restrictions:
+    requires: [arbitrary-ou]
     kind: stateful
     spec_refs:
       - {"req_id": "LDAP-4f22e3fd", "keyword": "MUST", "axis": "status", "step": 3, "allowed": ["fix-request", "stop", "authenticate", "redirect", "closed"]}
@@ -528,6 +552,7 @@ fixtures:
       - {"op": "modify", "args": {"dn": "cn={U}oc,{B}", "changes": [{"op": "delete", "type": "objectClass", "values": ["person"]}]}}
 
   census_operational_timestamps:
+    requires: [arbitrary-ou]
     kind: stateful
     spec_refs:
       - {"req_id": "LDAP-d489d33d", "keyword": "SHOULD", "axis": "attr_names", "step": 3, "allowed": [["createtimestamp", "creatorsname", "modifiersname", "modifytimestamp"]]}
@@ -569,6 +594,7 @@ fixtures:
       - {"op": "modify", "args": {"dn": "{@subschemaSubentry}", "changes": [{"op": "add", "type": "attributeTypes", "values": ["( 1.3.6.1.4.1.32473.9.1 NAME 'pdCensusAttr' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )"]}]}}
 
   census_value_preserved:
+    requires: [arbitrary-ou]
     kind: stateful
     value_attrs: ["description"]
     spec_refs:
@@ -598,6 +624,7 @@ fixtures:
       - {"op": "search", "args": {"base": "{B}", "scope": "base", "filter": ["present", "name"]}}
 
   census_name_subtype_rules:
+    requires: [arbitrary-ou]
     kind: probe
     spec_refs:
       - {"req_id": "LDAP-6d0be2b3", "keyword": "MUST", "axis": "status", "step": 2, "basis": "conditional", "note": "the outcome depends on the server's own schema (the AD schema allows name on top)"}
@@ -607,6 +634,7 @@ fixtures:
       - {"op": "add", "args": {"dn": "ou={U}nm,{B}", "attributes": [["objectClass", ["top", "organizationalUnit"]], ["ou", ["{U}nm"]], ["name", ["pd"]]]}}
 
   census_optional_features:
+    requires: [alias, arbitrary-ou]
     kind: probe
     value_attrs: ["subschemasubentry"]
     spec_refs:

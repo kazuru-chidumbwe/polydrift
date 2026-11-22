@@ -63,6 +63,9 @@ axes:
   vacation_to:
     tier: 2
     clause: "T2: To of each vacation reply (RFC 5230 5.5)"
+  pre_vacation_sent:
+    tier: 3
+    clause: "T3: the deliveries before the measured one caused a vacation reply (precondition of the response-tracking rows, RFC 5230 4.2)"
   vacation_notify_never:
     tier: 3
     clause: "T3: the vacation reply asks for no delivery notifications (RCPT NOTIFY=NEVER, RFC 5230 5.1); the sender's MTA would otherwise report on an automatic reply"

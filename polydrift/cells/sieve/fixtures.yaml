@@ -752,12 +752,30 @@ fixtures:
   census_vacation_tracking:
     kind: probe
     message: vacation.eml
+    # RFC 5230 4.2: a reply to a sender is not repeated within :days. The same sender delivers once before the
+    # measured delivery (pre_senders; engines that deliver over LMTP: pigeonhole-lmtp, cyrus, stalwart).
+    from: probe@example.invalid
+    pre_senders: ["probe@example.invalid"]
     spec_refs:
-      - {"req_id": "SIEVE-f10561e0", "keyword": "MUST", "axis": "emitted", "step": 1, "layer": "effect", "basis": "not-observable", "note": "one delivery per run cannot show response tracking"}
+      - {"req_id": "SIEVE-f10561e0", "keyword": "MUST", "axis": "emitted", "step": 1, "layer": "effect", "allowed": [[]], "when": {"axis": "pre_vacation_sent", "step": 1, "allowed": [true]}, "note": "the earlier delivery from the same sender got the reply; the measured one gets none"}
       - {"req_id": "SIEVE-94ca4bed", "keyword": "MUST", "axis": "emitted", "step": 1, "layer": "effect", "basis": "not-applicable", "note": "the script uses no variables"}
       - {"req_id": "SIEVE-f8c203bb", "keyword": "MAY", "axis": "emitted", "step": 1, "layer": "effect", "basis": "option"}
-      - {"req_id": "SIEVE-ed6235b5", "keyword": "MUST", "axis": "emitted", "step": 1, "layer": "effect", "basis": "not-observable", "note": "one delivery per run cannot show the tracking limit"}
-      - {"req_id": "SIEVE-9c9865bc", "keyword": "SHOULD", "axis": "emitted", "step": 1, "layer": "effect", "basis": "not-observable", "note": "one delivery per run cannot show the tracking limit"}
+    script: |
+      require "vacation";
+      vacation :days 7 "Away";
+
+  census_vacation_tracking_limit:
+    kind: probe
+    message: vacation.eml
+    # RFC 5230 4.2: at least 1000 remembered responses. 1000 senders deliver first (the probe sender, then 999
+    # others), then the probe sender again: an engine that keeps 1000 or more still remembers it. (With 1001 an
+    # engine at exactly 1000 that drops the oldest would rightly reply, so the count stays at 1000.)
+    from: probe@example.invalid
+    pre_senders_gen: {first: "probe@example.invalid", count: 999, pattern: "pd{i}@example.invalid"}
+    timeout_s: 900
+    spec_refs:
+      - {"req_id": "SIEVE-ed6235b5", "keyword": "MUST", "axis": "emitted", "step": 1, "layer": "effect", "allowed": [[]], "when": {"axis": "pre_vacation_sent", "step": 1, "allowed": [true]}, "note": "the first of 1000 tracked senders is still remembered"}
+      - {"req_id": "SIEVE-9c9865bc", "keyword": "SHOULD", "axis": "emitted", "step": 1, "layer": "effect", "basis": "conditional", "note": "binds only for an engine whose limit is reached; with 1000 senders no conforming limit is"}
     script: |
       require "vacation";
       vacation :days 7 "Away";

@@ -139,6 +139,69 @@ def _notice_has_edit(m):
     return None
 
 
+# ---------------------------------------------------------------- vacation tracking: deliveries before the measured one
+PRE: dict = {}
+
+
+def pre_deliveries(connect, meta: dict, fx: Path, settle=None) -> None:
+    """Deliver msg.eml once from each sender in meta["pre_senders"] (RFC 5230 4.2 response tracking fixtures), let
+    what they send out settle, then move those messages aside, so the measured delivery's emissions stand alone.
+    PRE records how many were delivered and how many vacation replies they caused (None when the fixture has none)."""
+    import smtplib
+    import time
+    senders = meta.get("pre_senders") or []
+    if not senders:
+        return
+    data = (fx / "msg.eml").read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n")
+    ok = 0
+    try:
+        for snd in senders:
+            c = connect()
+            c.ehlo_or_helo_if_needed()
+            c.mail(snd)
+            code, _m = c.rcpt(meta.get("to", "user@lab.test"))
+            if code < 400:
+                c.putcmd("data")
+                code, _m = c.getreply()
+                if code == 354:
+                    c.send(smtplib._quote_periods(data) + (b"" if data.endswith(b"\r\n") else b"\r\n") + b".\r\n")
+                    code, _m = c.getreply()
+                    ok += code < 400
+            try:
+                c.quit()
+            except Exception:  # noqa: BLE001
+                pass
+    except Exception as e:  # noqa: BLE001
+        PRE.update(error=repr(e)[:200])
+    if settle is not None:
+        settle()
+    else:
+        time.sleep(0.5)
+    pre = OUT / "pre"
+    pre.mkdir(parents=True, exist_ok=True)
+    vac = 0
+    for f in sorted(OUT.glob("*.eml")):
+        m = email.message_from_bytes(f.read_bytes(), policy=policy.compat32)
+        vac += classify(m) == "vacation"
+        f.rename(pre / f.name)
+        a = OUT / f"{f.stem}.args"
+        if a.exists():
+            a.rename(pre / a.name)
+    PRE.update(senders=len(senders), delivered=ok, vacations=vac)
+
+
+def sink_settle(sink, limit: float = 240.0, quiet: float = 3.0) -> None:
+    """Wait until the SMTP sink has received nothing for `quiet` seconds (Stalwart sends from its queue)."""
+    import time
+    t0, seen, still = time.time(), -1, time.time()
+    while time.time() - t0 < limit:
+        if sink.n != seen:
+            seen, still = sink.n, time.time()
+        elif time.time() - still >= quiet:
+            return
+        time.sleep(0.25)
+
+
 def emitted() -> list[dict]:
     out = []
     for f in sorted(OUT.glob("*.eml"), key=lambda p: int(p.stem)):
@@ -559,6 +622,7 @@ def pigeonhole_lmtp(fx: Path, meta: dict) -> dict:
     else:
         log = Path("/tmp/pd-dovecot.log").read_text(errors="replace")[-300:] if Path("/tmp/pd-dovecot.log").exists() else ""
         return {**res, "harness_error": f"lmtp socket missing: {txt.strip()[-150:]} {log}"}
+    pre_deliveries(lambda: smtplib.LMTP(sock, timeout=30), meta, fx)
     try:
         c = smtplib.LMTP(sock, timeout=30)
         c.ehlo_or_helo_if_needed()
@@ -741,6 +805,7 @@ def cyrus(fx: Path, meta: dict) -> dict:
     except Exception as e:  # noqa: BLE001
         proc.kill()
         return {**res, "harness_error": f"cyrus mailbox setup: {e!r}"[:300]}
+    pre_deliveries(lambda: smtplib.LMTP(sock, timeout=30), meta, fx)
     try:
         c = smtplib.LMTP(sock, timeout=30)
         c.ehlo_or_helo_if_needed()
@@ -1023,6 +1088,7 @@ def stalwart(fx: Path, meta: dict) -> dict:
             return res
         res.update(compile="ok", compile_class=None, compile_text="")
         sink = SmtpSink()
+        pre_deliveries(lambda: smtplib.LMTP("127.0.0.1", 24, timeout=30), meta, fx, settle=lambda: sink_settle(sink))
         c = smtplib.LMTP("127.0.0.1", 24, timeout=30)
         c.ehlo_or_helo_if_needed()
         code, msg = c.mail(meta.get("from", "sender@example.invalid"))
@@ -1119,6 +1185,8 @@ def main() -> int:
         res = ENGINES[a.engine](fx, meta)
     except Exception as e:  # noqa: BLE001
         res = {"harness_error": repr(e)[:300]}
+    if PRE and isinstance(res.get("effect"), dict):
+        res["effect"]["pre"] = dict(PRE)
     # keep is filing into the default mailbox (RFC 5228 4.3); Exim reports it as fileinto `inbox'.
     # No action and no implicit keep means the message is dropped: the same outcome as discard (RFC 5228 4.4).
     if isinstance(res.get("intent"), list):

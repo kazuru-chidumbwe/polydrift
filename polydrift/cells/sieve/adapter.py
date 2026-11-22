@@ -60,6 +60,10 @@ def effect_step(res: dict[str, Any], spec: CellSpec) -> StepRecord | None:
     stored = tuple(sorted((k, int(v)) for k, v in (eff.get("stored") or {}).items() if int(v) > 0))
     emitted = tuple(sorted((e.get("kind"), tuple(sorted(e.get("to") or []))) for e in (eff.get("emitted") or [])))
     vals = {"stored": stored, "emitted": emitted}
+    pre = eff.get("pre") or {}
+    # vacation tracking fixtures: did the deliveries before the measured one cause a vacation reply (so the
+    # measured delivery's silence or reply is evidence about tracking); None for every other fixture
+    vals["pre_vacation_sent"] = (pre.get("vacations", 0) > 0) if "senders" in pre and not pre.get("error") else None
     if "flags" in eff:
         # IMAP flags of the stored messages per folder (RFC 5232)
         vals["stored_flags"] = tuple(sorted((k, tuple(v)) for k, v in (eff.get("flags") or {}).items()))

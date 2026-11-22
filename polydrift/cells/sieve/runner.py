@@ -56,6 +56,11 @@ def sh(args: list[str], timeout: int = 180) -> subprocess.CompletedProcess:
 
 def run_one(t: dict[str, Any], lab: str, fx: dict[str, Any], defaults: dict) -> dict[str, Any]:
     meta = {k: fx.get(k, defaults.get(k)) for k in ("from", "to", "folders")}
+    if fx.get("pre_senders"):
+        meta["pre_senders"] = list(fx["pre_senders"])
+    if fx.get("pre_senders_gen"):
+        g = fx["pre_senders_gen"]
+        meta["pre_senders"] = [g["first"]] + [g["pattern"].format(i=i) for i in range(1, int(g["count"]) + 1)]
     with tempfile.TemporaryDirectory(prefix="pdsv-") as d:
         dp = Path(d)
         text = fx["script"].replace("\r\n", "\n")
@@ -72,7 +77,7 @@ def run_one(t: dict[str, Any], lab: str, fx: dict[str, Any], defaults: dict) -> 
         if t.get("user"):
             args += ["--user", t["user"]]
         args += [t["image"], "python3", "/lab/run.py", "--engine", t["impl"], "--fx", "/fx"]
-        r = sh(args)
+        r = sh(args, timeout=int(fx.get("timeout_s", 180)))
     line = next((ln for ln in reversed(r.stdout.splitlines()) if ln.startswith("{")), None)
     if not line:
         return {"harness_error": f"exit {r.returncode}: {(r.stderr or r.stdout).strip()[-200:]}"}

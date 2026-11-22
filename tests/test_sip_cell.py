@@ -105,6 +105,7 @@ def test_spec_bundle_covers_oracle_files():
     cell = Path(__file__).resolve().parents[1] / "polydrift" / "cells" / "sip"
     files = bundle(cell).files
     assert {"tiers.yaml", "classes.py", "adapter.py", "capabilities.yaml"} <= set(files)
+    assert {"core/oracle.py", "core/replay.py", "core/replay_action.py"} <= set(files)
 
 
 LEGACY_DIR = os.environ.get("POLYDRIFT_LEGACY_DIR", "")

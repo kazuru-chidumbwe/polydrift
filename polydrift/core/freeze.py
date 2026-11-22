@@ -21,8 +21,15 @@ SPEC_PATTERNS = (
     "adapter.py",
     "capabilities.yaml",
     "replay.yaml",
+    "replay.py",
+    "fixtures.yaml",
+    "fixtures_rq5.yaml",
     "fixtures/**/*",
+    "lab/consumers/**/*",
 )
+# protocol-independent files that decide outcomes for every cell (comparison, labels, replay rules, majority votes)
+CORE_FILES = ("oracle.py", "record.py", "spec.py", "label.py", "repeat.py", "drift.py", "baselines.py",
+              "replay.py", "replay_action.py")
 
 
 class SpecNotDeposited(RuntimeError):
@@ -58,6 +65,11 @@ def bundle(cell_dir: str | Path, cell: str | None = None) -> SpecBundle:
         for path in sorted(root.glob(pattern)):
             if path.is_file() and "__pycache__" not in path.parts:
                 files[path.relative_to(root).as_posix()] = _sha256(path)
+    core = root.parent.parent / "core"
+    if (core / "oracle.py").is_file():
+        for name in CORE_FILES:
+            if (core / name).is_file():
+                files[f"core/{name}"] = _sha256(core / name)
     return SpecBundle(cell=cell or root.name, files=files)
 
 

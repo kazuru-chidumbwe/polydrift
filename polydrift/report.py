@@ -23,7 +23,7 @@ from typing import Any, Callable, Iterable
 
 import yaml
 
-from polydrift.core.baselines import coarse_oracle, raw_oracle
+from polydrift.core.baselines import coarse_oracle, raw_oracle, raw_view
 from polydrift.core.drift import convergence, drift, lineage_groups, signatures
 from polydrift.core.freeze import bundle
 from polydrift.core.label import consequence, fault_class, unanimous_violations
@@ -116,11 +116,16 @@ def report(
     listed: list[dict[str, Any]] = []
     partitions: dict[str, dict[str, list[list[str]]]] = {}
     unanimous: dict[str, list[str]] = {}
+    triage: Counter[str] = Counter()
     for fid, impls in sorted(by_fixture.items()):
         fx = fixtures.get(fid) or _empty_fixture(fid, cell)
         peers = [r for k, r in sorted(impls.items()) if k in current]
         partitions[fid] = {f"T{int(t)}": [sorted(c) for c in partition(peers, t, flaky=rep.flaky, refusal_class=rc)]
                            for t in (Tier.T1, Tier.T2, Tier.T3)}
+        # triage load (4.6): behaviour classes a reviewer inspects per fixture, raw equality against the model at T3
+        triage["raw"] += len({(tuple(s.status.value for s in r.steps), raw_view(r)) for r in peers})
+        triage["model_T3"] += len(partitions[fid]["T3"])
+        triage["fixtures"] += 1
         uv = unanimous_violations(peers, fx, refusal_class=rc)
         if uv:
             unanimous[fid] = uv
@@ -191,6 +196,7 @@ def report(
         "violations_and_security": listed,
         "unanimous_violations": unanimous,
         "baselines": dict(sorted(baselines.items())),
+        "triage_load": dict(sorted(triage.items())),
         "partition_shapes": {fx: {t: list(partition_shape([frozenset(c) for c in cl])) for t, cl in p.items()}
                              for fx, p in partitions.items()},
         "partitions": partitions,

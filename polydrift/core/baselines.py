@@ -16,7 +16,7 @@ from polydrift.core.record import ObservationRecord, Status
 NATIVE_AXIS = "native_code"
 
 
-def _raw_view(rec: ObservationRecord) -> tuple[Any, ...]:
+def raw_view(rec: ObservationRecord) -> tuple[Any, ...]:
     parts: list[Any] = []
     # announced configuration is outside the study for every oracle, the baselines included
     for k, step in enumerate(rec.steps, start=1):
@@ -37,7 +37,7 @@ def raw_oracle(a: ObservationRecord, b: ObservationRecord) -> str:
     for rec in (a, b):
         if any(s.status != Status.RESPONDED for s in rec.steps):
             return "error"
-    return "agree" if _raw_view(a) == _raw_view(b) else "diverge"
+    return "agree" if raw_view(a) == raw_view(b) else "diverge"
 
 
 def coarse_oracle(a: ObservationRecord, b: ObservationRecord, native_axis: str = NATIVE_AXIS) -> str:

@@ -14,18 +14,23 @@ url: "https://github.com/kazuru-chidumbwe/polydrift"
 abstract: >-
   PolyDrift sends the same input to several independent implementations of a
   protocol, records what each one does, and reports where they agree and where
-  they differ. The SIP cell provides a pinned fixture corpus, stub drivers for
-  continuous integration, and laboratory drivers for PJSIP, Sofia-SIP and
-  Kamailio.
+  they differ. One observation model and one graded oracle serve six protocols
+  in five cells: SIP proxies and registrars, DNS resolvers and forwarders, MQTT
+  brokers, LDAP directory servers, and mail delivery and retrieval through Sieve
+  and JMAP. Divergences are graded by their effect on a conforming consumer,
+  and the grading is checked by replaying recorded responses into real client
+  libraries.
 keywords:
   - differential testing
   - test oracle
   - protocol implementations
   - interoperability
   - SIP
-  - PJSIP
-  - Sofia-SIP
-  - Kamailio
+  - DNS
+  - MQTT
+  - LDAP
+  - Sieve
+  - JMAP
 license: MIT
 version: "0.4.0.dev0"
 preferred-citation:

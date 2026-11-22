@@ -77,6 +77,10 @@
   "ready": 90,
   "base": "dc=lab,dc=test",
   "admin": "uid=admin,ou=people,dc=lab,dc=test",
-  "password": "Lab-Pass-2026"
+  "password": "Lab-Pass-2026",
+  "lacks": [
+   "alias",
+   "arbitrary-ou"
+  ]
  }
 ]

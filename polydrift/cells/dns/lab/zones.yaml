@@ -60,6 +60,7 @@ servers:
       - "cnx 300 CNAME nothere"
       - "loop1 300 CNAME loop2"
       - "loop2 300 CNAME loop1"
+      - "rq5-selfc 300 CNAME rq5-selfc"   # RQ5 D3: a CNAME that names itself (CVE-2022-48256)
       - "l1 300 CNAME l2"
       - "l2 300 CNAME l3"
       - "l3 300 CNAME l4"

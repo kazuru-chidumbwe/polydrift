@@ -27,6 +27,16 @@ cases:
     fixed: ["4.9.0"]
     source: "ResolverFuzz RC3 (PowerDNS Recursor 4.7.0); RD=0 forwarding changed in 4.9.0-alpha1 (PR 12425), not described as the fix"
     clause: "RFC 1034 4.3.1"
+  D3:
+    cell: dns
+    family: technitium
+    fixtures: [rq5_d3_self_cname]
+    axes: [answers]
+    affected: ["9.1"]
+    fixed: ["10.0"]
+    source: "ResolverFuzz RC4; Technitium CHANGELOG 10.0: self-CNAME vulnerability CVE-2022-48256 fixed, reported by Xiang Li (ResolverFuzz)"
+    clause: "RFC 1034 3.6.2"
+    note: "ResolverFuzz lists 10.0.1 among the tested versions; the vendor changelog places the fix in 10.0, which is used here"
   D4:
     cell: dns
     family: unbound

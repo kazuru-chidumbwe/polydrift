@@ -112,7 +112,11 @@
   "ready": 90,
   "base": "dc=lab,dc=test",
   "admin": "uid=admin,ou=people,dc=lab,dc=test",
-  "password": "Lab-Pass-2026"
+  "password": "Lab-Pass-2026",
+  "lacks": [
+   "alias",
+   "arbitrary-ou"
+  ]
  },
  {
   "key": "lldap-0.6.1",
@@ -132,7 +136,11 @@
   "ready": 90,
   "base": "dc=lab,dc=test",
   "admin": "uid=admin,ou=people,dc=lab,dc=test",
-  "password": "Lab-Pass-2026"
+  "password": "Lab-Pass-2026",
+  "lacks": [
+   "alias",
+   "arbitrary-ou"
+  ]
  },
  {
   "key": "lldap-0.6.2",
@@ -152,7 +160,11 @@
   "ready": 90,
   "base": "dc=lab,dc=test",
   "admin": "uid=admin,ou=people,dc=lab,dc=test",
-  "password": "Lab-Pass-2026"
+  "password": "Lab-Pass-2026",
+  "lacks": [
+   "alias",
+   "arbitrary-ou"
+  ]
  },
  {
   "key": "lldap-0.6.3",
@@ -172,7 +184,11 @@
   "ready": 90,
   "base": "dc=lab,dc=test",
   "admin": "uid=admin,ou=people,dc=lab,dc=test",
-  "password": "Lab-Pass-2026"
+  "password": "Lab-Pass-2026",
+  "lacks": [
+   "alias",
+   "arbitrary-ou"
+  ]
  },
  {
   "key": "openldap-2.5.20",

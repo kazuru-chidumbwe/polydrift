@@ -5,6 +5,13 @@ fixtures:
   # D10, CVE-2021-25215 (ISC, 28 Apr 2021): a DNAME placed in the answer while chasing DNAMEs is itself the final
   # answer. rq5-self.pd.pdlab. DNAME pd.pdlab., so rq5-self.rq5-self.pd.pdlab. synthesises to rq5-self.pd.pdlab.,
   # whose DNAME answers the DNAME query. Asked twice (the second answer comes from the cache), then a plain name.
+  # D3, ResolverFuzz RC4, CVE-2022-48256 (Technitium CHANGELOG 10.0): rq5-selfc.pd.pdlab. CNAME rq5-selfc.pd.pdlab.;
+  # the affected resolver follows the loop until its limit and answers with a couple of hundred records.
+  rq5_d3_self_cname:
+    kind: probe
+    steps:
+      - {qname: rq5-selfc.pd.pdlab, qtype: A, timeout: 10}
+
   rq5_d10_dname_self_answer:
     kind: probe
     clause: "RFC 6672 3.4 (recursive DNAME processing); RFC 1035 7.1"

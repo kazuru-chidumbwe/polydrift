@@ -165,12 +165,19 @@ def _path(ctx: dict[str, Any], path: str) -> Any:
     return _MISSING
 
 
-FN = r"^(len|keys|type|has|eq|ne|in|re|allre|allin|sorted|lower|ge|hasall|nullorge|lensum|sortedby|allvals|count|nodate|hoursahead):"
+FN = r"^(len|keys|type|has|eq|ne|in|re|allre|allin|sorted|lower|ge|hasall|nullorge|lensum|sortedby|allvals|count|nodate|hoursahead|streq|strne):"
 # The lab push sink's control port (runner.PUSH_IP, lab/push/sink.py)
 PUSH_CONTROL = "http://93.184.215.14:8080"
 
 
 def evaluate(expr: str, ctx: dict[str, Any]) -> Any:
+    if expr.startswith("when:"):
+        # when:COND?EXPR: EXPR where COND holds, else None (the row does not bind: recorded as null)
+        cond, _, rest = expr[5:].partition("?")
+        return evaluate(rest, ctx) if evaluate(cond, ctx) else None
+    # {@path}: the value at another path, as a path segment (bodyValues/{@r0/list/0/textBody/0/partId}: the part id
+    # the server gave the text part, which servers number differently)
+    expr = re.sub(r"\{@([^{}]+)\}", lambda m: str(evaluate(m.group(1), ctx)), expr)
     fn, _, body = expr.partition(":") if re.match(FN, expr) else ("", "", expr)
     if not fn:
         v = _path(ctx, expr)
@@ -197,6 +204,10 @@ def evaluate(expr: str, ctx: dict[str, Any]) -> Any:
                                           int: "number", float: "number", type(None): "null"}.get(type(v), "?")
     if fn == "eq":
         return v == _lit(lit)
+    if fn in ("streq", "strne"):
+        # opaque strings (state strings) compared as text: "8" and a literal 8 are the same state
+        same = (not missing) and str(v) == lit
+        return same if fn == "streq" else not same
     if fn == "ne":
         return v != _lit(lit)
     if fn == "in":

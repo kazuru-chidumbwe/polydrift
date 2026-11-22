@@ -27,7 +27,7 @@ RUN useradd -r -g mail -d /var/lib/cyrus -s /usr/sbin/nologin cyrus \
       'autocreate_quota: 0' 'syslog_prefix: cyrus' > /etc/imapd.conf \
  && printf '%s\n' 'START {' '  recover cmd="ctl_cyrusdb -r"' '}' 'SERVICES {' '  imap cmd="imapd" listen="143" prefork=0' \
       '  http cmd="httpd" listen="8008" prefork=0' '}' 'EVENTS {' '  checkpoint cmd="ctl_cyrusdb -c" period=30' '}' \
-      'DAEMON {' '}' > /etc/cyrus.conf \
+      'DAEMON {' '  idled cmd="idled"' '}' > /etc/cyrus.conf \
  && mkdir -p /var/lib/cyrus /var/spool/cyrus/mail /run/cyrus && chown -R cyrus:mail /var/lib/cyrus /var/spool/cyrus /run/cyrus \
  && su -s /bin/sh cyrus -c "perl /usr/local/share/cyrus/mkimap /etc/imapd.conf" \
  && touch /etc/sasldb2 && chown cyrus:mail /etc/sasldb2

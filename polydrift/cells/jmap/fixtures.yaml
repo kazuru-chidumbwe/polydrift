@@ -280,7 +280,7 @@ fixtures:
     steps:
       - {"op": "call", "calls": [["Mailbox/get", {"accountId": "{acct}", "ids": []}, "c0"]], "key": "s1"}
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"k": {"name": "pd{U}x"}}, "ifInState": "pd-not-a-state"}, "c0"]]}
-      - {"op": "call", "calls": [["Mailbox/get", {"accountId": "{acct}", "ids": []}, "c0"]], "extract": {"x1": "eq:r0/state={state:s1}"}}
+      - {"op": "call", "calls": [["Mailbox/get", {"accountId": "{acct}", "ids": []}, "c0"]], "extract": {"x1": "streq:r0/state={state:s1}"}}
 
   census_result_reference:
     kind: control
@@ -347,7 +347,7 @@ fixtures:
     steps:
       - {"op": "call", "calls": [["Mailbox/get", {"accountId": "{acct}", "ids": []}, "c0"]], "key": "s1"}
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"sc": {"name": "pd{U}sc"}}}, "mc"]]}
-      - {"op": "call", "calls": [["Mailbox/get", {"accountId": "{acct}", "ids": ["{id:sc}"]}, "c0"]], "extract": {"x1": "ne:r0/state={state:s1}", "x2": "len:r0/list"}}
+      - {"op": "call", "calls": [["Mailbox/get", {"accountId": "{acct}", "ids": ["{id:sc}"]}, "c0"]], "extract": {"x1": "strne:r0/state={state:s1}", "x2": "len:r0/list"}}
 
   census_immutable_property:
     kind: probe
@@ -411,7 +411,7 @@ fixtures:
       - {"req_id": "JMAP-d0df5331", "keyword": "MUST", "axis": "x1", "step": 4, "allowed": [true]}
       - {"req_id": "JMAP-1aacfc36", "keyword": "MUST", "axis": "x2", "step": 5, "allowed": [true]}
       - {"req_id": "JMAP-57725553", "keyword": "MUST", "axis": "x3", "step": 6, "allowed": [true, "null"]}
-      - {"req_id": "JMAP-f8dc2370", "keyword": "MUST", "axis": "x4", "step": 7, "allowed": [true]}
+      - {"req_id": "JMAP-f8dc2370", "keyword": "MUST", "axis": "x4", "step": 9, "allowed": [true], "note": "a fresh Email, untouched by the earlier patches"}
     steps:
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"box": {"name": "pd{U}box"}}}, "mc"]]}
       - {"op": "upload", "key": "m", "data": "From: Alice <alice@example.invalid>\r\nTo: user@lab.test\r\nSubject: pd census\r\nDate: Thu, 12 Nov 2026 10:00:00 +0000\r\nMessage-ID: <pd-{U}@example.invalid>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nhello census\r\n", "content_type": "message/rfc822"}
@@ -419,7 +419,9 @@ fixtures:
       - {"op": "call", "calls": [["Email/set", {"accountId": "{acct}", "update": {"{id:e}": {"keywords/$seen/deeper": true}}}, "c1"]], "extract": {"x1": "eq:r0/notUpdated/{id:e}/type=\"invalidPatch\""}}
       - {"op": "call", "calls": [["Email/set", {"accountId": "{acct}", "update": {"{id:e}": {"keywords": {"$seen": true}, "keywords/$flagged": true}}}, "c0"]], "extract": {"x2": "has:r0/notUpdated/{id:e}"}}
       - {"op": "call", "calls": [["Email/set", {"accountId": "{acct}", "update": {"{id:e}": {"mailboxIds/0": true}}}, "c0"]], "extract": {"x3": "has:r0/notUpdated/{id:e}"}}
-      - {"op": "call", "calls": [["Email/set", {"accountId": "{acct}", "update": {"{id:e}": {"keywords/$flagged": true, "size": 1}}}, "c0"], ["Email/get", {"accountId": "{acct}", "ids": ["{id:e}"], "properties": ["keywords"]}, "g"]], "extract": {"x4": "eq:r1/list/0/keywords/$flagged=null"}}
+      - {"op": "upload", "key": "m2", "data": "From: Alice <alice@example.invalid>\r\nTo: user@lab.test\r\nSubject: pd census 2\r\nDate: Thu, 12 Nov 2026 10:00:00 +0000\r\nMessage-ID: <pd-2-{U}@example.invalid>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nhello census\r\n", "content_type": "message/rfc822"}
+      - {"op": "call", "calls": [["Email/import", {"accountId": "{acct}", "emails": {"e2": {"blobId": "{blob:m2}", "mailboxIds": {"{id:box}": true}}}}, "ei"]]}
+      - {"op": "call", "calls": [["Email/set", {"accountId": "{acct}", "update": {"{id:e2}": {"keywords/$flagged": true, "size": 1}}}, "c0"], ["Email/get", {"accountId": "{acct}", "ids": ["{id:e2}"], "properties": ["keywords"]}, "g"]], "extract": {"x4": "eq:r1/list/0/keywords/$flagged=null"}}
 
   census_set_server_set_property:
     kind: stateful
@@ -497,7 +499,7 @@ fixtures:
     steps:
       - {"op": "call", "calls": [["Mailbox/query", {"accountId": "{acct}"}, "c0"]], "key": "q1"}
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"qs": {"name": "pd{U}qs"}}}, "mc"]]}
-      - {"op": "call", "calls": [["Mailbox/query", {"accountId": "{acct}"}, "c0"]], "extract": {"x1": "ne:r0/queryState={state:q1}", "x2": "has:r0/queryState"}}
+      - {"op": "call", "calls": [["Mailbox/query", {"accountId": "{acct}"}, "c0"]], "extract": {"x1": "strne:r0/queryState={state:q1}", "x2": "has:r0/queryState"}}
 
   census_query_sort_collation:
     kind: stateful
@@ -647,9 +649,9 @@ fixtures:
   census_push_ssrf:
     kind: probe
     spec_refs:
-      - {"req_id": "JMAP-55add4a3", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true]}
+      - {"req_id": "JMAP-55add4a3", "keyword": "MUST", "axis": "x1", "step": 1, "allowed": [true, "null"], "note": "null: the server has no PushSubscription (unknownMethod)"}
     steps:
-      - {"op": "call", "calls": [["PushSubscription/set", {"create": {"p": {"deviceClientId": "pd{U}ssrf", "url": "http://127.0.0.1:1/pd"}}}, "c0"]], "extract": {"x1": "has:r0/notCreated/p"}}
+      - {"op": "call", "calls": [["PushSubscription/set", {"create": {"p": {"deviceClientId": "pd{U}ssrf", "url": "http://127.0.0.1:1/pd"}}}, "c0"]], "extract": {"x1": "when:strne:r0/type=unknownMethod?has:r0/notCreated/p"}}
 
   census_mailbox_rules:
     kind: stateful
@@ -704,7 +706,6 @@ fixtures:
   census_email_header_forms:
     kind: stateful
     spec_refs:
-      - {"req_id": "JMAP-351dac5e", "keyword": "MUST", "axis": "x1", "step": 4, "allowed": [false]}
       - {"req_id": "JMAP-711dc890", "keyword": "SHOULD", "axis": "x2", "step": 4, "allowed": [true]}
       - {"req_id": "JMAP-94f45102", "keyword": "MUST", "axis": "x3", "step": 4, "allowed": [true]}
       - {"req_id": "JMAP-341f3574", "keyword": "SHOULD", "axis": "x4", "step": 4, "basis": "option", "note": "best-effort decoding"}
@@ -716,9 +717,19 @@ fixtures:
       - {"req_id": "JMAP-079465a8", "keyword": "SHOULD", "axis": "x8", "step": 4, "basis": "option", "note": "best-effort parsing"}
     steps:
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"box": {"name": "pd{U}box"}}}, "mc"]]}
-      - {"op": "upload", "key": "m", "data": "From: alice@example.invalid (Alice Comment)\r\nTo: =?UTF-8?Q?J=C3=BCrgen?= <j@example.invalid>\r\nSubject: pd nul\u0000here and bad ÿ byte =?UTF-8?Q?not encoded?= x=?UTF-8?Q?glued?=\r\nX-Pd-List: <https://a.example>, <https://b.example>\r\nX-Pd-Enc: =?UTF-8?B?w6TDtsO8?=\r\nDate: Thu, 12 Nov 2026 10:00:00 +0000\r\nMessage-ID: <pd-forms-{U}@example.invalid>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nbody\r\n", "content_type": "message/rfc822"}
+      - {"op": "upload", "key": "m", "data": "From: alice@example.invalid (Alice Comment)\r\nTo: =?UTF-8?Q?J=C3=BCrgen?= <j@example.invalid>\r\nSubject: pd bad ÿ byte =?UTF-8?Q?not encoded?= x=?UTF-8?Q?glued?=\r\nX-Pd-List: <https://a.example>, <https://b.example>\r\nX-Pd-Enc: =?UTF-8?B?w6TDtsO8?=\r\nDate: Thu, 12 Nov 2026 10:00:00 +0000\r\nMessage-ID: <pd-forms-{U}@example.invalid>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nbody\r\n", "content_type": "message/rfc822"}
       - {"op": "call", "calls": [["Email/import", {"accountId": "{acct}", "emails": {"e": {"blobId": "{blob:m}", "mailboxIds": {"{id:box}": true}}}}, "ei"]]}
-      - {"op": "call", "calls": [["Email/get", {"accountId": "{acct}", "ids": ["{id:e}"], "properties": ["header:Subject:asText", "from", "to", "header:X-Pd-Enc:asText", "header:X-Pd-List:asURLs"]}, "eg"]], "extract": {"x1": "in:r0/list/0/header:Subject:asText=\u0000", "x2": "in:r0/list/0/header:Subject:asText=�", "x3": "in:r0/list/0/header:Subject:asText==?UTF-8?Q?not encoded?=", "x4": "r0/list/0/header:Subject:asText", "x5": "eq:r0/list/0/from/0/name=Alice Comment", "x6": "eq:r1/list/0/to/0/name=Jürgen", "x7": "r0/list/0/from", "x8": "eq:r0/list/0/header:X-Pd-Enc:asText=äöü"}}
+      - {"op": "call", "calls": [["Email/get", {"accountId": "{acct}", "ids": ["{id:e}"], "properties": ["header:Subject:asText", "from", "to", "header:X-Pd-Enc:asText", "header:X-Pd-List:asURLs"]}, "eg"]], "extract": {"x2": "in:r0/list/0/header:Subject:asText=�", "x3": "in:r0/list/0/header:Subject:asText==?UTF-8?Q?not encoded?=", "x4": "r0/list/0/header:Subject:asText", "x5": "eq:r0/list/0/from/0/name=Alice Comment", "x6": "eq:r0/list/0/to/0/name=Jürgen", "x7": "r0/list/0/from", "x8": "eq:r0/list/0/header:X-Pd-Enc:asText=äöü"}}
+
+  census_email_header_nul:
+    kind: stateful
+    spec_refs:
+      - {"req_id": "JMAP-351dac5e", "keyword": "MUST", "axis": "x1", "step": 4, "allowed": [false], "note": "a message with NUL may be refused at import (x2); then nothing carries the NUL"}
+    steps:
+      - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"box": {"name": "pd{U}box"}}}, "mc"]]}
+      - {"op": "upload", "key": "m", "data": "From: alice@example.invalid\r\nTo: user@lab.test\r\nSubject: pd nul\u0000here\r\nDate: Thu, 12 Nov 2026 10:00:00 +0000\r\nMessage-ID: <pd-nul-{U}@example.invalid>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nbody\r\n", "content_type": "message/rfc822"}
+      - {"op": "call", "calls": [["Email/import", {"accountId": "{acct}", "emails": {"e": {"blobId": "{blob:m}", "mailboxIds": {"{id:box}": true}}}}, "ei"]], "extract": {"x2": "has:r0/notCreated/e"}}
+      - {"op": "call", "calls": [["Email/get", {"accountId": "{acct}", "ids": ["{id:e}"], "properties": ["header:Subject:asText"]}, "eg"]], "extract": {"x1": "in:r0/list/0/header:Subject:asText=\u0000"}}
 
   census_email_body_values:
     kind: stateful
@@ -738,7 +749,7 @@ fixtures:
       - {"op": "call", "calls": [["Mailbox/set", {"accountId": "{acct}", "create": {"box": {"name": "pd{U}box"}}}, "mc"]]}
       - {"op": "upload", "key": "m", "data": "From: Alice <alice@example.invalid>\r\nTo: user@lab.test\r\nSubject: pd census\r\nDate: Thu, 12 Nov 2026 10:00:00 +0000\r\nMessage-ID: <pd-{U}@example.invalid>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nääääääääääääääääääääääääääääää word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word \r\n", "content_type": "message/rfc822"}
       - {"op": "call", "calls": [["Email/import", {"accountId": "{acct}", "emails": {"e": {"blobId": "{blob:m}", "mailboxIds": {"{id:box}": true}}}}, "ei"]]}
-      - {"op": "call", "calls": [["Email/get", {"accountId": "{acct}", "ids": ["{id:e}"], "properties": ["bodyValues", "preview"], "fetchTextBodyValues": true, "maxBodyValueBytes": 7}, "g"]], "extract": {"x1": "eq:r0/list/0/bodyValues/1/isTruncated=true", "x2": "re:r0/list/0/bodyValues/1/value=[ä]{3}", "x4": "re:r0/list/0/preview=(?s).{0,256}", "x8": "r0/list/0/bodyValues/1/isEncodingProblem"}}
+      - {"op": "call", "calls": [["Email/get", {"accountId": "{acct}", "ids": ["{id:e}"], "properties": ["bodyValues", "preview", "textBody"], "fetchTextBodyValues": true, "maxBodyValueBytes": 7}, "g"]], "extract": {"x1": "eq:r0/list/0/bodyValues/{@r0/list/0/textBody/0/partId}/isTruncated=true", "x2": "re:r0/list/0/bodyValues/{@r0/list/0/textBody/0/partId}/value=[ä]{3}", "x4": "re:r0/list/0/preview=(?s).{0,256}", "x8": "r0/list/0/bodyValues/{@r0/list/0/textBody/0/partId}/isEncodingProblem"}}
       - {"op": "upload", "key": "h", "data": "From: Alice <alice@example.invalid>\r\nTo: user@lab.test\r\nSubject: pd census\r\nDate: Thu, 12 Nov 2026 10:00:00 +0000\r\nMessage-ID: <pd-html-{U}@example.invalid>\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<p><a href=\"https://example.com/long/path\">link</a></p>\r\n", "content_type": "message/rfc822"}
       - {"op": "call", "calls": [["Email/import", {"accountId": "{acct}", "emails": {"eh": {"blobId": "{blob:h}", "mailboxIds": {"{id:box}": true}}}}, "ei"]]}
       - {"op": "call", "calls": [["Email/get", {"accountId": "{acct}", "ids": ["{id:eh}"], "fetchHTMLBodyValues": true, "maxBodyValueBytes": 20}, "g"]], "extract": {"x3": "r0/list/0/bodyValues/*/value", "x5": "hasall:r0/list/0=[\"id\", \"blobId\", \"threadId\", \"mailboxIds\", \"keywords\", \"size\", \"receivedAt\", \"messageId\", \"subject\", \"from\", \"to\", \"preview\", \"hasAttachment\"]"}}

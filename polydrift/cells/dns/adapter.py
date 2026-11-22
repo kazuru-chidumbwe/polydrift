@@ -253,6 +253,7 @@ def step_record(obs: dict[str, Any], spec: CellSpec) -> StepRecord:
                 "qname_case": obs.get("qname_case"),
                 "answer_ttls": obs.get("ttls"),
                 "dname_compressed": dname_compressed(obs.get("wire")),
+                "question_mismatch": obs.get("question_mismatch"),
                 "synth_ttl_follows": synth_ttl_follows(obs.get("answers"), obs.get("ttls")),
                 "additional_soa": obs.get("additional_soa"),
             })

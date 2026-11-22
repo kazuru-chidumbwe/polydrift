@@ -360,6 +360,7 @@ fixtures:
 
   census_grammar_strings:
     kind: probe
+    line_endings: crlf
     message: clean.eml
     spec_refs:
       - {"req_id": "SIEVE-506446c9", "keyword": "MUST", "axis": "decision_class", "step": 1, "allowed": ["proceed"]}
@@ -835,6 +836,7 @@ fixtures:
 
   census_vacation_mime_8bit_header:
     kind: probe
+    line_endings: crlf
     message: vacation.eml
     spec_refs:
       - {"req_id": "SIEVE-6fa6f3ce", "keyword": "SHOULD", "axis": "outcome", "step": 1, "allowed": ["refused", "runtime-error"]}
@@ -927,6 +929,7 @@ fixtures:
 
   census_ereject_multiline_reason:
     kind: probe
+    line_endings: crlf
     message: clean.eml
     spec_refs:
       - {"req_id": "SIEVE-ec1d767e", "keyword": "MUST", "axis": "lmtp_reply", "step": 1, "layer": "effect", "basis": "conditional", "note": "binds only when the reason is returned at the protocol level"}
@@ -980,3 +983,12 @@ fixtures:
       {
         fileinto "INBOX";
       }
+
+  script_crlf_line_endings:
+    kind: probe
+    message: clean.eml
+    line_endings: crlf
+    # comparison only: RFC 5228 8.1 writes the grammar with CRLF; an engine that refuses a CRLF script cannot run
+    # scripts in the specification's own form
+    script: |
+      keep;

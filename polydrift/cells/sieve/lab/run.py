@@ -86,9 +86,9 @@ def _facts(m, args: list[str]) -> dict:
         "received_delta": len(m.get_all("Received") or []) - ORIG.get("received", 0),
         "in_reply_to_orig": bool(orig_mid) and orig_mid in (m.get("In-Reply-To") or ""),
         "references_orig": bool(orig_mid) and orig_mid in refs,
-        "subject": " ".join((m.get("Subject") or "").split()) or None,
-        "from": " ".join((m.get("From") or "").split()) or None,
-        "to": " ".join((m.get("To") or "").split()) or None,
+        "subject": " ".join(str(m.get("Subject") or "").split()) or None,
+        "from": " ".join(str(m.get("From") or "").split()) or None,
+        "to": " ".join(str(m.get("To") or "").split()) or None,
         "date_present": m.get("Date") is not None,
         "env_from": env_from,
         "mdn_disposition": _part_field(m, "message/disposition-notification", "Disposition"),
@@ -212,7 +212,7 @@ def emitted() -> list[dict]:
         kind = classify(m)
         rcpt = sorted(a for a in args if "@" in a and not a.startswith("-"))
         if not rcpt:
-            rcpt = sorted(x.strip().strip("<>") for x in (m.get("To") or "").split(",") if "@" in x)
+            rcpt = sorted(x.strip().strip("<>") for x in str(m.get("To") or "").split(",") if "@" in x)
         out.append({"kind": kind, "to": rcpt, "auto_submitted": auto or None, "facts": facts(m, args)})
     return out
 
@@ -251,7 +251,7 @@ def emitted_from_text(txt: str) -> list[dict]:
     for k, i in enumerate(starts):
         end = next((j for j in range(i, len(lines)) if lines[j] == ""), len(lines))
         m = email.message_from_string("\n".join(lines[i:end]) + "\n\n", policy=policy.compat32)
-        to = [rcpts[k]] if k < len(rcpts) else sorted(x.strip().strip("<>") for x in (m.get("To") or "").split(",") if "@" in x)
+        to = [rcpts[k]] if k < len(rcpts) else sorted(x.strip().strip("<>") for x in str(m.get("To") or "").split(",") if "@" in x)
         out.append({"kind": classify(m), "to": sorted(to), "auto_submitted": (m.get("Auto-Submitted") or "").lower() or None,
                     "facts": facts(m, [])})
     return out

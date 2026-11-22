@@ -64,7 +64,7 @@ def run_one(t: dict[str, Any], lab: str, fx: dict[str, Any], defaults: dict) -> 
     with tempfile.TemporaryDirectory(prefix="pdsv-") as d:
         dp = Path(d)
         text = fx["script"].replace("\r\n", "\n")
-        if fx.get("line_endings", "crlf") == "crlf":
+        if fx.get("line_endings", "lf") == "crlf":
             text = text.replace("\n", "\r\n")
         (dp / "script.sieve").write_bytes(text.encode("utf-8"))
         shutil.copy(Path(lab) / "messages" / fx["message"], dp / "msg.eml")

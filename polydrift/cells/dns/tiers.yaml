@@ -68,6 +68,10 @@ axes:
     tier: 3
     kappa: identity
     clause: "T3: question name as returned, case kept (RFC 1034 3.1, RFC 1035 2.3.3); 0x20 clients compare it"
+  question_mismatch:
+    tier: 0
+    kappa: identity
+    clause: "T0: the response carries the query's ID but a different question (RFC 1035 4.1.2, 7.3); a stub resolver discards it, so the consumer gets no usable response"
   dname_compressed:
     tier: 3
     kappa: identity

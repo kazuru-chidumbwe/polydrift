@@ -102,7 +102,13 @@ def query_wire(q: dns.message.Message, server: str, timeout: float, tcp: bool) -
         s = RecSock(socket.AF_INET, socket.SOCK_DGRAM)
         s.setblocking(False)
         with s:
-            resp = dns.query.udp(q, server, timeout=timeout, ignore_unexpected=True, sock=s)
+            try:
+                resp = dns.query.udp(q, server, timeout=timeout, ignore_unexpected=True, sock=s)
+            except dns.query.BadResponse:
+                # the reply carries our ID but another question (RFC 1035 4.1.2: the question is copied): parse it
+                # as sent and mark it, a stub would discard it
+                resp = dns.message.from_wire(s.got[-1], ignore_trailing=True)
+                resp.pd_question_mismatch = True
             return resp, s.got[-1]
     s = RecSock(socket.AF_INET, socket.SOCK_STREAM)
     with s:
@@ -338,6 +344,7 @@ def run(server: str, steps: list[dict]) -> list[dict]:
                 resp, wire = query_wire(q, server, timeout, bool(st.get("tcp")))
                 obs = observe(resp)
                 obs["wire"] = wire.hex()
+                obs["question_mismatch"] = bool(getattr(resp, "pd_question_mismatch", False))
         except dns.exception.Timeout:
             obs = {"error": "timeout"}
         except (ConnectionError, OSError) as e:

@@ -9,6 +9,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && rm -rf /var/lib/apt/lists/*
 RUN git clone --branch ${SDK_TAG} --recurse-submodules -j8 https://gitlab.linphone.org/BC/public/linphone-sdk.git /src \
  && git -C /src rev-parse HEAD > /LINPHONE-SDK-COMMIT
+# hidapi (bundled) needs libudev at configure time
+RUN apt-get update && apt-get install -y --no-install-recommends libudev-dev && rm -rf /var/lib/apt/lists/*
 RUN cmake -S /src -B /build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/linphone \
       -DENABLE_VIDEO=OFF -DENABLE_ADVANCED_IM=OFF -DENABLE_LIME_X3DH=OFF -DENABLE_LDAP=OFF -DENABLE_FLEXIAPI=OFF \
       -DENABLE_QRCODE=OFF -DENABLE_JPEG=OFF -DENABLE_UNIT_TESTS=OFF -DENABLE_DOC=OFF -DENABLE_CONSOLE_UI=ON \

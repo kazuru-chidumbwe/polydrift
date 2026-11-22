@@ -36,6 +36,10 @@ axes:
     tier: 2
     kappa: dn_set
     clause: "T2: naming attribute of the subschema subentry a client must locate to read the schema (RFC 4512 3.2, 4.2)"
+  schema_list_clash:
+    tier: 2
+    kappa: dn_set
+    clause: "T2: schema definitions (DIT content rules, name forms) that name one attribute type in two of their MUST, MAY and NOT lists; a client that builds entries from the schema gets contradictory rules (RFC 4512 4.1.6, 4.1.7.2)"
   referral_shape:
     tier: 2
     kappa: identity

@@ -563,7 +563,7 @@ fixtures:
 
   census_subschema_subentry:
     kind: control
-    value_attrs: ["subschemasubentry", "ditcontentrules"]
+    value_attrs: ["subschemasubentry", "ditcontentrules", "nameforms"]
     spec_refs:
       - {"req_id": "LDAP-cf55313a", "keyword": "MUST", "axis": "attr_names", "step": 2, "allowed": [["subschemasubentry"]]}
       - {"req_id": "LDAP-a643990c", "keyword": "SHOULD", "axis": "attr_names", "step": 2, "allowed": [["subschemasubentry"]]}
@@ -573,8 +573,8 @@ fixtures:
       - {"req_id": "LDAP-31319ba1", "keyword": "SHOULD", "axis": "attr_names", "step": 4, "allowed": [["attributetypes", "objectclasses"], ["attributetypes", "ldapsyntaxes", "matchingrules", "objectclasses"]]}
       - {"req_id": "LDAP-8d1dbab7", "keyword": "SHOULD", "axis": "objectclasses", "step": 5, "basis": "conditional", "note": "binds only for servers that follow the X.500(93) model"}
       - {"req_id": "LDAP-0d873343", "keyword": "MAY", "axis": "attr_names", "step": 6, "basis": "option"}
-      - {"req_id": "LDAP-27dbe42f", "keyword": "MUST", "axis": "entry_attrs", "step": 7, "basis": "not-observable", "note": "schema values are masked on this axis"}
-      - {"req_id": "LDAP-878008bf", "keyword": "MUST", "axis": "entry_attrs", "step": 7, "basis": "not-observable", "note": "schema values are masked on this axis"}
+      - {"req_id": "LDAP-27dbe42f", "keyword": "MUST", "axis": "schema_list_clash", "step": 7, "allowed": [[]], "note": "no attribute type in two of a DIT content rule's MUST, MAY and NOT lists"}
+      - {"req_id": "LDAP-878008bf", "keyword": "MUST", "axis": "schema_list_clash", "step": 8, "allowed": [[]], "note": "the MUST and MAY lists of every name form are different"}
     steps:
       - {"op": "bind", "args": {"dn": "{A}", "password": "{P}"}}
       - {"op": "search", "args": {"base": "{B}", "scope": "base", "attributes": ["subschemaSubentry"]}}
@@ -583,6 +583,7 @@ fixtures:
       - {"op": "search", "args": {"base": "{@subschemaSubentry}", "scope": "base", "filter": ["present", "objectClass"], "attributes": ["objectClass"]}}
       - {"op": "search", "args": {"base": "{@subschemaSubentry}", "scope": "base", "filter": ["present", "objectClass"], "attributes": ["+"]}}
       - {"op": "search", "args": {"base": "{@subschemaSubentry}", "scope": "base", "filter": ["present", "objectClass"], "attributes": ["dITContentRules"]}}
+      - {"op": "search", "args": {"base": "{@subschemaSubentry}", "scope": "base", "filter": ["present", "objectClass"], "attributes": ["nameForms"]}}
 
   census_subschema_modify:
     kind: probe

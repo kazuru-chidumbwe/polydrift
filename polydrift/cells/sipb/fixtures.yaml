@@ -463,29 +463,8 @@ fixtures:
       - {"req_id": "SIP-9b4145ed", "keyword": "MAY", "axis": "x1", "step": 2, "basis": "not-applicable", "note": "reliable transport only; the fixture uses UDP"}
       - {"req_id": "SIP-9bd6c175", "keyword": "MUST", "axis": "x4", "step": 3, "allowed": [[]], "note": "the late 200 is not forwarded after the transaction ended"}
     steps:
-      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0
-Via: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport
-Max-Forwards: 70
-From: <sip:bob@{domain}>;tag={tag:rbob}
-To: <sip:bob@{domain}>
-Call-ID: reg-bob-{U}@{lab}
-CSeq: 1 REGISTER
-Contact: <sip:bob@{lab}:{port:bob}>
-Expires: 300
-Content-Length: {clen}
-
-"}
-      - {"op": "send", "from": "alice", "window_ms": 34000, "msg": "OPTIONS sip:bob@{domain} SIP/2.0
-Via: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport
-Max-Forwards: 70
-From: <sip:alice@{domain}>;tag={tag:alice}
-To: <sip:bob@{domain}>
-Call-ID: {callid}
-CSeq: 1 OPTIONS
-Contact: <sip:alice@{lab}:{port:alice}>
-Content-Length: {clen}
-
-", "extract": {"x1": "codes:alice", "x2": "firstafter:alice=100,3.0", "x3": "prov1xx:alice"}}
+      - {"op": "send", "from": "bob", "window_ms": 1200, "msg": "REGISTER sip:{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:bob};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:bob@{domain}>;tag={tag:rbob}\nTo: <sip:bob@{domain}>\nCall-ID: reg-bob-{U}@{lab}\nCSeq: 1 REGISTER\nContact: <sip:bob@{lab}:{port:bob}>\nExpires: 300\nContent-Length: {clen}\n\n"}
+      - {"op": "send", "from": "alice", "window_ms": 34000, "msg": "OPTIONS sip:bob@{domain} SIP/2.0\nVia: SIP/2.0/UDP {lab}:{port:alice};branch={branch};rport\nMax-Forwards: 70\nFrom: <sip:alice@{domain}>;tag={tag:alice}\nTo: <sip:bob@{domain}>\nCall-ID: {callid}\nCSeq: 1 OPTIONS\nContact: <sip:alice@{lab}:{port:alice}>\nContent-Length: {clen}\n\n", "extract": {"x1": "codes:alice", "x2": "firstafter:alice=100,3.0", "x3": "prov1xx:alice"}}
       - {"op": "reply", "from": "bob", "code": 200, "reason": "OK", "window_ms": 1500, "extract": {"x4": "codes:alice"}}
 
   px_timeout_408:

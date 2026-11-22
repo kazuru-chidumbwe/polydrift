@@ -98,6 +98,22 @@ def _u(value: str, unique: str) -> str:
     return value.replace(unique, "{U}").replace(unique.lower(), "{U}") if unique else value
 
 
+def _oid_list(defn: str, kw: str) -> list[str]:
+    """Attribute types listed after keyword kw in an RFC 4512 schema definition ("MUST cn" or "MUST ( cn $ sn )"),
+    lower-cased; empty when the keyword is absent."""
+    import re
+    m = re.search(r"\b" + kw + r"\s+(\([^)]*\)|[^\s()]+)", defn)
+    if not m:
+        return []
+    return [x.strip().lower() for x in m.group(1).strip("() ").split("$") if x.strip()]
+
+
+def _def_name(defn: str) -> str:
+    import re
+    m = re.search(r"NAME\s+'([^']+)'", defn) or re.search(r"^\(\s*([0-9.]+)", defn.strip())
+    return m.group(1).lower() if m else "?"
+
+
 def step_fields(obs: dict[str, Any], spec: CellSpec, base: str, value_attrs: set[str], unique: str = "") -> dict[str, Field]:
     me = obs["clients"].get(obs["actor"], {})
     msgs = me.get("messages") or []
@@ -126,6 +142,18 @@ def step_fields(obs: dict[str, Any], spec: CellSpec, base: str, value_attrs: set
         v["subschema_rdn_attr"] = sorted({x.split("=", 1)[0].strip().lower() for m in ents
                                           for k, xs in m.get("attributes", {}).items()
                                           if k.lower() == "subschemasubentry" for x in xs})
+        # schema definitions that put one attribute type in two of their MUST / MAY / NOT lists (RFC 4512 4.1.6,
+        # 4.1.7.2), by definition name; empty when every fetched definition keeps its lists apart
+        clash = set()
+        for m in ents:
+            for k, vals in m.get("attributes", {}).items():
+                if k.lower() in ("ditcontentrules", "nameforms"):
+                    for val in vals:
+                        lists = {kw: _oid_list(val, kw) for kw in ("MUST", "MAY", "NOT")}
+                        seen = [x for kw in lists for x in lists[kw]]
+                        if len(seen) != len(set(seen)):
+                            clash.add(f"{k.lower()}:{_def_name(val)}")
+        v["schema_list_clash"] = sorted(clash)
     # referral shape (RFC 4511 4.1.10): "none" (no referral result, no continuation reference), "uris" (at least
     # one URI), "empty" (a referral or reference without a URI); the URIs themselves are compared with the base and
     # the unique name removed

@@ -175,7 +175,7 @@
   "image": "technitium/dns-server:9.1",
   "ready": 90,
   "mounts": {
-   "root.hints": "/opt/technitium/dns/named.root"
+   "root.hints": "/etc/dns/named.root"
   },
   "env": {
    "DNS_SERVER_ADMIN_PASSWORD": "pdlab"
@@ -203,7 +203,7 @@
   "image": "technitium/dns-server:10.0",
   "ready": 90,
   "mounts": {
-   "root.hints": "/opt/technitium/dns/named.root"
+   "root.hints": "/etc/dns/named.root"
   },
   "env": {
    "DNS_SERVER_ADMIN_PASSWORD": "pdlab"

@@ -1,0 +1,22 @@
+[
+ {
+  "key": "mailutils-3.19",
+  "impl": "mailutils",
+  "version": "3.19",
+  "image": "pd-mailutils:3.19",
+  "cloned_from": "mailutils-3.21"
+ },
+ {
+  "key": "mailutils-3.20",
+  "impl": "mailutils",
+  "version": "3.20",
+  "image": "pd-mailutils:3.20",
+  "cloned_from": "mailutils-3.21"
+ },
+ {
+  "key": "mailutils-3.21",
+  "impl": "mailutils",
+  "version": "3.21",
+  "image": "pd-mailutils:3.21"
+ }
+]

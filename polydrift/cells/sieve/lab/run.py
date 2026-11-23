@@ -417,7 +417,12 @@ def mailutils(fx: Path, meta: dict) -> dict:
         if f != "INBOX":
             for sub in ("cur", "new", "tmp"):
                 (root / f / sub).mkdir(parents=True, exist_ok=True)
-    common = ["--no-config", "--mbox-url", f"maildir://{src}", "--mailer", "prog:///lab/capture.sh",
+    # Mailutils executes its mailer program directly, so it needs an executable copy; /lab is mounted read-only and
+    # the harness tar keeps no mode bits (Amendment 2)
+    mailer = Path("/tmp/pd-capture.sh")
+    shutil.copy("/lab/capture.sh", mailer)
+    mailer.chmod(0o755)
+    common = ["--no-config", "--mbox-url", f"maildir://{src}", "--mailer", f"prog://{mailer}",
               "--email", meta.get("to", "user@lab.test"), "-v"]
     root.mkdir(parents=True, exist_ok=True)
     rc, txt = sh(["sieve", "--dry-run", *common, str(s)], env={"HOME": "/tmp/mbox"}, cwd=str(root))

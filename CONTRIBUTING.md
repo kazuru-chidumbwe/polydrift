@@ -1,6 +1,6 @@
 # Contributing to polydrift
 
-Thanks for interest in improving the harness. polydrift is maintained by a single author; contributions via GitHub issues and pull requests are welcome.
+Thanks for interest in improving the harness. contributions via GitHub issues and pull requests are welcome.
 
 ## Support
 
